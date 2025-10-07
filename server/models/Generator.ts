@@ -114,7 +114,6 @@ const GeneratorSchema: Schema = new Schema(
 );
 
 GeneratorSchema.index({ owner: 1, serialNumber: 1 }, { unique: true });
-GeneratorSchema.index({ generatorId: 1 });
 GeneratorSchema.index({ status: 1 });
 
 export const Generator: Model<IGenerator & Document> = mongoose.model<IGenerator & Document>('Generator', GeneratorSchema);

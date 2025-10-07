@@ -8,15 +8,12 @@ import helmet from "helmet";
 import limiter from "./utils/rateLimiter";
 import type { CorsOptions } from "cors";
 import config from "./config";
-// import authRouter from "./routes/auth.route";
-// import userRouter from "./routes/user.route";
-// import cartRouter from "./routes/cart.route";
-// import productRouter from "./routes/product.route";
-// import orderRouter from "./routes/order.route";
-// import addressRouter from "./routes/address.route";
-// import paymentRouter from "./routes/payment.route";
-// import couponRouter from "./routes/coupon.route";
-// import analyticsRouter from "./routes/analytics.route";
+import authRouter from "./routes/auth.route";
+import userRouter from "./routes/user.route";
+import generatorRouter from "./routes/generator.route";
+import inspectionRouter from "./routes/inspection.route";
+import inspectionReportRouter from "./routes/inspectionReport.route";
+import paymentRouter from "./routes/payment.route";
 
 export const app = express();
 // Load environment variables from .env file
@@ -62,23 +59,19 @@ app.use(helmet());
 app.use(limiter);
 
 // routes
-// app.use(
-//   "/api/v1",
-//   authRouter,
-//   userRouter,
-//   cartRouter,
-//   productRouter,
-//   orderRouter,
-//   paymentRouter,
-//   addressRouter,
-//   couponRouter,
-//   analyticsRouter
-// );
+app.use(
+  "/api/v1",
+  authRouter,
+  userRouter,
+  generatorRouter,
+  inspectionRouter,
+  inspectionReportRouter,
+  paymentRouter
+);
 
 // testing API
 app.get("/test", (req: Request, res: Response, next: NextFunction) => {
   res.status(200).json({ success: true, message: "API is working" });
 });
-
 
 app.use(errorMiddleware);

@@ -60,7 +60,6 @@ const PaymentSchema: Schema = new Schema(
   }
 );
 
-PaymentSchema.index({ transactionReference: 1 });
 PaymentSchema.index({ user: 1 });
 PaymentSchema.index({ status: 1 });
 

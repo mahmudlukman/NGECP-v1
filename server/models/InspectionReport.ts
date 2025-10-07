@@ -156,7 +156,6 @@ const InspectionReportSchema: Schema = new Schema(
   }
 );
 
-InspectionReportSchema.index({ inspection: 1 });
 InspectionReportSchema.index({ generator: 1 });
 
 export const InspectionReport: Model<IInspectionReport> = mongoose.model<IInspectionReport>('InspectionReport', InspectionReportSchema);

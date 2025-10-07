@@ -21,8 +21,7 @@ export interface IUser extends Document {
   accountType: AccountType;
 
   // Individual fields
-  firstName?: string;
-  lastName?: string;
+  name?: string;
   phoneNumber?: string;
 
   // Company fields
@@ -32,7 +31,6 @@ export interface IUser extends Document {
   contactPersonName?: string;
   contactPersonPhone?: string;
 
-  isEmailVerified: boolean;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -69,13 +67,7 @@ const UserSchema: Schema = new Schema(
     },
 
     // Individual fields
-    firstName: {
-      type: String,
-      required: function (this: IUser) {
-        return this.accountType === AccountType.INDIVIDUAL;
-      },
-    },
-    lastName: {
+    name: {
       type: String,
       required: function (this: IUser) {
         return this.accountType === AccountType.INDIVIDUAL;
@@ -102,10 +94,6 @@ const UserSchema: Schema = new Schema(
     contactPersonName: String,
     contactPersonPhone: String,
 
-    isEmailVerified: {
-      type: Boolean,
-      default: false,
-    },
     isActive: {
       type: Boolean,
       default: true,
@@ -116,9 +104,6 @@ const UserSchema: Schema = new Schema(
     timestamps: true,
   }
 );
-
-UserSchema.index({ email: 1 });
-UserSchema.index({ companyRegNumber: 1 }, { sparse: true });
 
 // Hash password
 UserSchema.pre<IUser>("save", async function (next) {
