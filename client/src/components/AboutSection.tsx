@@ -22,7 +22,7 @@ const AboutSection = () => {
             </span>
           </h2>
 
-          <p className="text-slate-600 text-lg leading-relaxed mb-6">
+          <p className="text-slate-600 text-sm leading-relaxed mb-6">
             The National Generator Emission Control Program (NGECP) is a
             government-driven initiative committed to promoting environmental
             sustainability across Nigeria. Our mission is to monitor, regulate,
@@ -30,7 +30,7 @@ const AboutSection = () => {
             and a healthier future for all.
           </p>
 
-          <p className="text-slate-600 text-lg leading-relaxed mb-8">
+          <p className="text-slate-600 text-sm leading-relaxed mb-8">
             Through modern technology, strict compliance frameworks, and public
             awareness campaigns, we aim to create an eco-friendly energy
             ecosystem that supports national growth while preserving our
@@ -38,16 +38,16 @@ const AboutSection = () => {
           </p>
 
           <ul className="space-y-3 text-slate-700">
-            <li className="flex items-center gap-2">
+            <li className="flex items-center text-sm gap-2">
               ✅ Promote sustainable generator use.
             </li>
-            <li className="flex items-center gap-2">
+            <li className="flex items-center text-sm gap-2">
               ✅ Enforce national emission standards.
             </li>
-            <li className="flex items-center gap-2">
+            <li className="flex items-center text-sm gap-2">
               ✅ Encourage renewable energy adoption.
             </li>
-            <li className="flex items-center gap-2">
+            <li className="flex items-center text-sm gap-2">
               ✅ Protect public health and the environment.
             </li>
           </ul>

@@ -6,7 +6,7 @@ const OurSpecs = () => {
     <div className="px-6 my-20 max-w-6xl mx-auto">
       <Title
         visibleButton={false}
-        title="Key Features of the NGECP Website"
+        title="Key Features"
         description="The NGECP Website offers a range of key features designed to streamline generator registration and monitoring in Nigeria. Users can access real-time data, compliance resources, and insightful reports to support environmental sustainability efforts."
       />
 

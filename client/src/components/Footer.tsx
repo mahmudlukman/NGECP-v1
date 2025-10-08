@@ -150,29 +150,29 @@ const Footer = () => {
 
   const linkSections = [
     {
-      title: "PRODUCTS",
+      title: "TERMS OF USE",
       links: [
-        { text: "Blender", path: "/", icon: null },
-        { text: "Bags", path: "/", icon: null },
-        { text: "Smartphones", path: "/", icon: null },
-        { text: "Shoes", path: "/", icon: null },
+        { text: "Privacy Policy", path: "/", icon: null },
+        { text: "Terms & Conditions", path: "/", icon: null },
+        { text: "Data Protection", path: "/", icon: null },
+        { text: "Reports & Analysis", path: "/", icon: null },
       ],
     },
     {
-      title: "WEBSITE?",
+      title: "WEBSITE",
       links: [
         { text: "Home", path: "/", icon: null },
-        { text: "Privacy Policy", path: "/", icon: null },
-        { text: "Store", path: "/products", icon: null },
+        { text: "About Us", path: "/products", icon: null },
         { text: "Contact", path: "/contact", icon: null },
+        { text: "Register", path: "/", icon: null },
       ],
     },
     {
       title: "CONTACT",
       links: [
         { text: "+234-805-555-6677", path: "/", icon: MailIcon },
-        { text: "contact@happinessimporthub.com", path: "/", icon: PhoneIcon },
-        { text: "Life Camp, Abuja", path: "/", icon: MapPinIcon },
+        { text: "contact@ngecp.com", path: "/", icon: PhoneIcon },
+        { text: "Maitama, Abuja", path: "/", icon: MapPinIcon },
       ],
     },
   ];
@@ -197,10 +197,11 @@ const Footer = () => {
               <span className="text-primary text-5xl leading-0">.</span>
             </Link>
             <p className="max-w-[410px] mt-6 text-sm">
-              Welcome to Happy Import Hub, where technology meets everyday
-              essentials! From stylish shoes, durable bags, and versatile
-              kitchen pots, we’ve got everything you need to live smarter and
-              happier – all under one roof.
+              The National Generator Emission Control Program (NGECP) is a
+              government-driven initiative committed to promoting environmental
+              sustainability across Nigeria. Our mission is to monitor,
+              regulate, and minimize harmful emissions from generators, ensuring
+              cleaner air and a healthier future for all.
             </p>
             <div className="flex items-center gap-3 mt-5">
               {socialIcons.map((item, i) => (
@@ -238,8 +239,8 @@ const Footer = () => {
           </div>
         </div>
         <p className="py-4 text-sm text-slate-500">
-          Copyright 2025 © National Generator Emission Control Program, All
-          Right Reserved.
+          Copyright {new Date().getFullYear()} © National Generator Emission
+          Control Program, All Right Reserved.
         </p>
       </div>
     </footer>

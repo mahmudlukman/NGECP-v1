@@ -20,3 +20,17 @@ export interface ServerError {
   };
   message?: string;
 }
+
+// Define the registration data type
+export interface RegistrationData {
+  email: string;
+  password: string;
+  accountType: "individual" | "company";
+  phoneNumber: string;
+  name?: string;
+  companyName?: string;
+  companyRegNumber?: string;
+  companyAddress?: string;
+  contactPersonName?: string;
+  contactPersonPhone?: string;
+}

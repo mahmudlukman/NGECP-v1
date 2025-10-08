@@ -1,4 +1,4 @@
-import { AccountType, IUser, User } from "../models/User";
+import { AccountType, User } from "../models/User";
 import ErrorHandler from "../utils/errorHandler";
 import { catchAsyncError } from "../middleware/catchAsyncErrors";
 import { NextFunction, Request, Response } from "express";

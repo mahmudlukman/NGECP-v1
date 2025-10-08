@@ -43,7 +43,7 @@ const MainBanner = () => {
                 Emission Control Program
               </span>
             </h1>
-            <p className="text-lg text-slate-600 mb-8">
+            <p className="text-sm text-slate-600 mb-8">
               We promote sustainable energy practices, reduce harmful emissions,
               and ensure compliance with international environmental standards.
               Through innovative registration and monitoring systems, we aim to
