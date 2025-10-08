@@ -8,14 +8,21 @@ import {
   getPaymentStatistics,
   updatePaymentStatus,
   initiateRefund,
+  initializePayment,
+  getPaymentStatus,
+  handleWebhook,
 } from "../controllers/payment.controller";
 
 const paymentRouter = express.Router();
 
 // User routes
-paymentRouter.post("/verify-payment", isAuthenticated, verifyPayment);
+paymentRouter.post("/initialize-payment", isAuthenticated, initializePayment);
+paymentRouter.get("/verify-payment", verifyPayment);
 paymentRouter.get("/my-payments", isAuthenticated, getMyPayments);
 paymentRouter.get("/payment-reference/:reference", isAuthenticated, getPaymentByReference);
+paymentRouter.get("/payment-status/:inspectionId", isAuthenticated, getPaymentStatus);
+
+paymentRouter.post("/webhook", handleWebhook);
 
 // Admin only routes
 paymentRouter.get(

@@ -176,7 +176,6 @@ export const updateGenerator = catchAsyncError(
     try {
       const { id } = req.params;
       const userId = req.user?._id;
-      const userRole = req.user?.role;
 
       const generator = await Generator.findById(id);
 
@@ -186,7 +185,6 @@ export const updateGenerator = catchAsyncError(
 
       // Check ownership
       if (
-        userRole !== "admin" &&
         generator.owner.toString() !== userId?.toString()
       ) {
         return next(
@@ -201,7 +199,6 @@ export const updateGenerator = catchAsyncError(
         yearOfManufacture,
         fuelType,
         location,
-        status,
       } = req.body;
 
       // Update allowed fields
@@ -211,11 +208,6 @@ export const updateGenerator = catchAsyncError(
       if (yearOfManufacture) generator.yearOfManufacture = yearOfManufacture;
       if (fuelType) generator.fuelType = fuelType;
       if (location) generator.location = location;
-
-      // Only admin can update status
-      if (status && userRole === "admin") {
-        generator.status = status;
-      }
 
       await generator.save();
 

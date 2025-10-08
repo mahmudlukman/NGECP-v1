@@ -14,7 +14,7 @@ export interface IGenerator {
   brand: string;
   model: string;
   serialNumber: string;
-  capacity: number;
+  capacity: string;
   yearOfManufacture: number;
   fuelType: string;
   location: {
@@ -62,7 +62,7 @@ const GeneratorSchema: Schema = new Schema(
       unique: true
     },
     capacity: {
-      type: Number,
+      type: String,
       required: true
     },
     yearOfManufacture: {

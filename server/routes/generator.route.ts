@@ -11,17 +11,27 @@ import {
 } from "../controllers/generator.controller";
 const generatorRouter = express.Router();
 
-generatorRouter.post("/register-generator", registerGenerator);
+generatorRouter.post("/register-generator", isAuthenticated, registerGenerator);
 generatorRouter.get("/generator/:id", isAuthenticated, getGeneratorById);
 generatorRouter.get("/my-generators", isAuthenticated, getMyGenerators);
 generatorRouter.get(
-  "/my-generators",
+  "/all-generators",
   isAuthenticated,
   authorizeRoles("admin", "editor"),
   getAllGenerators
 );
-generatorRouter.put("/update-generator/:id", updateGenerator);
-generatorRouter.put("/update-generator-status/:id", updateGeneratorStatus);
-generatorRouter.delete("/delete-generator/:id", deleteGenerator);
+generatorRouter.put("/update-generator/:id", isAuthenticated, updateGenerator);
+generatorRouter.put(
+  "/update-generator-status/:id",
+  isAuthenticated,
+  authorizeRoles("admin", "editor"),
+  updateGeneratorStatus
+);
+
+generatorRouter.delete(
+  "/delete-generator/:id",
+  isAuthenticated,
+  deleteGenerator
+);
 
 export default generatorRouter;

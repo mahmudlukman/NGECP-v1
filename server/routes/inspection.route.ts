@@ -11,17 +11,36 @@ import {
 } from "../controllers/inspection.controller";
 const inspectionRouter = express.Router();
 
-inspectionRouter.post("/schedule-inspection", scheduleInspection);
+inspectionRouter.post(
+  "/schedule-inspection",
+  isAuthenticated,
+  scheduleInspection
+);
 inspectionRouter.get("/my-inspections", isAuthenticated, getMyInspections);
 inspectionRouter.get("/inspection/:id", isAuthenticated, getInspectionById);
 inspectionRouter.get(
-  "/get-all-inspections",
+  "/all-inspections",
   isAuthenticated,
   authorizeRoles("admin", "editor"),
   getAllInspections
 );
-inspectionRouter.put("/assign-inspector/:id", assignInspector);
-inspectionRouter.put("/update-inspector-status/:id", updateInspectionStatus);
-inspectionRouter.put("/cancel-inspector/:id", cancelInspection);
+inspectionRouter.put(
+  "/assign-inspector/:id",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  assignInspector
+);
+inspectionRouter.put(
+  "/update-inspector-status/:id",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  updateInspectionStatus
+);
+
+inspectionRouter.put(
+  "/cancel-inspector/:id",
+  isAuthenticated,
+  cancelInspection
+);
 
 export default inspectionRouter;
