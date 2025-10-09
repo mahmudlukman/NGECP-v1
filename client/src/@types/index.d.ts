@@ -36,3 +36,39 @@ export interface RegistrationData {
   contactPersonName?: string;
   contactPersonPhone?: string;
 }
+
+export interface IGenerator {
+  _id: string;
+  owner:
+    | string
+    | {
+        _id: string;
+        email: string;
+        accountType: "individual" | "company";
+        name?: string;
+        companyName?: string;
+      };
+  generatorId: string;
+  name: string;
+  brand: string;
+  capacity: number;
+  yearOfManufacture?: number;
+  manufacturer?: string;
+  model?: string;
+  serialNumber?: string;
+  location: {
+    address: string;
+    state: string;
+    lga: string;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
+  };
+  fuelType?: string;
+  status: string;
+  registrationDate: Date;
+  lastInspectionDate?: Date;
+  nextInspectionDue?: Date;
+  complianceScore?: number;
+}

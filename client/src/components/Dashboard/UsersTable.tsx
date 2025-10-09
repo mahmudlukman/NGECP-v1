@@ -12,7 +12,7 @@ import Pagination from "../Pagination";
 import { useSelector } from "react-redux";
 
 const UsersTable = ({ usersData }: { usersData: User[] }) => {
-  const { user: loggedInUser } = useSelector((state: RootState) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
   const [updateUserStatus, { isLoading: isUpdating }] =
     useUpdateUserStatusMutation();
   const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
@@ -28,7 +28,7 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
 
   const users = useMemo(() => usersData ?? [], [usersData]);
-  const isAdmin = loggedInUser?.role === "admin";
+  const isAdmin = user?.role === "admin";
 //   const isEditor = loggedInUser?.role === "editor";
 
   // Filter Tabs state
