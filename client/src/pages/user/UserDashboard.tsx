@@ -1,6 +1,6 @@
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 
-const Dashboard = () => {
+const UserDashboard = () => {
   return (
     <DashboardLayout activeMenu="Dashboard">
       <div className="my-6">Dashboard</div>
@@ -8,4 +8,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default UserDashboard;

@@ -3,8 +3,8 @@ import Input from "../../components/Inputs/Input";
 import { validateEmail } from "../../utils/helper";
 import { useLoginMutation } from "../../redux/features/auth/authApi";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../@types";
+// import { useSelector } from "react-redux";
+// import type { RootState } from "../../@types";
 
 interface LoginProps {
   setCurrentPage: (page: string) => void;
@@ -12,7 +12,7 @@ interface LoginProps {
 }
 
 const Login = ({ setCurrentPage, closeModal }: LoginProps) => {
-  const { user } = useSelector((state: RootState) => state.auth);
+  // const { user } = useSelector((state: RootState) => state.auth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -44,13 +44,15 @@ const Login = ({ setCurrentPage, closeModal }: LoginProps) => {
     setError(null);
 
     try {
-      await login({ email, password }).unwrap();
+      const response = await login({ email, password }).unwrap(); // ✅ get the fresh data
       closeModal();
 
-      if (user?.role === "admin") {
+      const role = response.user?.role;
+
+      if (role === "admin" || role === "editor") {
         navigate("/admin/dashboard");
       } else {
-        navigate("/user/my-orders");
+        navigate("/user/dashboard");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

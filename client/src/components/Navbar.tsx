@@ -34,6 +34,8 @@ const Navbar = () => {
     }
   };
 
+  const initials = getInitials(user?.name, user?.accountType, user?.companyName);
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -59,7 +61,9 @@ const Navbar = () => {
               className="relative text-4xl font-semibold text-slate-700"
             >
               <span className="text-green-600">N</span>
-              <span className="text-transparent bg-clip-text bg-[radial-gradient(circle,_#7182ff_0%,_#3cff52_100%)] bg-[length:200%_200%] animate-text-shine">GECP</span>
+              <span className="text-transparent bg-clip-text bg-[radial-gradient(circle,_#7182ff_0%,_#3cff52_100%)] bg-[length:200%_200%] animate-text-shine">
+                GECP
+              </span>
               <span className="text-primary text-5xl leading-0">.</span>
             </NavLink>
 
@@ -86,33 +90,25 @@ const Navbar = () => {
                     className="w-10 h-10 flex items-center justify-center rounded-full bg-primary text-white font-semibold cursor-pointer"
                     onClick={() => setOpenMenu((prev) => !prev)}
                   >
-                    {getInitials(user?.name)}
+                    {initials}
                   </div>
                   {openMenu && (
                     <ul className="absolute top-10 right-0 bg-white shadow border border-gray-200 py-2.5 w-40 rounded-md text-sm z-40">
-                      {user?.role === "admin" && (
-                        <li
-                          onClick={() => {
-                            navigate("/admin/dashboard");
-                            setOpenMenu(false);
-                          }}
-                          className="p-1.5 pl-3 hover:bg-primary/10 cursor-pointer"
-                        >
-                          Dashboard
-                        </li>
-                      )}
                       <li
                         onClick={() => {
-                          navigate(
-                            user?.role === "admin"
-                              ? "/admin/my-orders"
-                              : "/user/my-orders"
-                          );
+                          if (
+                            user?.role === "admin" ||
+                            user?.role === "editor"
+                          ) {
+                            navigate("/admin/dashboard");
+                          } else {
+                            navigate("/user/dashboard");
+                          }
                           setOpenMenu(false);
                         }}
                         className="p-1.5 pl-3 hover:bg-primary/10 cursor-pointer"
                       >
-                        My Orders
+                        Dashboard
                       </li>
                       <li
                         onClick={() => {
@@ -155,25 +151,17 @@ const Navbar = () => {
             {user && (
               <NavLink
                 to={
-                  user?.role === "admin"
-                    ? "/admin/my-orders"
-                    : "/user/my-orders"
+                  user.role === "admin" || user.role === "editor"
+                    ? "/admin/dashboard"
+                    : "/user/dashboard"
                 }
-                onClick={() => setOpen(false)}
-                className="py-2 border-b border-gray-200"
-              >
-                My Orders
-              </NavLink>
-            )}
-            {user?.role === "admin" && (
-              <NavLink
-                to={"/admin/dashboard"}
                 onClick={() => setOpen(false)}
                 className="py-2 border-b border-gray-200"
               >
                 Dashboard
               </NavLink>
             )}
+
             <NavLink
               to="/about"
               onClick={() => setOpen(false)}

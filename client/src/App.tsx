@@ -8,9 +8,14 @@ import NotFound from "./pages/NotFound";
 // import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
-import Dashboard from "./pages/admin/Dashboard"
+import Dashboard from "./pages/admin/Dashboard";
 import PrivateRoute from "./utils/PrivateRoute";
 import { useTokenRefresh } from "./utils/userRefreshToken";
+import UserDashboard from "./pages/user/UserDashboard";
+import MyGenerators from "./pages/user/MyGenerators";
+import UserProfile from "./pages/user/UserProfile";
+import ManageGenerators from "./pages/admin/ManageGenerators";
+import ManageUsers from "./pages/admin/ManageUsers";
 
 const router = createBrowserRouter([
   {
@@ -25,27 +30,29 @@ const router = createBrowserRouter([
         path: "/payment/callback",
         // element: <PaymentSuccessPage />,
       },
-      // user protected routes
-      {
-        path: "/user",
-        element: <PrivateRoute allowedRoles={["user"]} />,
-        children: [
-          // { path: "add-address", element: <AddAddress /> },
-          // { path: "my-orders", element: <MyOrders /> },
-        ],
-      },
     ],
   },
   // admin protected routes
   {
     path: "/admin",
-    element: <PrivateRoute allowedRoles={["admin"]} />,
+    element: <PrivateRoute allowedRoles={["admin", "editor"]} />,
     children: [
       {
         path: "dashboard",
         element: <Dashboard />,
       },
-      // { path: "my-orders", element: <MyOrders /> },
+      { path: "manage-generators", element: <ManageGenerators /> },
+      { path: "manage-users", element: <ManageUsers /> },
+    ],
+  },
+  // user protected routes
+  {
+    path: "/user",
+    element: <PrivateRoute allowedRoles={["user"]} />,
+    children: [
+      { path: "dashboard", element: <UserDashboard /> },
+      { path: "generators", element: <MyGenerators /> },
+      { path: "profile", element: <UserProfile /> },
     ],
   },
   { path: "*", element: <NotFound /> },

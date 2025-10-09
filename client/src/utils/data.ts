@@ -51,7 +51,6 @@ export const assets = {
   box_icon,
 };
 
-
 export const ourSpecsData = [
   {
     title: "Generator Registration",
@@ -108,16 +107,13 @@ export const footerLinks = [
   },
 ];
 
-
 import {
   LuLayoutDashboard,
-  LuHandCoins,
-  LuWalletMinimal,
   LuLogOut,
+  LuClipboardCheck,
   LuUsers,
+  LuUser,
 } from "react-icons/lu";
-import { MdOutlineShoppingCart } from "react-icons/md";
-import { AiOutlineProduct } from "react-icons/ai";
 
 export const SIDE_MENU_DATA = [
   {
@@ -128,39 +124,53 @@ export const SIDE_MENU_DATA = [
   },
   {
     id: "02",
-    label: "Add Product",
-    icon: LuWalletMinimal,
-    path: "/admin/add-product",
+    label: "Manage Generators",
+    icon: LuClipboardCheck,
+    path: "/admin/manage-generators",
   },
   {
     id: "03",
-    label: "All Orders",
-    icon: MdOutlineShoppingCart,
-    path: "/admin/all-orders",
+    label: "Manage Users",
+    icon: LuUsers,
+    path: "/admin/manage-users",
   },
   {
     id: "04",
-    label: "All Products",
-    icon: AiOutlineProduct,
-    path: "/admin/all-products",
-  },
-  {
-    id: "05",
-    label: "All Users",
-    icon: LuUsers,
-    path: "/admin/all-users",
-  },
-  {
-    id: "06",
-    label: "Coupons",
-    icon: LuHandCoins,
-    path: "/admin/coupons",
-  },
-
-  {
-    id: "07",
     label: "Logout",
     icon: LuLogOut,
     path: "logout",
   },
+];
+
+export const SIDE_MENU_USER_DATA = [
+  {
+    id: "01",
+    label: "Dashboard",
+    icon: LuLayoutDashboard,
+    path: "/user/dashboard",
+  },
+  {
+    id: "02",
+    label: "My Generators",
+    icon: LuClipboardCheck,
+    path: "/user/generators",
+  },
+  {
+    id: "03",
+    label: "My Profile",
+    icon: LuUser,
+    path: "/user/profile",
+  },
+  {
+    id: "04",
+    label: "Logout",
+    icon: LuLogOut,
+    path: "logout",
+  },
+];
+
+export const STATUS_DATA = [
+  { label: "Pending", value: "Pending" },
+  { label: "In Progress", value: "In Progress" },
+  { label: "Completed", value: "Completed" },
 ];

@@ -7,9 +7,25 @@ export const validateEmail = (email: string) => {
   return regex.test(email);
 };
 
-export function getInitials(name?: string): string {
-  if (!name || !name.trim()) return "U";
-  return name.trim().charAt(0).toUpperCase();
+export function getInitials(
+  name?: string,
+  accountType?: string,
+  companyName?: string
+): string {
+  let source = "";
+
+  if (accountType === "company" && companyName) {
+    source = companyName.trim();
+  } else if (name) {
+    source = name.trim();
+  }
+
+  if (!source) return "U";
+
+  // Return first two initials if possible
+  const words = source.split(" ");
+  if (words.length === 1) return words[0].charAt(0).toUpperCase();
+  return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
 }
 
 export const addThousandsSeparator = (num: number) => {

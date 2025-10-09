@@ -6,10 +6,12 @@ export interface RootState {
 
 export interface User {
   _id: string;
-  name: string;
   email: string;
-  cartItems: Record<string>;
   role: string;
+  accountType: "individual" | "company";
+  name?: string;
+  companyName?: string;
+  phoneNumber?: string;
   isActive?: boolean;
 }
 
