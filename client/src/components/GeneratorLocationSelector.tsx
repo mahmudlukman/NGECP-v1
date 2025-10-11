@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef} from "react";
 import naijaStates from "naija-state-local-government";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -121,8 +121,33 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
   }, [initialLocation]);
 
   // Auto-update parent whenever location data changes
+  // Use useRef to prevent infinite loops
+  const prevLocationRef = useRef({
+    state: "",
+    lga: "",
+    address: "",
+    lat: 0,
+    lng: 0,
+  });
+
   useEffect(() => {
-    if (selectedState || selectedLGA || address) {
+    // Only update if values actually changed
+    const hasChanged =
+      prevLocationRef.current.state !== selectedState ||
+      prevLocationRef.current.lga !== selectedLGA ||
+      prevLocationRef.current.address !== address ||
+      prevLocationRef.current.lat !== coordinates[0] ||
+      prevLocationRef.current.lng !== coordinates[1];
+
+    if (hasChanged && selectedState && selectedLGA) {
+      prevLocationRef.current = {
+        state: selectedState,
+        lga: selectedLGA,
+        address,
+        lat: coordinates[0],
+        lng: coordinates[1],
+      };
+
       onLocationSelect({
         address,
         state: selectedState,
@@ -130,7 +155,7 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
         coordinates: { latitude: coordinates[0], longitude: coordinates[1] },
       });
     }
-  }, [selectedState, selectedLGA, address, coordinates]);
+  }, [selectedState, selectedLGA, address, coordinates, onLocationSelect]);
 
   const handleGetCoordinates = async () => {
     if (!selectedState || !selectedLGA) return;

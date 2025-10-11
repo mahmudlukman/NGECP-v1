@@ -36,7 +36,6 @@ const ManageGenerators = () => {
   const [updateGeneratorStatus] = useUpdateGeneratorStatusMutation();
   const [deleteGenerator] = useDeleteGeneratorMutation();
 
-  const generators = generatorsData?.generators || [];
   const pagination = generatorsData?.pagination;
 
   const handleStatusChange = async (id: string, newStatus: string) => {
@@ -74,6 +73,8 @@ const ManageGenerators = () => {
   };
 
   const filteredGenerators = useMemo(() => {
+    const generators = generatorsData?.generators || [];
+
     return generators.filter((g: IGenerator) => {
       // --- Filter by status ---
       if (filterStatus !== "all" && g.status !== filterStatus) return false;
@@ -108,7 +109,7 @@ const ManageGenerators = () => {
 
       return true;
     });
-  }, [generators, filterStatus, searchTerm]);
+  }, [generatorsData, filterStatus, searchTerm]);
 
   if (isLoading) {
     return (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -19,6 +19,7 @@ const UpdateGenerator = () => {
   const [capacity, setCapacity] = useState("");
   const [yearOfManufacture, setYearOfManufacture] = useState("");
   const [fuelType, setFuelType] = useState("");
+  const [isInitialLoad, setIsInitialLoad] = useState(true); // Add flag
 
   const [location, setLocation] = useState({
     address: "",
@@ -36,7 +37,7 @@ const UpdateGenerator = () => {
 
   // Populate form with existing data
   useEffect(() => {
-    if (generatorData?.generator) {
+    if (generatorData?.generator && isInitialLoad) {
       const gen = generatorData.generator;
       setBrand(gen.brand || "");
       setModel(gen.model || "");
@@ -44,6 +45,7 @@ const UpdateGenerator = () => {
       setCapacity(gen.capacity?.toString() || "");
       setYearOfManufacture(gen.yearOfManufacture?.toString() || "");
       setFuelType(gen.fuelType || "");
+      
       setLocation({
         address: gen.location?.address || "",
         state: gen.location?.state || "",
@@ -53,10 +55,12 @@ const UpdateGenerator = () => {
           longitude: gen.location?.coordinates?.longitude || 0,
         },
       });
+      
+      setIsInitialLoad(false); // Prevent future updates from this effect
     }
-  }, [generatorData]);
+  }, [generatorData, isInitialLoad]);
 
-  const handleLocationSelect = (data: {
+  const handleLocationSelect = useCallback((data: {
     address: string;
     state: string;
     lga: string;
@@ -68,7 +72,7 @@ const UpdateGenerator = () => {
       lga: data.lga,
       coordinates: data.coordinates || { latitude: 0, longitude: 0 },
     });
-  };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,7 +104,11 @@ const UpdateGenerator = () => {
     try {
       await updateGenerator({ id, data: updatedData }).unwrap();
       toast.success("Generator updated successfully");
-      navigate("/generators"); // Redirect to generators list or wherever appropriate
+      
+      // Use setTimeout to ensure state updates before navigation
+      setTimeout(() => {
+        navigate("/admin/manage-generators", { replace: true }); // or wherever you want to redirect
+      }, 100);
     } catch (err: unknown) {
       const serverError = err as ServerError;
       const errorMessage =
@@ -158,7 +166,7 @@ const UpdateGenerator = () => {
   }
 
   return (
-    <DashboardLayout activeMenu="Update Generator">
+    <DashboardLayout activeMenu="Manage Generators">
       <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
         <div className="no-scrollbar flex-1 h-[95vh] overflow-y-scroll flex flex-col justify-between">
           <div className="flex items-center justify-between max-w-3xl mb-4">

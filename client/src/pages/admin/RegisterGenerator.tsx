@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState} from "react";
 import toast from "react-hot-toast";
 import { useRegisterGeneratorMutation } from "../../redux/features/generator/generatorApi";
 import type { ServerError } from "../../@types";

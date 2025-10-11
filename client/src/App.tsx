@@ -17,6 +17,7 @@ import UserProfile from "./pages/user/UserProfile";
 import ManageGenerators from "./pages/admin/ManageGenerators";
 import ManageUsers from "./pages/admin/ManageUsers";
 import RegisterGenerator from "./pages/admin/RegisterGenerator";
+import UpdateGenerator from "./pages/admin/UpdateGenerator";
 
 const router = createBrowserRouter([
   {
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
       { path: "register-generator", element: <RegisterGenerator /> },
       { path: "manage-generators", element: <ManageGenerators /> },
       { path: "manage-users", element: <ManageUsers /> },
+      { path: "update-generator/:id", element: <UpdateGenerator /> },
     ],
   },
   // user protected routes
