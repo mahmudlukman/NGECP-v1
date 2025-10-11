@@ -75,6 +75,39 @@ export const ourSpecsData = [
   },
 ];
 
+export const faqs = [
+  {
+    question: "What services does your platform provide?",
+    answer:
+      "We offer generator registration, compliance monitoring, inspection scheduling, and performance analytics — all through a unified, easy-to-use dashboard.",
+  },
+  {
+    question: "Who can register a generator?",
+    answer:
+      "Both individuals and companies can register their generators. Once registered, you can manage inspections, compliance records, and performance reports seamlessly.",
+  },
+  {
+    question: "What do I gain by registering my generator?",
+    answer:
+      "Registering your generator gives you access to verified maintenance records, fuel efficiency insights, and timely inspection reminders. It also protects your investment by ensuring compliance with safety standards, reducing the risk of breakdowns and costly repairs while contributing to a cleaner, safer environment.",
+  },
+  {
+    question: "What is compliance scoring?",
+    answer:
+      "Compliance scoring measures how well a generator adheres to environmental and safety regulations. The system automatically updates scores based on inspection results.",
+  },
+  {
+    question: "Is my data secure?",
+    answer:
+      "Yes. We implement enterprise-grade encryption and access control to ensure that all user and generator data remain safe and confidential.",
+  },
+  {
+    question: "How does generator registration benefit my community?",
+    answer:
+      "Registered generators are tracked for emissions and safety standards, reducing air and noise pollution. This means cleaner air, quieter neighborhoods, and a more sustainable environment for everyone around you.",
+  },
+];
+
 export const footerLinks = [
   {
     title: "Quick Links",
