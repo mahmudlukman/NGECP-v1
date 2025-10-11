@@ -16,6 +16,7 @@ import MyGenerators from "./pages/user/MyGenerators";
 import UserProfile from "./pages/user/UserProfile";
 import ManageGenerators from "./pages/admin/ManageGenerators";
 import ManageUsers from "./pages/admin/ManageUsers";
+import RegisterGenerator from "./pages/admin/RegisterGenerator";
 
 const router = createBrowserRouter([
   {
@@ -41,6 +42,7 @@ const router = createBrowserRouter([
         path: "dashboard",
         element: <Dashboard />,
       },
+      { path: "register-generator", element: <RegisterGenerator /> },
       { path: "manage-generators", element: <ManageGenerators /> },
       { path: "manage-users", element: <ManageUsers /> },
     ],

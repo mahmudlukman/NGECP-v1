@@ -146,6 +146,7 @@ import {
   LuClipboardCheck,
   LuUsers,
   LuUser,
+  LuUserPlus,
 } from "react-icons/lu";
 
 export const SIDE_MENU_DATA = [
@@ -157,18 +158,24 @@ export const SIDE_MENU_DATA = [
   },
   {
     id: "02",
+    label: "Register Generator",
+    icon: LuUserPlus,
+    path: "/admin/register-generator",
+  },
+  {
+    id: "03",
     label: "Manage Generators",
     icon: LuClipboardCheck,
     path: "/admin/manage-generators",
   },
   {
-    id: "03",
+    id: "04",
     label: "Manage Users",
     icon: LuUsers,
     path: "/admin/manage-users",
   },
   {
-    id: "04",
+    id: "05",
     label: "Logout",
     icon: LuLogOut,
     path: "logout",

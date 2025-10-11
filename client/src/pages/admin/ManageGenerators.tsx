@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -19,6 +19,7 @@ const ManageGenerators = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [deleteGeneratorId, setDeleteGeneratorId] = useState<string | null>(
     null
   );
@@ -72,15 +73,42 @@ const ManageGenerators = () => {
     }
   };
 
-  const filteredGenerators = generators.filter((g: IGenerator) => {
-    if (filterStatus === "active") return g.status === "active";
-    if (filterStatus === "inactive") return g.status === "inactive";
-    if (filterStatus === "under_inspection")
-      return g.status === "under_inspection";
-    if (filterStatus === "compliant") return g.status === "compliant";
-    if (filterStatus === "non_compliant") return g.status === "non_compliant";
-    return true;
-  });
+  const filteredGenerators = useMemo(() => {
+    return generators.filter((g: IGenerator) => {
+      // --- Filter by status ---
+      if (filterStatus !== "all" && g.status !== filterStatus) return false;
+
+      // --- Search term match ---
+      if (searchTerm.trim() !== "") {
+        const search = searchTerm.toLowerCase();
+
+        const ownerName =
+          typeof g.owner === "string"
+            ? g.owner.toLowerCase()
+            : g.owner?.companyName?.toLowerCase() ||
+              g.owner?.name?.toLowerCase() ||
+              g.owner?.email?.toLowerCase() ||
+              "";
+
+        const address = g.location?.address?.toLowerCase() || "";
+        const state = g.location?.state?.toLowerCase() || "";
+        const lga = g.location?.lga?.toLowerCase() || "";
+
+        return (
+          g.generatorId?.toLowerCase().includes(search) ||
+          g.brand?.toLowerCase().includes(search) ||
+          g.model?.toLowerCase().includes(search) ||
+          g.serialNumber?.toLowerCase().includes(search) ||
+          ownerName.includes(search) ||
+          address.includes(search) ||
+          state.includes(search) ||
+          lga.includes(search)
+        );
+      }
+
+      return true;
+    });
+  }, [generators, filterStatus, searchTerm]);
 
   if (isLoading) {
     return (
@@ -138,7 +166,9 @@ const ManageGenerators = () => {
             <Search size={16} className="text-slate-600" />
             <input
               type="text"
-              placeholder="Search generators"
+              placeholder="Search by brand, owner, location, etc."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-transparent outline-none placeholder-slate-600"
             />
           </form>
