@@ -14,6 +14,7 @@ import generatorRouter from "./routes/generator.route";
 import inspectionRouter from "./routes/inspection.route";
 import inspectionReportRouter from "./routes/inspectionReport.route";
 import paymentRouter from "./routes/payment.route";
+import analyticsRouter from "./routes/analytics.route";
 
 export const app = express();
 // Load environment variables from .env file
@@ -66,7 +67,8 @@ app.use(
   generatorRouter,
   inspectionRouter,
   inspectionReportRouter,
-  paymentRouter
+  paymentRouter,
+  analyticsRouter
 );
 
 // testing API

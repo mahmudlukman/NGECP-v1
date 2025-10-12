@@ -182,7 +182,7 @@ const UpdateGenerator = () => {
             {/* Brand & Model */}
             <div className="flex flex-wrap gap-5">
               <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-slate-600">
                   Brand <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -190,12 +190,12 @@ const UpdateGenerator = () => {
                   value={brand}
                   onChange={(e) => setBrand(e.target.value)}
                   placeholder="e.g. Perkins"
-                  className="w-full px-3 py-2 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary text-slate-600"
                   required
                 />
               </div>
               <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-slate-600">
                   Model <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -203,7 +203,7 @@ const UpdateGenerator = () => {
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
                   placeholder="e.g. 404D-22G"
-                  className="w-full px-3 py-2 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-slate-600 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
                   required
                 />
               </div>
@@ -211,7 +211,7 @@ const UpdateGenerator = () => {
 
             {/* Serial Number */}
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 text-slate-600">
                 Serial Number <span className="text-red-500">*</span>
               </label>
               <input
@@ -219,7 +219,7 @@ const UpdateGenerator = () => {
                 value={serialNumber}
                 onChange={(e) => setSerialNumber(e.target.value)}
                 placeholder="Unique serial number"
-                className="w-full px-3 py-2 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 text-slate-600 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
                 required
               />
             </div>
@@ -227,7 +227,7 @@ const UpdateGenerator = () => {
             {/* Capacity & Year */}
             <div className="flex flex-wrap gap-5">
               <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-slate-600">
                   Capacity (KVA) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -235,18 +235,18 @@ const UpdateGenerator = () => {
                   value={capacity}
                   onChange={(e) => setCapacity(e.target.value)}
                   placeholder="e.g. 150"
-                  className="w-full px-3 py-2 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-slate-600 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
                   required
                 />
               </div>
               <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-slate-600">
                   Year of Manufacture <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={yearOfManufacture}
                   onChange={(e) => setYearOfManufacture(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-slate-600 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
                   required
                 >
                   <option value="">Select year</option>
@@ -261,13 +261,13 @@ const UpdateGenerator = () => {
 
             {/* Fuel Type */}
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-slate-600">
                 Fuel Type <span className="text-red-500">*</span>
               </label>
               <select
                 value={fuelType}
                 onChange={(e) => setFuelType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 text-slate-600 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
                 required
               >
                 <option value="">Select fuel type</option>
@@ -279,7 +279,7 @@ const UpdateGenerator = () => {
             </div>
 
             {/* Location Section */}
-            <h3 className="font-semibold text-gray-800 mt-6">
+            <h3 className="font-semibold text-slate-600 mt-6">
               Generator Location
             </h3>
             <GeneratorLocationSelector

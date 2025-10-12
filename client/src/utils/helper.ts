@@ -43,11 +43,6 @@ export const addThousandsSeparator = (num: number) => {
 interface FinancialData {
   month: string; // e.g. "2025-09"
   revenue: number;
-  subtotal: number;
-  discount: number;
-  tax: number;
-  netRevenue: number;
-  orderCount: number;
 }
 
 export const prepareRevenueByMonthChartData = (data: FinancialData[] = []) => {
@@ -65,9 +60,50 @@ export const prepareRevenueByMonthChartData = (data: FinancialData[] = []) => {
     .map((item) => ({
       month: format(parse(item.month, "yyyy-MM", new Date()), "MMM yyyy"),
       amount: item.revenue,
-      category: "Revenue",
     }));
 };
+
+// New financial data structure from backend
+interface inspectionsData {
+  month: string; // e.g. "2025-09"
+  count: number;
+}
+
+export const prepareInspectionsByMonthChartData = (
+  data: inspectionsData[] = []
+) => {
+  if (!Array.isArray(data) || data.length === 0) return [];
+
+  const dataCopy = data.filter((item) => item?.month && item?.count !== undefined);
+
+  return dataCopy
+    .sort((a, b) => {
+      const dateA = parse(`${a.month}-01`, "yyyy-MM-dd", new Date());
+      const dateB = parse(`${b.month}-01`, "yyyy-MM-dd", new Date());
+      return compareAsc(dateA, dateB);
+    })
+    .map((item) => {
+      try {
+        // Append "-01" so "2025-10" becomes a valid full date string
+        const parsedDate = parse(`${item.month}-01`, "yyyy-MM-dd", new Date());
+        const formattedMonth = format(parsedDate, "MMM yyyy"); // -> "Oct 2025"
+
+        return {
+          month: formattedMonth,
+          amount: item.count,
+        };
+      } catch {
+        // fallback
+        return {
+          month: item.month ?? "Unknown",
+          amount: item.count,
+        };
+      }
+    });
+};
+
+
+
 
 export interface UserGrowthData {
   date: string;

@@ -143,11 +143,11 @@ export const footerLinks = [
 import {
   LuLayoutDashboard,
   LuLogOut,
-  LuClipboardCheck,
   LuUsers,
   LuUser,
   LuUserPlus,
 } from "react-icons/lu";
+import { GiPowerGenerator } from "react-icons/gi";
 
 export const SIDE_MENU_DATA = [
   {
@@ -165,7 +165,7 @@ export const SIDE_MENU_DATA = [
   {
     id: "03",
     label: "Manage Generators",
-    icon: LuClipboardCheck,
+    icon: GiPowerGenerator,
     path: "/admin/manage-generators",
   },
   {
@@ -192,7 +192,7 @@ export const SIDE_MENU_USER_DATA = [
   {
     id: "02",
     label: "My Generators",
-    icon: LuClipboardCheck,
+    icon: GiPowerGenerator,
     path: "/user/generators",
   },
   {

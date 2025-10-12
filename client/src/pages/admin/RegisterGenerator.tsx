@@ -119,7 +119,7 @@ const RegisterGenerator = () => {
             {/* Brand & Model */}
             <div className="flex flex-wrap gap-5">
               <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-slate-600">
                   Brand <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -132,7 +132,7 @@ const RegisterGenerator = () => {
                 />
               </div>
               <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-slate-600">
                   Model <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -148,7 +148,7 @@ const RegisterGenerator = () => {
 
             {/* Serial Number */}
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-slate-600">
                 Serial Number <span className="text-red-500">*</span>
               </label>
               <input
@@ -164,7 +164,7 @@ const RegisterGenerator = () => {
             {/* Capacity & Year */}
             <div className="flex flex-wrap gap-5">
               <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-slate-600">
                   Capacity (KVA) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -177,13 +177,13 @@ const RegisterGenerator = () => {
                 />
               </div>
               <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-slate-600">
                   Year of Manufacture <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={yearOfManufacture}
                   onChange={(e) => setYearOfManufacture(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border text-slate-600 border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
                   required
                 >
                   <option value="">Select year</option>
@@ -198,13 +198,13 @@ const RegisterGenerator = () => {
 
             {/* Fuel Type */}
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-slate-600">
                 Fuel Type <span className="text-red-500">*</span>
               </label>
               <select
                 value={fuelType}
                 onChange={(e) => setFuelType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border text-slate-600 border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
                 required
               >
                 <option value="">Select fuel type</option>
@@ -216,7 +216,7 @@ const RegisterGenerator = () => {
             </div>
 
             {/* Location Section */}
-            <h3 className="font-semibold text-gray-800 mt-6">
+            <h3 className="font-semibold text-slate-600 mt-6">
               Generator Location
             </h3>
             <GeneratorLocationSelector
