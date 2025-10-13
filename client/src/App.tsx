@@ -18,6 +18,7 @@ import ManageGenerators from "./pages/admin/ManageGenerators";
 import ManageUsers from "./pages/admin/ManageUsers";
 import RegisterGenerator from "./pages/admin/RegisterGenerator";
 import UpdateGenerator from "./pages/admin/UpdateGenerator";
+import GeneratorsMapView from "./pages/admin/GeneratorsMapView";
 
 const router = createBrowserRouter([
   {
@@ -44,6 +45,7 @@ const router = createBrowserRouter([
         element: <Dashboard />,
       },
       { path: "register-generator", element: <RegisterGenerator /> },
+      { path: "generators-map-view", element: <GeneratorsMapView /> },
       { path: "manage-generators", element: <ManageGenerators /> },
       { path: "manage-users", element: <ManageUsers /> },
       { path: "update-generator/:id", element: <UpdateGenerator /> },

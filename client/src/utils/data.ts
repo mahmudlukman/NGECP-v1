@@ -145,7 +145,8 @@ import {
   LuLogOut,
   LuUsers,
   LuUser,
-  LuUserPlus,
+  LuBadgePlus,
+  LuLocate,
 } from "react-icons/lu";
 import { GiPowerGenerator } from "react-icons/gi";
 
@@ -159,23 +160,29 @@ export const SIDE_MENU_DATA = [
   {
     id: "02",
     label: "Register Generator",
-    icon: LuUserPlus,
+    icon: LuBadgePlus,
     path: "/admin/register-generator",
   },
   {
     id: "03",
+    label: "Generators Map View",
+    icon: LuLocate,
+    path: "/admin/generators-map-view",
+  },
+  {
+    id: "04",
     label: "Manage Generators",
     icon: GiPowerGenerator,
     path: "/admin/manage-generators",
   },
   {
-    id: "04",
+    id: "05",
     label: "Manage Users",
     icon: LuUsers,
     path: "/admin/manage-users",
   },
   {
-    id: "05",
+    id: "06",
     label: "Logout",
     icon: LuLogOut,
     path: "logout",

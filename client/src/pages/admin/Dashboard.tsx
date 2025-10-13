@@ -168,6 +168,8 @@ const Dashboard = () => {
               dashboardData?.analytics?.generators?.nonCompliant || 0
             }
           />
+          <GeneratorByMonthChart data={GeneratorsByMonth} />
+          <InspectionsByMonthChart data={InspectionsByMonth} />
           <InspectionOverview
             totalInspections={dashboardData?.analytics?.inspections?.total || 0}
             Pending={dashboardData?.analytics?.inspections?.pending || 0}
@@ -176,8 +178,6 @@ const Dashboard = () => {
             Completed={dashboardData?.analytics?.inspections?.Completed || 0}
           />
           <UsersByMonthChart data={usersByMonth} />
-          <GeneratorByMonthChart data={GeneratorsByMonth} />
-          <InspectionsByMonthChart data={InspectionsByMonth} />
           <RevenueByMonthChart data={RevenueByMonth} />
         </div>
         {/* <div className="grid grid-cols-1 gap-6 mt-6">
