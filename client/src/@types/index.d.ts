@@ -72,3 +72,14 @@ export interface IGenerator {
   nextInspectionDue?: Date;
   complianceScore?: number;
 }
+
+interface IInspection {
+  _id: string;
+  generator: { _id: string };
+  status: string;
+  payment: {
+    _id: string;
+    amount: number;
+    status: string;
+  };
+}

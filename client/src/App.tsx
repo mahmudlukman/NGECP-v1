@@ -17,8 +17,11 @@ import UserProfile from "./pages/user/UserProfile";
 import ManageGenerators from "./pages/admin/ManageGenerators";
 import ManageUsers from "./pages/admin/ManageUsers";
 import RegisterGenerator from "./pages/admin/RegisterGenerator";
-import UpdateGenerator from "./pages/admin/UpdateGenerator";
+import UpdateGenerator from "./pages/user/UpdateGenerator";
 import GeneratorsMapView from "./pages/admin/GeneratorsMapView";
+import GeneratorDetails from "./pages/user/GeneratorDetails";
+import MyGeneratorsMapView from "./pages/user/MyGeneratorsMapView";
+import PaymentSuccessPage from "./pages/PaymentSuccess";
 
 const router = createBrowserRouter([
   {
@@ -29,9 +32,10 @@ const router = createBrowserRouter([
       { path: "/contact", element: <Contact /> },
       { path: "/reset-password", element: <ResetPassword /> },
       { path: "/activation/:activation_token", element: <Activation /> },
+      { path: "/generator/:id", element: <GeneratorDetails /> },
       {
         path: "/payment/callback",
-        // element: <PaymentSuccessPage />,
+        element: <PaymentSuccessPage />,
       },
     ],
   },
@@ -48,7 +52,6 @@ const router = createBrowserRouter([
       { path: "generators-map-view", element: <GeneratorsMapView /> },
       { path: "manage-generators", element: <ManageGenerators /> },
       { path: "manage-users", element: <ManageUsers /> },
-      { path: "update-generator/:id", element: <UpdateGenerator /> },
     ],
   },
   // user protected routes
@@ -57,7 +60,10 @@ const router = createBrowserRouter([
     element: <PrivateRoute allowedRoles={["user"]} />,
     children: [
       { path: "dashboard", element: <UserDashboard /> },
+      { path: "register-generator", element: <RegisterGenerator /> },
+      { path: "my-generators-map-view", element: <MyGeneratorsMapView /> },
       { path: "generators", element: <MyGenerators /> },
+      { path: "update-generator/:id", element: <UpdateGenerator /> },
       { path: "profile", element: <UserProfile /> },
     ],
   },

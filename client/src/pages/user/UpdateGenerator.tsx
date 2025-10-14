@@ -8,6 +8,7 @@ import {
 import type { ServerError } from "../../@types";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import GeneratorLocationSelector from "../../components/GeneratorLocationSelector";
+import Loading from "../../components/Loading";
 
 const UpdateGenerator = () => {
   const { id } = useParams<{ id: string }>();
@@ -45,7 +46,7 @@ const UpdateGenerator = () => {
       setCapacity(gen.capacity?.toString() || "");
       setYearOfManufacture(gen.yearOfManufacture?.toString() || "");
       setFuelType(gen.fuelType || "");
-      
+
       setLocation({
         address: gen.location?.address || "",
         state: gen.location?.state || "",
@@ -55,24 +56,27 @@ const UpdateGenerator = () => {
           longitude: gen.location?.coordinates?.longitude || 0,
         },
       });
-      
+
       setIsInitialLoad(false); // Prevent future updates from this effect
     }
   }, [generatorData, isInitialLoad]);
 
-  const handleLocationSelect = useCallback((data: {
-    address: string;
-    state: string;
-    lga: string;
-    coordinates?: { latitude: number; longitude: number };
-  }) => {
-    setLocation({
-      address: data.address,
-      state: data.state,
-      lga: data.lga,
-      coordinates: data.coordinates || { latitude: 0, longitude: 0 },
-    });
-  }, []);
+  const handleLocationSelect = useCallback(
+    (data: {
+      address: string;
+      state: string;
+      lga: string;
+      coordinates?: { latitude: number; longitude: number };
+    }) => {
+      setLocation({
+        address: data.address,
+        state: data.state,
+        lga: data.lga,
+        coordinates: data.coordinates || { latitude: 0, longitude: 0 },
+      });
+    },
+    []
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,7 +108,7 @@ const UpdateGenerator = () => {
     try {
       await updateGenerator({ id, data: updatedData }).unwrap();
       toast.success("Generator updated successfully");
-      
+
       // Use setTimeout to ensure state updates before navigation
       setTimeout(() => {
         navigate("/admin/manage-generators", { replace: true }); // or wherever you want to redirect
@@ -132,28 +136,21 @@ const UpdateGenerator = () => {
 
   if (isFetching) {
     return (
-      <DashboardLayout activeMenu="Update Generator">
-        <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
-          <div className="flex items-center justify-center h-96">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading generator data...</p>
-            </div>
-          </div>
-        </div>
+      <DashboardLayout activeMenu="My Generators">
+        <Loading />
       </DashboardLayout>
     );
   }
 
   if (!generatorData?.generator) {
     return (
-      <DashboardLayout activeMenu="Update Generator">
+      <DashboardLayout activeMenu="My Generators">
         <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
               <p className="text-red-600 text-lg mb-4">Generator not found</p>
               <button
-                onClick={() => navigate("/generators")}
+                onClick={() => navigate("/user/my-generators")}
                 className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
               >
                 Back to Generators
@@ -166,7 +163,7 @@ const UpdateGenerator = () => {
   }
 
   return (
-    <DashboardLayout activeMenu="Manage Generators">
+    <DashboardLayout activeMenu="My Generators">
       <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
         <div className="no-scrollbar flex-1 h-[95vh] overflow-y-scroll flex flex-col justify-between">
           <div className="flex items-center justify-between max-w-3xl mb-4">

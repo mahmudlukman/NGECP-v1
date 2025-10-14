@@ -1,14 +1,14 @@
 import type { FC } from "react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import Lottie from "react-lottie";
+import animationData from "../assets/animations/107043-success.json";
 import {
   useVerifyPaymentQuery,
   type VerifyPaymentResponse,
 } from "../redux/features/payment/paymentApi";
-import Lottie from "react-lottie";
-import animationData from "../assets/animations/107043-success.json";
 
-const PaymentCallback = () => {
+const PaymentSuccess = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMounted, setIsMounted] = useState(false);
@@ -32,6 +32,16 @@ const PaymentCallback = () => {
     },
     { skip: !status || !tx_ref || !transaction_id }
   );
+
+  // Handle verification success → redirect after delay
+  useEffect(() => {
+    if (data && data.success) {
+      const timer = setTimeout(() => {
+        navigate("/user/generators");
+      }, 3000); // Redirect after 3 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [data, navigate]);
 
   // Handle verification failure → redirect
   useEffect(() => {
@@ -94,9 +104,7 @@ const PaymentContent: FC<PaymentContentProps> = ({
           <div className="w-[300px] h-[300px] bg-gray-200 rounded mb-4"></div>
           <div className="h-6 bg-gray-200 rounded w-48 mx-auto"></div>
         </div>
-        <p className="mt-4 text-gray-600">
-          Initializing payment verification...
-        </p>
+        <p className="text-gray-600">Initializing payment verification...</p>
       </div>
     );
   }
@@ -140,15 +148,18 @@ const PaymentContent: FC<PaymentContentProps> = ({
         {data.orderId && (
           <p className="text-gray-500 mb-2">Order ID: {data.orderId}</p>
         )}
-        {data.order && (
+        {data.inspection && (
           <div className="text-gray-600 text-sm">
-            <p>Total Amount: ₦{data.order.amount}</p>
-            <p>Status: {data.order.status}</p>
-            {data.order.paidAt && (
-              <p>Paid At: {new Date(data.order.paidAt).toLocaleString()}</p>
+            <p>Total Amount: ₦{data.inspection.amount}</p>
+            <p>Status: {data.inspection.status}</p>
+            {data.inspection.paidAt && (
+              <p>
+                Paid At: {new Date(data.inspection.paidAt).toLocaleString()}
+              </p>
             )}
           </div>
         )}
+        <p className="text-gray-500 mt-4">Redirecting to your generators...</p>
       </div>
     );
   }
@@ -156,4 +167,4 @@ const PaymentContent: FC<PaymentContentProps> = ({
   return null;
 };
 
-export default PaymentCallback;
+export default PaymentSuccess;

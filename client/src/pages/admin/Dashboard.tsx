@@ -1,14 +1,7 @@
 import { LuHandCoins, LuUsers, LuWalletMinimal } from "react-icons/lu";
 import { GiPowerGenerator } from "react-icons/gi";
-// import { useNavigate } from "react-router-dom";
 import { addThousandsSeparator, currency } from "../../utils/helper";
 import InfoCard from "../../components/Cards/InfoCard";
-// import RecentTransactions from "../../components/Dashboard/RecentTransactions";
-// import type { Order } from "../../@types";
-// import OrderOverview from "../../components/Dashboard/FinancialOverview";
-// import RevenueByMonthChart from "../../components/Dashboard/RevenueByMonthChart";
-// import UsersByMonthChart from "../../components/Dashboard/UsersByMonthChart";
-// import { parse, format } from "date-fns";
 import Loading from "../../components/Loading";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import { useDashboardAnalyticsQuery } from "../../redux/features/Analytics/analyticsApi";
@@ -21,9 +14,6 @@ import InspectionsByMonthChart from "../../components/Dashboard/InspectionsByMon
 import RevenueByMonthChart from "../../components/Dashboard/RevenueByMonthChart";
 
 const Dashboard = () => {
-  // const navigate = useNavigate();
-
-  // Use RTK Query hook
   const {
     data: dashboardData,
     isLoading: loading,
@@ -33,17 +23,6 @@ const Dashboard = () => {
   } = useDashboardAnalyticsQuery({});
 
   console.log(dashboardData);
-
-  // const recentOrders =
-  //   dashboardData?.data?.recentOrders?.map((order: Order) => ({
-  //     _id: order._id,
-  //     type: "order",
-  //     name: order.items?.[0]?.product?.name || "Unknown",
-  //     image: order.items?.[0]?.product?.images?.[0]?.url || "/placeholder.png",
-  //     date: order.createdAt,
-  //     price: order.amount,
-  //     createdAt: order.createdAt,
-  //   })) || [];
 
   type UsersByMonthItem = {
     month: string | Date;
@@ -86,22 +65,6 @@ const Dashboard = () => {
   const InspectionsByMonth =
     dashboardData?.analytics?.inspections?.inspectionsByMonth?.map(
       (item: InspectionsByMonthItem) => ({
-        month:
-          typeof item.month === "string"
-            ? format(parse(item.month, "yyyy-MM", new Date()), "MMM yyyy")
-            : format(item.month as Date, "MMM yyyy"),
-        count: item.count,
-      })
-    ) || [];
-  // InspectionsByMonthItem
-  type RevenueByMonthItem = {
-    month: string | Date;
-    count: number;
-  };
-
-  const RevenueByMonth =
-    dashboardData?.analytics?.payments?.revenueByMonth?.map(
-      (item: RevenueByMonthItem) => ({
         month:
           typeof item.month === "string"
             ? format(parse(item.month, "yyyy-MM", new Date()), "MMM yyyy")
@@ -178,14 +141,9 @@ const Dashboard = () => {
             Completed={dashboardData?.analytics?.inspections?.Completed || 0}
           />
           <UsersByMonthChart data={usersByMonth} />
-          <RevenueByMonthChart data={RevenueByMonth} />
-        </div>
-        {/* <div className="grid grid-cols-1 gap-6 mt-6">
-          <UsersByMonthChart data={usersByMonth} />
           <RevenueByMonthChart
-            data={dashboardData?.data?.financials?.financialsByMonth || []}
-          />
-        </div> */}
+            data={dashboardData?.analytics?.payments?.revenueByMonth || []}/>
+        </div>
 
         {/* Optional: Add refresh button */}
         {isError && (

@@ -11,7 +11,6 @@ export interface IPayment extends Document {
   user: mongoose.Types.ObjectId;
   inspection?: mongoose.Types.ObjectId;
   amount: number;
-  currency: string;
   status: PaymentStatus;
   paymentMethod?: string;
   transactionReference: string;
@@ -35,10 +34,6 @@ const PaymentSchema: Schema = new Schema(
     amount: {
       type: Number,
       required: true
-    },
-    currency: {
-      type: String,
-      default: 'NGN'
     },
     status: {
       type: String,

@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { useNavigate } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { useGetAllGeneratorsQuery } from "../../redux/features/generator/generatorApi";
+import { useGetMyGeneratorsQuery } from "../../redux/features/generator/generatorApi";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import toast from "react-hot-toast";
 
@@ -87,7 +87,7 @@ function FitBounds({ generators }: { generators: Generator[] }) {
   return null;
 }
 
-const GeneratorsMapView = () => {
+const MyGeneratorsMapView = () => {
   const navigate = useNavigate();
   const [page] = useState(1);
   const [pageSize] = useState(1000); // Load all generators for map
@@ -95,7 +95,7 @@ const GeneratorsMapView = () => {
     null
   );
 
-  const { data, isLoading, error } = useGetAllGeneratorsQuery({
+  const { data, isLoading, error } = useGetMyGeneratorsQuery({
     page,
     pageSize,
   });
@@ -112,9 +112,9 @@ const GeneratorsMapView = () => {
     navigate(`/admin/generator-details/${generatorId}`);
   };
 
-  // const handleEditGenerator = (generatorId: string) => {
-  //   navigate(`/admin/update-generator/${generatorId}`);
-  // };
+   const handleEditGenerator = (generatorId: string) => {
+    navigate(`/user/update-generator/${generatorId}`);
+  };
 
   if (isLoading) {
     return (
@@ -157,13 +157,13 @@ const GeneratorsMapView = () => {
             </div>
             <div className="flex gap-2">
               <button
-                onClick={() => navigate("/admin/manage-generators")}
+                onClick={() => navigate("/user/generators")}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 hover:scale-103 active:scale-95 transition"
               >
                 List View
               </button>
               <button
-                onClick={() => navigate("/admin/register-generator")}
+                onClick={() => navigate("/user/register-generator")}
                 className="px-4 py-2 text-white rounded-lg bg-primary hover:scale-103 active:scale-95 transition"
               >
                 + Add Generator
@@ -296,12 +296,12 @@ const GeneratorsMapView = () => {
                           >
                             View Details
                           </button>
-                          {/* <button
+                          <button
                             onClick={() => handleEditGenerator(generator._id)}
-                            className="flex-1 px-3 py-1.5 text-white text-sm rounded bg-primary hover:scale-103 active:scale-95 transition"
+                            className="flex-1 px-3 py-1.5 text-white text-sm rounded bg-slate-600 hover:scale-103 active:scale-95 transition"
                           >
                             Edit
-                          </button> */}
+                          </button>
                         </div>
                       </div>
                     </Popup>
@@ -339,14 +339,14 @@ const GeneratorsMapView = () => {
                 onClick={() => handleViewDetails(selectedGenerator._id)}
                 className="px-4 py-2 bg-primary hover:scale-103 active:scale-95 transition text-white text-sm rounded-lg"
               >
-                View Full Details
+                View Generator Details
               </button>
-              {/* <button
+              <button
                 onClick={() => handleEditGenerator(selectedGenerator._id)}
-                className="px-4 py-2 text-white text-sm rounded-lg bg-primary hover:scale-103 active:scale-95 transition"
+                className="px-4 py-2 text-white text-sm rounded-lg bg-slate-600 hover:scale-103 active:scale-95 transition"
               >
                 Edit Generator
-              </button> */}
+              </button>
             </div>
           </div>
         )}
@@ -355,4 +355,4 @@ const GeneratorsMapView = () => {
   );
 };
 
-export default GeneratorsMapView;
+export default MyGeneratorsMapView;

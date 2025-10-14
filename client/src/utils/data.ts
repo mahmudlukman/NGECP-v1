@@ -198,18 +198,30 @@ export const SIDE_MENU_USER_DATA = [
   },
   {
     id: "02",
+    label: "Register Generator",
+    icon: LuBadgePlus,
+    path: "/user/register-generator",
+  },
+   {
+    id: "04",
+    label: "Generators Map View",
+    icon: LuLocate,
+    path: "/user/my-generators-map-view",
+  },
+  {
+    id: "05",
     label: "My Generators",
     icon: GiPowerGenerator,
     path: "/user/generators",
   },
   {
-    id: "03",
+    id: "06",
     label: "My Profile",
     icon: LuUser,
     path: "/user/profile",
   },
   {
-    id: "04",
+    id: "05",
     label: "Logout",
     icon: LuLogOut,
     path: "logout",

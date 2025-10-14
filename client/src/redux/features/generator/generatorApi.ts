@@ -20,7 +20,7 @@ export const generatorApi = apiSlice.injectEndpoints({
       providesTags: [{ type: "Generator", id: "LIST" }],
     }),
     getGeneratorById: builder.query({
-      query: ({ id }) => ({
+      query: ({id}) => ({
         url: `generator/${id}`,
         method: "GET",
         credentials: "include" as const,

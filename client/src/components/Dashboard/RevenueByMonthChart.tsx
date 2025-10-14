@@ -15,6 +15,8 @@ const RevenueByMonthChart = ({ data }: Props) => {
   >([]);
 
   useEffect(() => {
+    // Log data for debugging
+    console.log("RevenueByMonthChart data:", data);
     const result = prepareRevenueByMonthChartData(data);
     setChartData(result);
   }, [data]);
