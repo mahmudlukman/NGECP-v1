@@ -147,6 +147,7 @@ import {
   LuUser,
   LuBadgePlus,
   LuLocate,
+  LuUserPen,
 } from "react-icons/lu";
 import { GiPowerGenerator } from "react-icons/gi";
 
@@ -183,6 +184,12 @@ export const SIDE_MENU_DATA = [
   },
   {
     id: "06",
+    label: "Inspections",
+    icon: LuUserPen,
+    path: "/admin/inspections",
+  },
+  {
+    id: "07",
     label: "Logout",
     icon: LuLogOut,
     path: "logout",

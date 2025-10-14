@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { useState, useEffect, useMemo } from "react";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import { useNavigate } from "react-router-dom";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useGetAllGeneratorsQuery } from "../../redux/features/generator/generatorApi";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
+import Modal from "../../components/Modal";
 import toast from "react-hot-toast";
 
 // Define Generator type
@@ -13,7 +14,7 @@ interface Generator {
   brand: string;
   model: string;
   serialNumber: string;
-  capacity: number;
+  capacity: number | string; // Allow string due to "45 KVA" in data
   yearOfManufacture: number;
   fuelType: string;
   status?: string;
@@ -21,17 +22,35 @@ interface Generator {
     address: string;
     state: string;
     lga: string;
-    coordinates: {
+    coordinates?: {
       latitude: number;
       longitude: number;
     };
   };
 }
 
-// Custom marker icons based on status
-const createMarkerIcon = (status?: string) => {
-  const color =
-    status === "active" ? "green" : status === "inactive" ? "red" : "blue";
+// Status color mapping based on legend
+const statusColors: Record<string, string> = {
+  active: "#875CF5", // Purple
+  inactive: "#FA2C37", // Red
+  underinspection: "#06B6D4", // Cyan
+  compliant: "#4fbf8b", // Green
+  noncompliant: "#c40477ff", // Pink
+  unknown: "#6B7280", // Gray (fallback)
+};
+
+// Normalize status for consistency
+const normalizeStatus = (status?: string): string => {
+  if (!status) return "unknown";
+  const lowerStatus = status.toLowerCase();
+  if (lowerStatus === "under_inspection") return "underinspection";
+  return lowerStatus.replace("_", "");
+};
+
+// Custom marker icon with status color and number for multiple generators
+const createMarkerIcon = (status: string = "unknown", count: number = 1) => {
+  const normalizedStatus = normalizeStatus(status);
+  const color = statusColors[normalizedStatus] || statusColors.unknown;
 
   return L.divIcon({
     className: "custom-div-icon",
@@ -51,9 +70,11 @@ const createMarkerIcon = (status?: string) => {
         <div style="
           transform: rotate(45deg);
           color: white;
-          font-size: 16px;
+          font-size: ${count > 1 ? "12px" : "16px"};
           font-weight: bold;
-        ">⚡</div>
+        ">
+          ${count > 1 ? count : "⚡"}
+        </div>
       </div>
     `,
     iconSize: [30, 30],
@@ -69,12 +90,12 @@ function FitBounds({ generators }: { generators: Generator[] }) {
   useEffect(() => {
     if (generators.length > 0) {
       const bounds = generators
-        .filter((gen) => gen.location?.coordinates?.latitude)
+        .filter((gen) => gen.location?.coordinates?.latitude && gen.location?.coordinates?.longitude)
         .map(
           (gen) =>
             [
-              gen.location.coordinates.latitude,
-              gen.location.coordinates.longitude,
+              gen.location.coordinates!.latitude,
+              gen.location.coordinates!.longitude,
             ] as [number, number]
         );
 
@@ -91,9 +112,8 @@ const GeneratorsMapView = () => {
   const navigate = useNavigate();
   const [page] = useState(1);
   const [pageSize] = useState(1000); // Load all generators for map
-  const [selectedGenerator, setSelectedGenerator] = useState<Generator | null>(
-    null
-  );
+  const [selectedGenerator, setSelectedGenerator] = useState<Generator | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data, isLoading, error } = useGetAllGeneratorsQuery({
     page,
@@ -108,13 +128,23 @@ const GeneratorsMapView = () => {
     }
   }, [error]);
 
+  // Group generators by coordinates to count multiple generators at the same location
+  const groupedGenerators = useMemo(() => {
+    const map = new Map<string, Generator[]>();
+    generators.forEach((gen) => {
+      if (gen.location?.coordinates?.latitude && gen.location?.coordinates?.longitude) {
+        const key = `${gen.location.coordinates.latitude},${gen.location.coordinates.longitude}`;
+        const existing = map.get(key) || [];
+        map.set(key, [...existing, gen]);
+      }
+    });
+    return map;
+  }, [generators]);
+
   const handleViewDetails = (generatorId: string) => {
     navigate(`/admin/generator-details/${generatorId}`);
+    setIsModalOpen(false);
   };
-
-  // const handleEditGenerator = (generatorId: string) => {
-  //   navigate(`/admin/update-generator/${generatorId}`);
-  // };
 
   if (isLoading) {
     return (
@@ -224,89 +254,30 @@ const GeneratorsMapView = () => {
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
 
-                {validGenerators.map((generator) => (
-                  <Marker
-                    key={generator._id}
-                    position={[
-                      generator.location.coordinates.latitude,
-                      generator.location.coordinates.longitude,
-                    ]}
-                    icon={createMarkerIcon(generator.status)}
-                    eventHandlers={{
-                      click: () => setSelectedGenerator(generator),
-                    }}
-                  >
-                    <Popup>
-                      <div className="p-2 min-w-[250px] z-index-10">
-                        <h3 className="font-bold text-lg mb-2 text-gray-800">
-                          {generator.brand} {generator.model}
-                        </h3>
+                {Array.from(groupedGenerators.entries()).map(([key, gens]) => {
+                  const [latitude, longitude] = key.split(",").map(Number);
+                  const representativeGen = gens[0]; // Use first generator for status
+                  const count = gens.length;
 
-                        <div className="space-y-1 text-sm mb-3">
-                          <p>
-                            <span className="font-semibold">Capacity:</span>{" "}
-                            {generator.capacity} KVA
-                          </p>
-                          <p>
-                            <span className="font-semibold">Serial:</span>{" "}
-                            {generator.serialNumber}
-                          </p>
-                          <p>
-                            <span className="font-semibold">Fuel:</span>{" "}
-                            <span className="capitalize">
-                              {generator.fuelType}
-                            </span>
-                          </p>
-                          <p>
-                            <span className="font-semibold">Year:</span>{" "}
-                            {generator.yearOfManufacture}
-                          </p>
-                          <p>
-                            <span className="font-semibold">Status:</span>{" "}
-                            <span
-                              className={`capitalize px-2 py-0.5 rounded text-xs ${
-                                generator.status === "active"
-                                  ? "bg-green-100 text-green-700"
-                                  : generator.status === "inactive"
-                                  ? "bg-red-100 text-red-700"
-                                  : "bg-gray-100 text-gray-700"
-                              }`}
-                            >
-                              {generator.status || "Unknown"}
-                            </span>
-                          </p>
-                        </div>
-
-                        <div className="border-t pt-2 mb-2">
-                          <p className="text-sm">
-                            <span className="font-semibold">Location:</span>
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            {generator.location.address}
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            {generator.location.lga}, {generator.location.state}
-                          </p>
-                        </div>
-
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleViewDetails(generator._id)}
-                            className="flex-1 px-3 py-1.5 text-white text-sm rounded bg-primary hover:scale-103 active:scale-95 transition"
-                          >
-                            View Details
-                          </button>
-                          {/* <button
-                            onClick={() => handleEditGenerator(generator._id)}
-                            className="flex-1 px-3 py-1.5 text-white text-sm rounded bg-primary hover:scale-103 active:scale-95 transition"
-                          >
-                            Edit
-                          </button> */}
-                        </div>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
+                  return (
+                    <Marker
+                      key={key}
+                      position={[latitude, longitude]}
+                      icon={createMarkerIcon(representativeGen.status, count)}
+                      eventHandlers={{
+                        click: () => {
+                          if (gens.length === 1) {
+                            setSelectedGenerator(gens[0]);
+                            setIsModalOpen(true);
+                          } else {
+                            setSelectedGenerator(gens[0]); // Select first generator
+                            setIsModalOpen(true);
+                          }
+                        },
+                      }}
+                    />
+                  );
+                })}
 
                 <FitBounds generators={validGenerators} />
               </MapContainer>
@@ -314,41 +285,84 @@ const GeneratorsMapView = () => {
           )}
         </div>
 
-        {/* Selected Generator Info Card (Optional - shows below map) */}
+        {/* Custom Modal for Generator Details */}
         {selectedGenerator && (
-          <div className="mt-4 bg-white p-4 rounded-xl shadow-md border-l-4 border-primary">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-bold text-lg text-gray-800">
-                  {selectedGenerator.brand} {selectedGenerator.model}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {selectedGenerator.location.lga},{" "}
-                  {selectedGenerator.location.state}
-                </p>
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              setSelectedGenerator(null);
+            }}
+            title={`${selectedGenerator.brand} ${selectedGenerator.model}`}
+          >
+            <div className="p-6 w-[90vw] md:w-[400px]">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Capacity
+                  </label>
+                  <p className="text-sm text-gray-600">{selectedGenerator.capacity} KVA</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Serial Number
+                  </label>
+                  <p className="text-sm text-gray-600">{selectedGenerator.serialNumber}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Fuel Type
+                  </label>
+                  <p className="text-sm text-gray-600 capitalize">{selectedGenerator.fuelType}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Year of Manufacture
+                  </label>
+                  <p className="text-sm text-gray-600">{selectedGenerator.yearOfManufacture}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Status
+                  </label>
+                  <p
+                    className={`text-sm capitalize px-2 py-0.5 rounded inline-block ${
+                      normalizeStatus(selectedGenerator.status) === "active"
+                        ? "bg-[#875CF5] text-white"
+                        : normalizeStatus(selectedGenerator.status) === "inactive"
+                        ? "bg-[#FA2C37] text-white"
+                        : normalizeStatus(selectedGenerator.status) === "underinspection"
+                        ? "bg-[#06B6D4] text-white"
+                        : normalizeStatus(selectedGenerator.status) === "compliant"
+                        ? "bg-[#4fbf8b] text-white"
+                        : normalizeStatus(selectedGenerator.status) === "noncompliant"
+                        ? "bg-[#c40477ff] text-white"
+                        : "bg-[#6B7280] text-white"
+                    }`}
+                  >
+                    {selectedGenerator.status?.replace("_", " ") || "Unknown"}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Location
+                  </label>
+                  <p className="text-sm text-gray-600">{selectedGenerator.location.address}</p>
+                  <p className="text-sm text-gray-600">
+                    {selectedGenerator.location.lga}, {selectedGenerator.location.state}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleViewDetails(selectedGenerator._id)}
+                    className="flex-1 bg-primary text-white py-2 rounded-lg hover:opacity-90 transition"
+                  >
+                    View Details
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={() => setSelectedGenerator(null)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                ✕
-              </button>
             </div>
-            <div className="flex gap-3 mt-3">
-              <button
-                onClick={() => handleViewDetails(selectedGenerator._id)}
-                className="px-4 py-2 bg-primary hover:scale-103 active:scale-95 transition text-white text-sm rounded-lg"
-              >
-                View Full Details
-              </button>
-              {/* <button
-                onClick={() => handleEditGenerator(selectedGenerator._id)}
-                className="px-4 py-2 text-white text-sm rounded-lg bg-primary hover:scale-103 active:scale-95 transition"
-              >
-                Edit Generator
-              </button> */}
-            </div>
-          </div>
+          </Modal>
         )}
       </div>
     </DashboardLayout>

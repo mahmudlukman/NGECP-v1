@@ -6,6 +6,22 @@ import mongoose, { FilterQuery } from "mongoose";
 import { Inspection, IInspection, InspectionStatus } from "../models/Inspection";
 import { Payment } from "../models/Payment";
 import { User } from "../models/User";
+import { InspectionFee } from "../models/InspectionFee";
+
+// Calculate inspection amount from InspectionFee
+const calculateInspectionAmount = async (fuelType: string, capacity: string) => {
+  const feeConfig = await InspectionFee.findOne({ fuelType: fuelType?.toLowerCase() });
+  if (!feeConfig) {
+    throw new ErrorHandler(`No fee configuration for fuel type: ${fuelType}`, 400);
+  }
+
+  const kVA = parseFloat(capacity) || 0;
+  const range = feeConfig.kVARanges.find(
+    (r) => kVA <= r.maxKVA || r.maxKVA === Infinity
+  ) || feeConfig.kVARanges[0];
+
+  return feeConfig.baseRate + kVA * range.multiplier;
+};
 
 // Schedule inspection (create inspection with payment)
 export const scheduleInspection = catchAsyncError(
@@ -75,6 +91,7 @@ export const scheduleInspection = catchAsyncError(
         owner,
         scheduledDate: new Date(scheduledDate),
         payment: payment._id,
+        location: generator.location,
       });
 
       // Update payment with inspection ID
@@ -100,6 +117,65 @@ export const scheduleInspection = catchAsyncError(
     }
   }
 );
+
+// Get inspection fees (admin-only)
+export const getInspectionFees = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const fees = await InspectionFee.find().lean();
+      res.status(200).json({
+        success: true,
+        fees,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+// Update inspection fees (admin-only)
+export const updateInspectionFees = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const fees = req.body;
+      if (!Array.isArray(fees) || fees.length === 0) {
+        return next(new ErrorHandler("Invalid fee configuration", 400));
+      }
+
+      for (const fee of fees) {
+        const { fuelType, baseRate, kVARanges } = fee;
+        if (
+          !fuelType ||
+          typeof baseRate !== "number" ||
+          !Array.isArray(kVARanges) ||
+          kVARanges.length === 0
+        ) {
+          return next(new ErrorHandler(`Invalid data for fuelType: ${fuelType}`, 400));
+        }
+
+        await InspectionFee.findOneAndUpdate(
+          { fuelType: fuelType.toLowerCase() },
+          {
+            baseRate,
+            kVARanges,
+            updatedAt: new Date(),
+          },
+          { upsert: true, new: true }
+        );
+      }
+
+      const updatedFees = await InspectionFee.find().lean();
+      res.status(200).json({
+        success: true,
+        message: "Inspection fees updated successfully",
+        fees: updatedFees,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
 
 // Get my inspections
 export const getMyInspections = catchAsyncError(
@@ -374,52 +450,6 @@ export const updateInspectionStatus = catchAsyncError(
         success: true,
         message: "Inspection status updated successfully",
         inspection,
-      });
-    } catch (error: any) {
-      return next(new ErrorHandler(error.message, 400));
-    }
-  }
-);
-
-// Get inspection statistics --- for admin/editor
-export const getInspectionStatistics = catchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const [
-        totalInspections,
-        pendingInspections,
-        scheduledInspections,
-        completedInspections,
-        cancelledInspections,
-      ] = await Promise.all([
-        Inspection.countDocuments(),
-        Inspection.countDocuments({ status: "pending" }),
-        Inspection.countDocuments({ status: "scheduled" }),
-        Inspection.countDocuments({ status: "completed" }),
-        Inspection.countDocuments({ status: "cancelled" }),
-      ]);
-
-      // Inspections this month
-      const firstDayOfMonth = new Date();
-      firstDayOfMonth.setDate(1);
-      firstDayOfMonth.setHours(0, 0, 0, 0);
-
-      const inspectionsThisMonth = await Inspection.countDocuments({
-        createdAt: { $gte: firstDayOfMonth },
-      });
-
-      res.status(200).json({
-        success: true,
-        statistics: {
-          total: totalInspections,
-          byStatus: {
-            pending: pendingInspections,
-            scheduled: scheduledInspections,
-            completed: completedInspections,
-            cancelled: cancelledInspections,
-          },
-          thisMonth: inspectionsThisMonth,
-        },
       });
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));

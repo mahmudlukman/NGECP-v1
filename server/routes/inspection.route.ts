@@ -5,8 +5,10 @@ import {
   cancelInspection,
   getAllInspections,
   getInspectionById,
+  getInspectionFees,
   getMyInspections,
   scheduleInspection,
+  updateInspectionFees,
   updateInspectionStatus,
 } from "../controllers/inspection.controller";
 const inspectionRouter = express.Router();
@@ -18,6 +20,18 @@ inspectionRouter.post(
 );
 inspectionRouter.get("/my-inspections", isAuthenticated, getMyInspections);
 inspectionRouter.get("/inspection/:id", isAuthenticated, getInspectionById);
+inspectionRouter.get(
+  "/inspection-fee",
+  isAuthenticated,
+  authorizeRoles("admin", "editor"),
+  getInspectionFees
+);
+inspectionRouter.put(
+  "/update-inspection-fee",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  updateInspectionFees
+);
 inspectionRouter.get(
   "/all-inspections",
   isAuthenticated,

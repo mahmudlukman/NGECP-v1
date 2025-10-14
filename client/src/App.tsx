@@ -22,6 +22,7 @@ import GeneratorsMapView from "./pages/admin/GeneratorsMapView";
 import GeneratorDetails from "./pages/user/GeneratorDetails";
 import MyGeneratorsMapView from "./pages/user/MyGeneratorsMapView";
 import PaymentSuccessPage from "./pages/PaymentSuccess";
+import Inspections from "./pages/admin/Inspections";
 
 const router = createBrowserRouter([
   {
@@ -52,6 +53,7 @@ const router = createBrowserRouter([
       { path: "generators-map-view", element: <GeneratorsMapView /> },
       { path: "manage-generators", element: <ManageGenerators /> },
       { path: "manage-users", element: <ManageUsers /> },
+      { path: "inspections", element: <Inspections /> },
     ],
   },
   // user protected routes

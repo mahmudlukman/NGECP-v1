@@ -75,11 +75,36 @@ export interface IGenerator {
 
 interface IInspection {
   _id: string;
-  generator: { _id: string };
+  generator: {
+    _id: string;
+    generatorId: string;
+    brand: string;
+    model: string;
+    serialNumber: string;
+  };
+  owner?: string | {
+    _id?: string;
+    email?: string;
+    accountType?: "individual" | "company";
+    name?: string;
+    companyName?: string;
+  };
+  scheduledDate?: string;
   status: string;
-  payment: {
+  payment?: {
     _id: string;
     amount: number;
     status: string;
+    transactionReference: string;
   };
+  location?: {
+    address?: string;
+    state?: string;
+    lga?: string;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
+  };
+  updatedAt?: string;
 }
