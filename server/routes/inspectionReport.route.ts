@@ -8,7 +8,6 @@ import {
   approveInspectionReport,
   getAllReports,
   getMyReports,
-  getReportStatistics,
   deleteInspectionReport,
 } from "../controllers/inspectionReport.controller";
 
@@ -43,13 +42,6 @@ InspectionReportRouter.get(
   isAuthenticated,
   authorizeRoles("admin", "editor"),
   getAllReports
-);
-
-InspectionReportRouter.get(
-  "/report-stats",
-  isAuthenticated,
-  authorizeRoles("admin", "editor"),
-  getReportStatistics
 );
 
 // Admin only routes

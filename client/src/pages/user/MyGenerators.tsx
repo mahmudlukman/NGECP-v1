@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -9,6 +9,7 @@ import {
   useScheduleInspectionMutation,
   useCancelInspectionMutation,
   useGetMyInspectionsQuery,
+  useGetInspectionFeeQuery,
 } from "../../redux/features/inspection/inspectionApi";
 import { useInitializePaymentMutation } from "../../redux/features/payment/paymentApi";
 import type { IGenerator, IInspection, ServerError } from "../../@types";
@@ -43,10 +44,9 @@ const MyGenerators = () => {
     isError: isGeneratorsError,
     refetch: refetchGenerators,
   } = useGetMyGeneratorsQuery({ page, pageSize });
-  const {
-    data: inspectionsData,
-    isLoading: isInspectionsLoading,
-  } = useGetMyInspectionsQuery({ status: "pending,scheduled" });
+  const { data: inspectionsData, isLoading: isInspectionsLoading } =
+    useGetMyInspectionsQuery({ status: "pending,scheduled" });
+  const { data: feeData } = useGetInspectionFeeQuery({});
   const [deleteGenerator] = useDeleteGeneratorMutation();
   const [scheduleInspection, { isLoading: isScheduling }] =
     useScheduleInspectionMutation();
@@ -119,9 +119,15 @@ const MyGenerators = () => {
     });
   }, [generatorsData, filterStatus, searchTerm]);
 
+  useEffect(() => {
+    if (feeData?.fee?.amount) {
+      setAmount(feeData.fee.amount.toString());
+    }
+  }, [feeData]);
+
   // Schedule inspection handler
   const handleScheduleInspection = async () => {
-    if (!selectedGenerator || !scheduledDate || !amount) {
+    if (!selectedGenerator || !scheduledDate) {
       toast.error("Please provide all required details");
       return;
     }
@@ -129,7 +135,7 @@ const MyGenerators = () => {
       const res = await scheduleInspection({
         generatorId: selectedGenerator._id,
         scheduledDate,
-        amount,
+        amount: Number(amount),
       }).unwrap();
       toast.success(res.message || "Inspection scheduled successfully!");
       setIsModalOpen(false);
@@ -584,14 +590,14 @@ const MyGenerators = () => {
           <div className="p-6 w-[90vw] md:w-[400px]">
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-600 mb-1">
                   Generator ID
                 </label>
                 <input
                   type="text"
                   value={selectedGenerator?.generatorId || ""}
                   readOnly
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100 text-gray-600"
+                  className="w-full border text-slate-600 rounded-lg px-3 py-2 bg-gray-100 text-gray-600"
                 />
               </div>
               <div>
@@ -602,19 +608,19 @@ const MyGenerators = () => {
                   type="date"
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  className="w-full border text-slate-600 rounded-lg px-3 py-2"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-600 mb-1">
                   Inspection Amount (₦)
                 </label>
                 <input
                   type="number"
                   placeholder="Enter amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                  value={feeData.fee.amount}
+                  readOnly
+                  className="w-full border text-slate-600 rounded-lg px-3 py-2 bg-gray-100 text-gray-600"
                 />
               </div>
               <button

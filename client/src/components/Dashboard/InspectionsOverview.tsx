@@ -1,11 +1,11 @@
 import CustomPieChart from "../Charts/CustomPieChart";
 
 interface InspectionOverviewProps {
+  totalInspections: number;
   Pending: number;
   Scheduled: number;
   Completed: number;
   Cancelled: number;
-  totalInspections: number;
 }
 
 const InspectionOverview = ({
@@ -13,6 +13,7 @@ const InspectionOverview = ({
   Scheduled,
   Completed,
   Cancelled,
+  totalInspections,
 }: InspectionOverviewProps) => {
   const COLORS = ["#875CF5", "#FA2C37", "#06B6D4", "#4fbf8b"];
 
@@ -23,7 +24,7 @@ const InspectionOverview = ({
     { name: "Completed", amount: Completed },
   ];
 
-  const totalInspections = Pending + Scheduled + Completed + Cancelled;
+  // const totalInspections = Pending + Scheduled + Completed + Cancelled;
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50">
@@ -35,7 +36,7 @@ const InspectionOverview = ({
         data={inspectionData}
         label="Total Inspection"
         colors={COLORS}
-        amount={totalInspections}
+        totalInspections={totalInspections}
         showTextAnchor
       />
     </div>

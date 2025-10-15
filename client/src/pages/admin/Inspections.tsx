@@ -1,14 +1,14 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   useGetAllInspectionsQuery,
   useUpdateInspectionStatusMutation,
   useDeleteInspectionMutation,
-  useGetInspectionFeesQuery,
-  useUpdateInspectionFeesMutation,
+  useGetInspectionFeeQuery,
+  useUpdateInspectionFeeMutation,
 } from "../../redux/features/inspection/inspectionApi";
-import type { IInspection, ServerError } from "../../@types";
+import type { IInspection, RootState, ServerError } from "../../@types";
 import Tooltip from "../../components/Tooltip";
 import DeleteAlert from "../../components/DeleteAlert";
 import Pagination from "../../components/Pagination";
@@ -16,19 +16,11 @@ import Loading from "../../components/Loading";
 import { Eye, Trash2, FileText, Search, Plus } from "lucide-react";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import { format } from "date-fns";
-
-interface IInspectionFee {
-  _id: string;
-  fuelType: string;
-  baseRate: number;
-  kVARanges: {
-    maxKVA: number;
-    multiplier: number;
-  }[];
-  updatedAt: string;
-}
+import Modal from "../../components/Modal";
+import { useSelector } from "react-redux";
 
 const Inspections = () => {
+  const { user } = useSelector((state: RootState) => state.auth);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -36,8 +28,7 @@ const Inspections = () => {
   const [deleteInspectionId, setDeleteInspectionId] = useState<string | null>(
     null
   );
-  const [showFeeModal, setShowFeeModal] = useState(false);
-  const [fees, setFees] = useState<IInspectionFee[]>([]);
+  const isAdmin = user?.role === "admin";
 
   const navigate = useNavigate();
 
@@ -52,19 +43,23 @@ const Inspections = () => {
     data: feeData,
     isLoading: isFeeLoading,
     isError: isFeeError,
-  } = useGetInspectionFeesQuery(undefined);
+  } = useGetInspectionFeeQuery({});
 
   const [updateInspectionStatus] = useUpdateInspectionStatusMutation();
   const [deleteInspection] = useDeleteInspectionMutation();
   const [updateInspectionFees, { isLoading: isUpdatingFees }] =
-    useUpdateInspectionFeesMutation();
+    useUpdateInspectionFeeMutation();
+  const [feeAmount, setFeeAmount] = useState<number>(0);
+  const [feeDescription, setFeeDescription] = useState<string>("");
 
-  // Initialize fees state when data is loaded
-  useMemo(() => {
-    if (feeData?.fees) {
-      setFees(feeData.fees);
+  const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (isFeeModalOpen && feeData?.fee) {
+      setFeeAmount(feeData.fee.amount || 0);
+      setFeeDescription(feeData.fee.description || "");
     }
-  }, [feeData]);
+  }, [isFeeModalOpen, feeData]);
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
@@ -100,45 +95,21 @@ const Inspections = () => {
     navigate(`/admin/write-report/${inspectionId}`);
   };
 
-  const handleFeeChange = (
-    index: number,
-    field:
-      | "baseRate"
-      | `kVARanges.${number}.maxKVA`
-      | `kVARanges.${number}.multiplier`,
-    value: string
-  ) => {
-    const newFees = [...fees];
-    const numValue = value === "" ? Infinity : Number(value);
-
-    // Validate input
-    if (isNaN(numValue) && numValue !== Infinity) {
-      toast.error("Please enter a valid number");
-      return;
-    }
-    if (numValue < 0) {
-      toast.error("Value cannot be negative");
-      return;
-    }
-
-    if (field.startsWith("kVARanges")) {
-      const [rangeIndex, rangeField] = field.split(".");
-      newFees[index].kVARanges[Number(rangeIndex)][
-        rangeField as "maxKVA" | "multiplier"
-      ] = numValue;
-    } else {
-      newFees[index].baseRate = numValue;
-    }
-    setFees(newFees);
-  };
-  const handleSaveFees = async () => {
+  // ✅ Extracted reusable update function
+  const handleUpdateInspectionFee = async () => {
     try {
-      await updateInspectionFees(fees).unwrap();
-      toast.success("Inspection fees updated successfully");
-      setShowFeeModal(false);
+      await updateInspectionFees({
+        data: { amount: feeAmount, description: feeDescription },
+      }).unwrap();
+      toast.success("Inspection fee updated successfully");
+      setIsFeeModalOpen(false);
     } catch (err: unknown) {
       const serverError = err as ServerError;
-      toast.error(serverError.data?.message || "Failed to update fees");
+      const errorMessage =
+        serverError?.data?.message ||
+        serverError?.message ||
+        "Failed to register generator";
+      toast.error(errorMessage);
     }
   };
 
@@ -201,7 +172,7 @@ const Inspections = () => {
             Manage <span className="text-slate-800 font-bold">Inspections</span>
           </h1>
           <button
-            onClick={() => setShowFeeModal(true)}
+            onClick={() => setIsFeeModalOpen(true)}
             className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-primary/90 transition"
           >
             <Plus size={16} /> Update Inspection Fee
@@ -455,113 +426,61 @@ const Inspections = () => {
           </div>
         )}
 
-        {/* Inspection Fee Modal */}
-        {showFeeModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div
-              className="absolute inset-0 cursor-pointer bg-black/20"
-              onClick={() => setShowFeeModal(false)}
-            ></div>
-            <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 z-10">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Update Inspection Fees
-                </h3>
-                <button
-                  onClick={() => setShowFeeModal(false)}
-                  className="text-gray-400 hover:text-gray-600 cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="space-y-6">
-                {fees.map((fee, index) => (
-                  <div key={fee._id} className="border p-4 rounded-lg">
-                    <h4 className="text-md font-medium capitalize">
-                      {fee.fuelType}
-                    </h4>
-                    <div className="mt-2">
-                      <label className="block text-sm font-medium text-gray-700">
-                        Base Rate (₦)
-                      </label>
-                      <input
-                        type="number"
-                        value={fee.baseRate}
-                        onChange={(e) =>
-                          handleFeeChange(index, "baseRate", e.target.value)
-                        }
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                        min="0"
-                      />
-                    </div>
-                    <div className="mt-4">
-                      <h5 className="text-sm font-medium">kVA Ranges</h5>
-                      {fee.kVARanges.map((range, rangeIndex) => (
-                        <div key={rangeIndex} className="flex gap-4 mt-2">
-                          <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-700">
-                              Max kVA
-                            </label>
-                            <input
-                              type="number"
-                              value={
-                                range.maxKVA === Infinity ? "" : range.maxKVA
-                              }
-                              onChange={(e) =>
-                                handleFeeChange(
-                                  index,
-                                  `kVARanges.${rangeIndex}.maxKVA`,
-                                  e.target.value
-                                )
-                              }
-                              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                              min="0"
-                              placeholder="Infinity"
-                              disabled={rangeIndex === fee.kVARanges.length - 1}
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-700">
-                              Multiplier (₦/kVA)
-                            </label>
-                            <input
-                              type="number"
-                              value={range.multiplier}
-                              onChange={(e) =>
-                                handleFeeChange(
-                                  index,
-                                  `kVARanges.${rangeIndex}.multiplier`,
-                                  e.target.value
-                                )
-                              }
-                              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                              min="0"
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 flex justify-end gap-4">
-                <button
-                  onClick={() => setShowFeeModal(false)}
-                  className="px-4 py-2 text-sm text-gray-600 border rounded-lg hover:bg-gray-100"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveFees}
-                  className="px-4 py-2 text-sm text-white bg-primary rounded-lg hover:bg-primary/90"
-                  disabled={isUpdatingFees}
-                >
-                  {isUpdatingFees ? "Saving..." : "Save Changes"}
-                </button>
-              </div>
-            </div>
+        {/* Update Inspection Fee Modal */}
+        <Modal
+          isOpen={isFeeModalOpen}
+          onClose={() => setIsFeeModalOpen(false)}
+          title="Update Inspection Fee"
+        >
+          <div className="p-6 space-y-4">
+            {isFeeLoading ? (
+              <p className="text-center text-gray-500">
+                Loading current fee...
+              </p>
+            ) : (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">
+                    Amount (₦)
+                  </label>
+                  <input
+                    type="number"
+                    value={feeAmount}
+                    onChange={(e) => setFeeAmount(Number(e.target.value))}
+                    className="w-full border border-gray-300 text-slate-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">
+                    Description
+                  </label>
+                  <textarea
+                    value={feeDescription}
+                    onChange={(e) => setFeeDescription(e.target.value)}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 h-24 text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
+                  <button
+                    onClick={() => setIsFeeModalOpen(false)}
+                    className="px-4 py-2 rounded-lg border border-gray-300 text-slate-600 hover:bg-gray-100 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    disabled={!isAdmin || isUpdatingFees}
+                    onClick={handleUpdateInspectionFee}
+                    className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition disabled:opacity-50"
+                  >
+                    {isUpdatingFees ? "Updating..." : "Save Changes"}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        )}
+        </Modal>
       </div>
     </DashboardLayout>
   );

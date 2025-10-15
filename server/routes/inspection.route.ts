@@ -5,10 +5,10 @@ import {
   cancelInspection,
   getAllInspections,
   getInspectionById,
-  getInspectionFees,
+  getInspectionFee,
   getMyInspections,
   scheduleInspection,
-  updateInspectionFees,
+  updateInspectionFee,
   updateInspectionStatus,
 } from "../controllers/inspection.controller";
 const inspectionRouter = express.Router();
@@ -23,14 +23,13 @@ inspectionRouter.get("/inspection/:id", isAuthenticated, getInspectionById);
 inspectionRouter.get(
   "/inspection-fee",
   isAuthenticated,
-  authorizeRoles("admin", "editor"),
-  getInspectionFees
+  getInspectionFee
 );
 inspectionRouter.put(
   "/update-inspection-fee",
   isAuthenticated,
   authorizeRoles("admin"),
-  updateInspectionFees
+  updateInspectionFee
 );
 inspectionRouter.get(
   "/all-inspections",
@@ -45,9 +44,9 @@ inspectionRouter.put(
   assignInspector
 );
 inspectionRouter.put(
-  "/update-inspector-status/:id",
+  "/update-inspection-status/:id",
   isAuthenticated,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "editor"),
   updateInspectionStatus
 );
 

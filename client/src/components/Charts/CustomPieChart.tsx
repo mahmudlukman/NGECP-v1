@@ -18,12 +18,12 @@ interface DataItem {
 interface PieChartProps {
   data: DataItem[];
   label: string;
-  amount: string | number;
+  totalInspections: string | number;
   showTextAnchor: boolean;
   colors: string[];
 }
 
-const CustomPieChart = ({ data, label, amount, showTextAnchor, colors }: PieChartProps) => {
+const CustomPieChart = ({ data, label, totalInspections, showTextAnchor, colors }: PieChartProps) => {
 
   return (
     <ResponsiveContainer width="100%" height={380}>
@@ -66,7 +66,7 @@ const CustomPieChart = ({ data, label, amount, showTextAnchor, colors }: PieChar
               fontSize="24px"
               fontWeight="semi-bold"
             >
-              {amount}
+              {totalInspections}
             </text>
           </>
         )}

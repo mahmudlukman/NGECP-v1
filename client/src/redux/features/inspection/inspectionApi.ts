@@ -35,7 +35,7 @@ export const inspectionApi = apiSlice.injectEndpoints({
       }),
       providesTags: [{ type: "Inspection", id: "LIST" }],
     }),
-    getInspectionFees: builder.query({
+    getInspectionFee: builder.query({
       query: () => ({
         url: "inspection-fee",
         method: "GET",
@@ -43,7 +43,7 @@ export const inspectionApi = apiSlice.injectEndpoints({
       }),
       providesTags: [{ type: "Inspection", id: "LIST" }],
     }),
-    updateInspectionFees: builder.mutation({
+    updateInspectionFee: builder.mutation({
       query: ({ data }) => ({
         url: "update-inspection-fee",
         method: "PUT",
@@ -63,7 +63,7 @@ export const inspectionApi = apiSlice.injectEndpoints({
     }),
     updateInspectionStatus: builder.mutation({
       query: ({ id, data }) => ({
-        url: `update-inspector-status/${id}`,
+        url: `update-inspection-status/${id}`,
         method: "PUT",
         body: data,
         credentials: "include" as const,
@@ -72,7 +72,7 @@ export const inspectionApi = apiSlice.injectEndpoints({
     }),
     cancelInspection: builder.mutation({
       query: (id) => ({
-        url: `cancel-inspector/${id}`,
+        url: `cancel-inspection/${id}`,
         method: "PUT",
         credentials: "include" as const,
       }),
@@ -94,8 +94,8 @@ export const {
   useGetAllInspectionsQuery,
   useGetInspectionByIdQuery,
   useGetMyInspectionsQuery,
-  useGetInspectionFeesQuery,
-  useUpdateInspectionFeesMutation,
+  useGetInspectionFeeQuery,
+  useUpdateInspectionFeeMutation,
   useUpdateInspectionStatusMutation,
   useAssignInspectorMutation,
   useCancelInspectionMutation,

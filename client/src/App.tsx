@@ -23,6 +23,8 @@ import GeneratorDetails from "./pages/user/GeneratorDetails";
 import MyGeneratorsMapView from "./pages/user/MyGeneratorsMapView";
 import PaymentSuccessPage from "./pages/PaymentSuccess";
 import Inspections from "./pages/admin/Inspections";
+import WriteReport from "./pages/admin/WriteReport";
+import Reports from "./pages/admin/Reports";
 
 const router = createBrowserRouter([
   {
@@ -54,6 +56,8 @@ const router = createBrowserRouter([
       { path: "manage-generators", element: <ManageGenerators /> },
       { path: "manage-users", element: <ManageUsers /> },
       { path: "inspections", element: <Inspections /> },
+      { path: "write-report/:inspectionId", element: <WriteReport /> },
+      { path: "reports", element: <Reports /> },
     ],
   },
   // user protected routes

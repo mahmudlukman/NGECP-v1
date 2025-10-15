@@ -42,16 +42,6 @@ export const createInspectionReport = catchAsyncError(
         return next(new ErrorHandler("Inspection not found", 404));
       }
 
-      // Check if inspection is assigned to this inspector or user is admin
-      if (
-        req.user?.role !== "admin" &&
-        inspection.inspector?.toString() !== inspectorId?.toString()
-      ) {
-        return next(
-          new ErrorHandler("You are not assigned to this inspection", 403)
-        );
-      }
-
       // Check if report already exists
       const existingReport = await InspectionReport.findOne({
         inspection: inspectionId,
@@ -142,8 +132,6 @@ export const getReportByInspectionId = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { inspectionId } = req.params;
-      const userId = req.user?._id;
-      const userRole = req.user?.role;
 
       const report = await InspectionReport.findOne({
         inspection: inspectionId,
@@ -163,18 +151,6 @@ export const getReportByInspectionId = catchAsyncError(
         return next(new ErrorHandler("Report not found", 404));
       }
 
-      // Check permission
-      const inspection = report.inspection as any;
-      if (
-        userRole !== "admin" &&
-        userRole !== "editor" &&
-        inspection.owner._id.toString() !== userId?.toString()
-      ) {
-        return next(
-          new ErrorHandler("You don't have permission to view this report", 403)
-        );
-      }
-
       res.status(200).json({
         success: true,
         report,
@@ -190,8 +166,6 @@ export const getReportById = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const userId = req.user?._id;
-      const userRole = req.user?.role;
 
       const report = await InspectionReport.findById(id)
         .populate({
@@ -207,18 +181,6 @@ export const getReportById = catchAsyncError(
 
       if (!report) {
         return next(new ErrorHandler("Report not found", 404));
-      }
-
-      // Check permission
-      const inspection = report.inspection as any;
-      if (
-        userRole !== "admin" &&
-        userRole !== "editor" &&
-        inspection.owner._id.toString() !== userId?.toString()
-      ) {
-        return next(
-          new ErrorHandler("You don't have permission to view this report", 403)
-        );
       }
 
       res.status(200).json({
@@ -237,7 +199,6 @@ export const updateInspectionReport = catchAsyncError(
     try {
       const { id } = req.params;
       const inspectorId = req.user?._id;
-      const userRole = req.user?.role;
 
       const report = await InspectionReport.findById(id);
 
@@ -245,21 +206,8 @@ export const updateInspectionReport = catchAsyncError(
         return next(new ErrorHandler("Report not found", 404));
       }
 
-      // Check permission - only the inspector or admin can update
-      if (
-        userRole !== "admin" &&
-        report.inspector.toString() !== inspectorId?.toString()
-      ) {
-        return next(
-          new ErrorHandler(
-            "You don't have permission to update this report",
-            403
-          )
-        );
-      }
-
       // Don't allow updates if report is approved (only admin can)
-      if (report.isApproved && userRole !== "admin") {
+      if (report.isApproved) {
         return next(
           new ErrorHandler("Cannot update approved report. Contact admin.", 400)
         );
@@ -510,66 +458,6 @@ export const getMyReports = catchAsyncError(
           totalPages,
           hasNextPage: page < totalPages,
           hasPrevPage: page > 1,
-        },
-      });
-    } catch (error: any) {
-      return next(new ErrorHandler(error.message, 400));
-    }
-  }
-);
-
-// Get report statistics --- for admin/editor
-export const getReportStatistics = catchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const [
-        totalReports,
-        compliantReports,
-        nonCompliantReports,
-        approvedReports,
-        pendingApprovalReports,
-        avgComplianceScore,
-      ] = await Promise.all([
-        InspectionReport.countDocuments(),
-        InspectionReport.countDocuments({ overallCompliance: true }),
-        InspectionReport.countDocuments({ overallCompliance: false }),
-        InspectionReport.countDocuments({ isApproved: true }),
-        InspectionReport.countDocuments({ isApproved: false }),
-        InspectionReport.aggregate([
-          { $group: { _id: null, avgScore: { $avg: "$complianceScore" } } },
-        ]),
-      ]);
-
-      // Get common issues
-      const commonIssues = await InspectionReport.aggregate([
-        { $unwind: "$maintenanceStatus.issues" },
-        {
-          $group: {
-            _id: "$maintenanceStatus.issues",
-            count: { $sum: 1 },
-          },
-        },
-        { $sort: { count: -1 } },
-        { $limit: 10 },
-      ]);
-
-      res.status(200).json({
-        success: true,
-        statistics: {
-          total: totalReports,
-          byCompliance: {
-            compliant: compliantReports,
-            nonCompliant: nonCompliantReports,
-          },
-          byApproval: {
-            approved: approvedReports,
-            pendingApproval: pendingApprovalReports,
-          },
-          averageComplianceScore:
-            avgComplianceScore.length > 0
-              ? Math.round(avgComplianceScore[0].avgScore * 100) / 100
-              : 0,
-          commonIssues,
         },
       });
     } catch (error: any) {

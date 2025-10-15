@@ -136,9 +136,9 @@ const Dashboard = () => {
           <InspectionOverview
             totalInspections={dashboardData?.analytics?.inspections?.total || 0}
             Pending={dashboardData?.analytics?.inspections?.pending || 0}
-            Cancelled={dashboardData?.analytics?.inspections?.Cancelled || 0}
-            Scheduled={dashboardData?.analytics?.inspections?.Scheduled || 0}
-            Completed={dashboardData?.analytics?.inspections?.Completed || 0}
+            Cancelled={dashboardData?.analytics?.inspections?.cancelled || 0}
+            Scheduled={dashboardData?.analytics?.inspections?.scheduled || 0}
+            Completed={dashboardData?.analytics?.inspections?.completed || 0}
           />
           <UsersByMonthChart data={usersByMonth} />
           <RevenueByMonthChart

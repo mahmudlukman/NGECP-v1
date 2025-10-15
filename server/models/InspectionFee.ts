@@ -1,52 +1,38 @@
+// models/InspectionFee.ts
 import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IInspectionFee extends Document {
-  fuelType: string;
-  baseRate: number;
-  kVARanges: {
-    maxKVA: number;
-    multiplier: number;
-  }[];
+  amount: number;
+  description: string;
+  updatedBy?: mongoose.Types.ObjectId;
   updatedAt: Date;
+  createdAt: Date;
 }
 
-const InspectionFeeSchema: Schema = new Schema<IInspectionFee>(
+const InspectionFeeSchema: Schema = new Schema(
   {
-    fuelType: {
-      type: String,
-      required: true,
-      lowercase: true,
-      enum: ["diesel", "petrol", "gas"],
-    },
-    baseRate: {
+    amount: {
       type: Number,
       required: true,
       min: 0,
+      default: 5000,
     },
-    kVARanges: [
-      {
-        maxKVA: {
-          type: Number,
-          required: true,
-          min: 0,
-        },
-        multiplier: {
-          type: Number,
-          required: true,
-          min: 0,
-        },
-      },
-    ],
-    updatedAt: {
-      type: Date,
-      default: Date.now,
+    description: {
+      type: String,
+      default: "Standard inspection fee for all generator types",
+    },
+    updatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   {
-    timestamps: false,
+    timestamps: true,
   }
 );
 
-InspectionFeeSchema.index({ fuelType: 1 }, { unique: true });
+// Ensure only one fee document exists
+InspectionFeeSchema.index({}, { unique: true });
 
-export const InspectionFee: Model<IInspectionFee> = mongoose.model<IInspectionFee>("InspectionFee", InspectionFeeSchema);
+export const InspectionFee: Model<IInspectionFee> =
+  mongoose.model<IInspectionFee>("InspectionFee", InspectionFeeSchema);

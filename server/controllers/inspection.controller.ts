@@ -8,21 +8,6 @@ import { Payment } from "../models/Payment";
 import { User } from "../models/User";
 import { InspectionFee } from "../models/InspectionFee";
 
-// Calculate inspection amount from InspectionFee
-const calculateInspectionAmount = async (fuelType: string, capacity: string) => {
-  const feeConfig = await InspectionFee.findOne({ fuelType: fuelType?.toLowerCase() });
-  if (!feeConfig) {
-    throw new ErrorHandler(`No fee configuration for fuel type: ${fuelType}`, 400);
-  }
-
-  const kVA = parseFloat(capacity) || 0;
-  const range = feeConfig.kVARanges.find(
-    (r) => kVA <= r.maxKVA || r.maxKVA === Infinity
-  ) || feeConfig.kVARanges[0];
-
-  return feeConfig.baseRate + kVA * range.multiplier;
-};
-
 // Schedule inspection (create inspection with payment)
 export const scheduleInspection = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -119,13 +104,22 @@ export const scheduleInspection = catchAsyncError(
 );
 
 // Get inspection fees (admin-only)
-export const getInspectionFees = catchAsyncError(
+export const getInspectionFee = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const fees = await InspectionFee.find().lean();
+      let fee = await InspectionFee.findOne();
+
+      // Create default fee if none exists
+      if (!fee) {
+        fee = await InspectionFee.create({
+          amount: 5000,
+          description: "Standard inspection fee for all generator types",
+        });
+      }
+
       res.status(200).json({
         success: true,
-        fees,
+        fee,
       });
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
@@ -133,42 +127,41 @@ export const getInspectionFees = catchAsyncError(
   }
 );
 
+
 // Update inspection fees (admin-only)
-export const updateInspectionFees = catchAsyncError(
+export const updateInspectionFee = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const fees = req.body;
-      if (!Array.isArray(fees) || fees.length === 0) {
-        return next(new ErrorHandler("Invalid fee configuration", 400));
-      }
+      const { amount, description } = req.body;
+      const updatedBy = req.user?._id;
 
-      for (const fee of fees) {
-        const { fuelType, baseRate, kVARanges } = fee;
-        if (
-          !fuelType ||
-          typeof baseRate !== "number" ||
-          !Array.isArray(kVARanges) ||
-          kVARanges.length === 0
-        ) {
-          return next(new ErrorHandler(`Invalid data for fuelType: ${fuelType}`, 400));
-        }
-
-        await InspectionFee.findOneAndUpdate(
-          { fuelType: fuelType.toLowerCase() },
-          {
-            baseRate,
-            kVARanges,
-            updatedAt: new Date(),
-          },
-          { upsert: true, new: true }
+      if (!amount || amount < 0) {
+        return next(
+          new ErrorHandler("Please provide a valid amount", 400)
         );
       }
 
-      const updatedFees = await InspectionFee.find().lean();
+      let fee = await InspectionFee.findOne();
+
+      if (!fee) {
+        // Create if doesn't exist
+        fee = await InspectionFee.create({
+          amount,
+          description: description || "Standard inspection fee for all generator types",
+          updatedBy,
+        });
+      } else {
+        // Update existing
+        fee.amount = amount;
+        if (description) fee.description = description;
+        fee.updatedBy = updatedBy as mongoose.Types.ObjectId;
+        await fee.save();
+      }
+
       res.status(200).json({
         success: true,
-        message: "Inspection fees updated successfully",
-        fees: updatedFees,
+        message: "Inspection fee updated successfully",
+        fee,
       });
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));

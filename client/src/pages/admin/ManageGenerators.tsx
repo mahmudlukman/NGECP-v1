@@ -6,7 +6,7 @@ import {
   useUpdateGeneratorStatusMutation,
   useDeleteGeneratorMutation,
 } from "../../redux/features/generator/generatorApi";
-import type { IGenerator, ServerError } from "../../@types";
+import type { IGenerator, RootState, ServerError } from "../../@types";
 import Tooltip from "../../components/Tooltip";
 import DeleteAlert from "../../components/DeleteAlert";
 import Pagination from "../../components/Pagination";
@@ -14,8 +14,10 @@ import Loading from "../../components/Loading";
 import { Pencil, Eye, Trash2, Plus, Search } from "lucide-react";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import { format } from "date-fns";
+import { useSelector } from "react-redux";
 
 const ManageGenerators = () => {
+  const { user } = useSelector((state: RootState) => state.auth);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -23,6 +25,8 @@ const ManageGenerators = () => {
   const [deleteGeneratorId, setDeleteGeneratorId] = useState<string | null>(
     null
   );
+
+  const isAdmin = user?.role === "admin";
 
   const navigate = useNavigate();
 
@@ -334,6 +338,7 @@ const ManageGenerators = () => {
 
                   <Tooltip text="Delete Generator" position="bottom">
                     <button
+                      disabled={!isAdmin}
                       onClick={() => handleDeleteClick(g._id!)}
                       className="p-2 rounded-full hover:bg-red-200 text-red-600 transition"
                     >
