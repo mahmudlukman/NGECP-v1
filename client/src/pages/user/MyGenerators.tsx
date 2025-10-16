@@ -197,8 +197,8 @@ const MyGenerators = () => {
   };
 
   // View report handler
-  const handleViewReport = (inspectionId: string) => {
-    navigate(`/user/inspection-report/${inspectionId}`);
+  const handleViewReport = (id: string) => {
+    navigate(`/user/report-details/${id}`);
   };
 
   if (isGeneratorsLoading || isInspectionsLoading) {

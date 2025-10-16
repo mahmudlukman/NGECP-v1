@@ -234,16 +234,16 @@ const ManageGenerators = () => {
                     </p>
                     <p>
                       <span className="font-semibold">Capacity:</span>{" "}
-                      {g.capacity || "N/A"}
+                      {g.capacity || "N/A"}KVA
                     </p>
                     <p>
                       <span className="font-semibold">Year:</span>{" "}
                       {g.yearOfManufacture || "N/A"}
                     </p>
-                    <p>
+                    {/* <p>
                       <span className="font-semibold">Fuel Type:</span>{" "}
                       {g.fuelType || "N/A"}
-                    </p>
+                    </p> */}
                   </div>
                 </td>
 
@@ -329,7 +329,7 @@ const ManageGenerators = () => {
 
                   <Tooltip text="View Generator" position="bottom">
                     <button
-                      onClick={() => navigate(`/generators/${g._id}`)}
+                      onClick={() => navigate(`/generator/${g._id}`)}
                       className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition"
                     >
                       <Eye size={18} />

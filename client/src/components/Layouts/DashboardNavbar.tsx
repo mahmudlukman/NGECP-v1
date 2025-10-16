@@ -22,7 +22,16 @@ const AdminNavbar = ({ activeMenu }: { activeMenu: string }) => {
         )}
       </button>
 
-      <h2 className="text-lg font-medium text-black cursor-pointer" onClick={()=> navigate('/')}>NGECP</h2>
+      <h2
+        className="cursor-pointer relative text-4xl font-semibold text-slate-700"
+        onClick={() => navigate("/")}
+      >
+        <span className="text-green-600">N</span>
+        <span className="text-transparent bg-clip-text bg-[radial-gradient(circle,_#7182ff_0%,_#3cff52_100%)] bg-[length:200%_200%] animate-text-shine">
+          GECP
+        </span>
+        <span className="text-primary text-5xl leading-0">.</span>
+      </h2>
 
       {openSideMenu && (
         <div className="fixed top-[61px] -ml-4 bg-white">

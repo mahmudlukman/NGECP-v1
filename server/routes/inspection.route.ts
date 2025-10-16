@@ -51,7 +51,7 @@ inspectionRouter.put(
 );
 
 inspectionRouter.put(
-  "/cancel-inspector/:id",
+  "/cancel-inspection/:id",
   isAuthenticated,
   cancelInspection
 );

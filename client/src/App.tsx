@@ -25,6 +25,7 @@ import PaymentSuccessPage from "./pages/PaymentSuccess";
 import Inspections from "./pages/admin/Inspections";
 import WriteReport from "./pages/admin/WriteReport";
 import Reports from "./pages/admin/Reports";
+import ReportDetails from "./pages/admin/ReportDetails";
 
 const router = createBrowserRouter([
   {
@@ -58,6 +59,7 @@ const router = createBrowserRouter([
       { path: "inspections", element: <Inspections /> },
       { path: "write-report/:inspectionId", element: <WriteReport /> },
       { path: "reports", element: <Reports /> },
+      { path: "report-details/:id", element: <ReportDetails /> },
     ],
   },
   // user protected routes
