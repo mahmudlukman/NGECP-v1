@@ -6,7 +6,6 @@ import L from "leaflet";
 import { useGetAllGeneratorsQuery } from "../../redux/features/generator/generatorApi";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import Modal from "../../components/Modal";
-import toast from "react-hot-toast";
 
 // Define Generator type
 interface Generator {
@@ -90,7 +89,11 @@ function FitBounds({ generators }: { generators: Generator[] }) {
   useEffect(() => {
     if (generators.length > 0) {
       const bounds = generators
-        .filter((gen) => gen.location?.coordinates?.latitude && gen.location?.coordinates?.longitude)
+        .filter(
+          (gen) =>
+            gen.location?.coordinates?.latitude &&
+            gen.location?.coordinates?.longitude
+        )
         .map(
           (gen) =>
             [
@@ -112,7 +115,9 @@ const GeneratorsMapView = () => {
   const navigate = useNavigate();
   const [page] = useState(1);
   const [pageSize] = useState(1000); // Load all generators for map
-  const [selectedGenerator, setSelectedGenerator] = useState<Generator | null>(null);
+  const [selectedGenerator, setSelectedGenerator] = useState<Generator | null>(
+    null
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data, isLoading, error } = useGetAllGeneratorsQuery({
@@ -120,19 +125,18 @@ const GeneratorsMapView = () => {
     pageSize,
   });
 
-  const generators: Generator[] = data?.generators || [];
-
-  useEffect(() => {
-    if (error) {
-      toast.error("Failed to load generators");
-    }
-  }, [error]);
+  const generators: Generator[] = useMemo(() => {
+    return data?.generators || [];
+  }, [data?.generators]);
 
   // Group generators by coordinates to count multiple generators at the same location
   const groupedGenerators = useMemo(() => {
     const map = new Map<string, Generator[]>();
     generators.forEach((gen) => {
-      if (gen.location?.coordinates?.latitude && gen.location?.coordinates?.longitude) {
+      if (
+        gen.location?.coordinates?.latitude &&
+        gen.location?.coordinates?.longitude
+      ) {
         const key = `${gen.location.coordinates.latitude},${gen.location.coordinates.longitude}`;
         const existing = map.get(key) || [];
         map.set(key, [...existing, gen]);
@@ -156,6 +160,16 @@ const GeneratorsMapView = () => {
               <p className="text-gray-600">Loading generators map...</p>
             </div>
           </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout activeMenu="Manage Generators">
+        <div className="flex justify-center items-center h-[80vh]">
+          <p className="text-red-500">Failed to load generators.</p>
         </div>
       </DashboardLayout>
     );
@@ -301,25 +315,33 @@ const GeneratorsMapView = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Capacity
                   </label>
-                  <p className="text-sm text-gray-600">{selectedGenerator.capacity} KVA</p>
+                  <p className="text-sm text-gray-600">
+                    {selectedGenerator.capacity} KVA
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Serial Number
                   </label>
-                  <p className="text-sm text-gray-600">{selectedGenerator.serialNumber}</p>
+                  <p className="text-sm text-gray-600">
+                    {selectedGenerator.serialNumber}
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Fuel Type
                   </label>
-                  <p className="text-sm text-gray-600 capitalize">{selectedGenerator.fuelType}</p>
+                  <p className="text-sm text-gray-600 capitalize">
+                    {selectedGenerator.fuelType}
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Year of Manufacture
                   </label>
-                  <p className="text-sm text-gray-600">{selectedGenerator.yearOfManufacture}</p>
+                  <p className="text-sm text-gray-600">
+                    {selectedGenerator.yearOfManufacture}
+                  </p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -329,13 +351,17 @@ const GeneratorsMapView = () => {
                     className={`text-sm capitalize px-2 py-0.5 rounded inline-block ${
                       normalizeStatus(selectedGenerator.status) === "active"
                         ? "bg-[#875CF5] text-white"
-                        : normalizeStatus(selectedGenerator.status) === "inactive"
+                        : normalizeStatus(selectedGenerator.status) ===
+                          "inactive"
                         ? "bg-[#FA2C37] text-white"
-                        : normalizeStatus(selectedGenerator.status) === "underinspection"
+                        : normalizeStatus(selectedGenerator.status) ===
+                          "underinspection"
                         ? "bg-[#06B6D4] text-white"
-                        : normalizeStatus(selectedGenerator.status) === "compliant"
+                        : normalizeStatus(selectedGenerator.status) ===
+                          "compliant"
                         ? "bg-[#4fbf8b] text-white"
-                        : normalizeStatus(selectedGenerator.status) === "noncompliant"
+                        : normalizeStatus(selectedGenerator.status) ===
+                          "noncompliant"
                         ? "bg-[#c40477ff] text-white"
                         : "bg-[#6B7280] text-white"
                     }`}
@@ -347,9 +373,12 @@ const GeneratorsMapView = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Location
                   </label>
-                  <p className="text-sm text-gray-600">{selectedGenerator.location.address}</p>
                   <p className="text-sm text-gray-600">
-                    {selectedGenerator.location.lga}, {selectedGenerator.location.state}
+                    {selectedGenerator.location.address}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {selectedGenerator.location.lga},{" "}
+                    {selectedGenerator.location.state}
                   </p>
                 </div>
                 <div className="flex gap-2">

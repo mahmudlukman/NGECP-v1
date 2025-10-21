@@ -26,7 +26,8 @@ const GeneratorsOverview = ({
     { name: "Non-Compliant", amount: nonCompliant },
   ];
 
-  const totalGenerators = active + inactive + underInspection + compliant + nonCompliant;
+  const totalGenerators =
+    active + inactive + underInspection + compliant + nonCompliant;
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50">
@@ -38,7 +39,7 @@ const GeneratorsOverview = ({
         data={generatorsData}
         label="Total Generators"
         colors={COLORS}
-        amount={totalGenerators}
+        totalInspections={totalGenerators}
         showTextAnchor
       />
     </div>
