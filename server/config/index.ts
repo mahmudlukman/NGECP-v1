@@ -15,14 +15,7 @@ const config = {
   REFRESH_TOKEN_EXPIRES: process.env.REFRESH_TOKEN_EXPIRES as ms.StringValue,
   defaultResLimit: 20,
   defaultResOffset: 0,
-  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME!,
-  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY!,
-  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET!,
   RESEND_API_KEY: process.env.RESEND_API_KEY!,
-  FLW_PUBLIC_KEY: process.env.FLW_PUBLIC_KEY!,
-  FLW_SECRET_KEY: process.env.FLW_SECRET_KEY!,
-  FLW_ENCRYPTION_KEY: process.env.FLW_ENCRYPTION_KEY!,
-  FLW_WEBHOOK_HASH: process.env.FLW_WEBHOOK_HASH!,
 };
 
 export default config;
