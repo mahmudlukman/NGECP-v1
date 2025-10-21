@@ -1,4 +1,3 @@
-import React from 'react'
 import AboutSection from '../components/AboutSection'
 import OurSpecs from '../components/OurSpecs'
 
