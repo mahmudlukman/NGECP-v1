@@ -5,7 +5,10 @@ dotenv.config();
 const config = {
   PORT: process.env.PORT || 8000,
   NODE_ENV: process.env.NODE_ENV,
-  WHITELIST_ORIGINS: ["http://localhost:5173"],
+  WHITELIST_ORIGINS: [
+    "https://ngecp-v1.netlify.app",
+    "http://localhost:5173",
+  ],
   FRONTEND_URL: process.env.FRONTEND_URL!,
   DB_URL: process.env.DB_URL!,
   ACTIVATION_SECRET: process.env.ACTIVATION_SECRET!,
