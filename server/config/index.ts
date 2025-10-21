@@ -16,6 +16,10 @@ const config = {
   defaultResLimit: 20,
   defaultResOffset: 0,
   RESEND_API_KEY: process.env.RESEND_API_KEY!,
+  FLW_PUBLIC_KEY: process.env.FLW_PUBLIC_KEY!,
+  FLW_SECRET_KEY: process.env.FLW_SECRET_KEY!,
+  FLW_ENCRYPTION_KEY: process.env.FLW_ENCRYPTION_KEY!,
+  FLW_WEBHOOK_HASH: process.env.FLW_WEBHOOK_HASH!,
 };
 
 export default config;
