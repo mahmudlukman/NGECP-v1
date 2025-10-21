@@ -15,7 +15,7 @@ const PrivateRoute = ({ allowedRoles }: { allowedRoles: string[] }) => {
     if (user.role === "admin" || user.role === "editor") {
       redirectPath = "/admin/dashboard";
     } else if (user.role === "user") {
-      redirectPath = "/user/dashboard";
+      redirectPath = "/user/my-generators-map-view";
     }
 
     return <Navigate to={redirectPath} replace />;

@@ -10,7 +10,7 @@ import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import GeneratorLocationSelector from "../../components/GeneratorLocationSelector";
 import Loading from "../../components/Loading";
 
-const UpdateGenerator = () => {
+const UpdateMyGenerator = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -111,7 +111,7 @@ const UpdateGenerator = () => {
 
       // Use setTimeout to ensure state updates before navigation
       setTimeout(() => {
-        navigate("/admin/manage-generators", { replace: true }); // or wherever you want to redirect
+        navigate("/user/generators", { replace: true }); // or wherever you want to redirect
       }, 100);
     } catch (err: unknown) {
       const serverError = err as ServerError;
@@ -136,7 +136,7 @@ const UpdateGenerator = () => {
 
   if (isFetching) {
     return (
-      <DashboardLayout activeMenu="My Generators">
+      <DashboardLayout activeMenu="Manage Generators">
         <Loading />
       </DashboardLayout>
     );
@@ -144,13 +144,13 @@ const UpdateGenerator = () => {
 
   if (!generatorData?.generator) {
     return (
-      <DashboardLayout activeMenu="My Generators">
+      <DashboardLayout activeMenu="Manage Generators">
         <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
               <p className="text-red-600 text-lg mb-4">Generator not found</p>
               <button
-                onClick={() => navigate("/user/my-generators")}
+                onClick={() => navigate("/user/generators")}
                 className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
               >
                 Back to Generators
@@ -163,7 +163,7 @@ const UpdateGenerator = () => {
   }
 
   return (
-    <DashboardLayout activeMenu="My Generators">
+    <DashboardLayout activeMenu="Manage Generators">
       <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
         <div className="no-scrollbar flex-1 h-[95vh] overflow-y-scroll flex flex-col justify-between">
           <div className="flex items-center justify-between max-w-3xl mb-4">
@@ -309,4 +309,4 @@ const UpdateGenerator = () => {
   );
 };
 
-export default UpdateGenerator;
+export default UpdateMyGenerator;

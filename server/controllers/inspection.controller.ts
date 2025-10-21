@@ -1,9 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import { catchAsyncError } from "../middleware/catchAsyncErrors";
-import { Generator, GeneratorStatus} from "../models/Generator";
+import { Generator, GeneratorStatus } from "../models/Generator";
 import ErrorHandler from "../utils/errorHandler";
 import mongoose, { FilterQuery } from "mongoose";
-import { Inspection, IInspection, InspectionStatus } from "../models/Inspection";
+import {
+  Inspection,
+  IInspection,
+  InspectionStatus,
+} from "../models/Inspection";
 import { Payment } from "../models/Payment";
 import { User } from "../models/User";
 import { InspectionFee } from "../models/InspectionFee";
@@ -93,7 +97,8 @@ export const scheduleInspection = catchAsyncError(
 
       res.status(201).json({
         success: true,
-        message: "Inspection scheduled successfully. Please proceed to payment.",
+        message:
+          "Inspection scheduled successfully. Please proceed to payment.",
         inspection: populatedInspection,
         paymentReference: transactionReference,
       });
@@ -127,7 +132,6 @@ export const getInspectionFee = catchAsyncError(
   }
 );
 
-
 // Update inspection fees (admin-only)
 export const updateInspectionFee = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -136,9 +140,7 @@ export const updateInspectionFee = catchAsyncError(
       const updatedBy = req.user?._id;
 
       if (!amount || amount < 0) {
-        return next(
-          new ErrorHandler("Please provide a valid amount", 400)
-        );
+        return next(new ErrorHandler("Please provide a valid amount", 400));
       }
 
       let fee = await InspectionFee.findOne();
@@ -147,7 +149,8 @@ export const updateInspectionFee = catchAsyncError(
         // Create if doesn't exist
         fee = await InspectionFee.create({
           amount,
-          description: description || "Standard inspection fee for all generator types",
+          description:
+            description || "Standard inspection fee for all generator types",
           updatedBy,
         });
       } else {
@@ -168,7 +171,6 @@ export const updateInspectionFee = catchAsyncError(
     }
   }
 );
-
 
 // Get my inspections
 export const getMyInspections = catchAsyncError(
@@ -192,7 +194,10 @@ export const getMyInspections = catchAsyncError(
 
       const [inspections, totalInspections] = await Promise.all([
         Inspection.find(query)
-          .populate("generator", "generatorId brand model serialNumber location")
+          .populate(
+            "generator",
+            "generatorId brand model serialNumber location"
+          )
           .populate("payment")
           .populate("inspector", "name email")
           .populate("report")
@@ -367,9 +372,7 @@ export const assignInspector = catchAsyncError(
       }
 
       if (inspector.role !== "admin" && inspector.role !== "editor") {
-        return next(
-          new ErrorHandler("Selected user is not an inspector", 400)
-        );
+        return next(new ErrorHandler("Selected user is not an inspector", 400));
       }
 
       const inspection = await Inspection.findById(id);
@@ -494,6 +497,62 @@ export const cancelInspection = catchAsyncError(
       res.status(200).json({
         success: true,
         message: "Inspection cancelled successfully",
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+// Delete inspection --- for admin only
+export const deleteInspection = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const inspection = await Inspection.findById(id);
+
+      if (!inspection) {
+        return next(new ErrorHandler("Inspection not found", 404));
+      }
+
+      // Prevent deletion of completed inspections with reports
+      if (inspection.status === "completed" && inspection.report) {
+        return next(
+          new ErrorHandler(
+            "Cannot delete completed inspection with an existing report",
+            400
+          )
+        );
+      }
+
+      // Delete associated payment if it exists and is not paid
+      if (inspection.payment) {
+        const payment = await Payment.findById(inspection.payment);
+        if (payment && payment.status !== "paid") {
+          await Payment.findByIdAndDelete(inspection.payment);
+        } else if (payment && payment.status === "paid") {
+          return next(
+            new ErrorHandler(
+              "Cannot delete inspection with completed payment. Consider cancelling instead.",
+              400
+            )
+          );
+        }
+      }
+
+      // Update generator status back to active if it's under inspection
+      const generator = await Generator.findById(inspection.generator);
+      if (generator && generator.status === GeneratorStatus.UNDER_INSPECTION) {
+        generator.status = GeneratorStatus.ACTIVE;
+        await generator.save();
+      }
+
+      // Delete the inspection
+      await Inspection.findByIdAndDelete(id);
+
+      res.status(200).json({
+        success: true,
+        message: "Inspection deleted successfully",
       });
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));

@@ -206,9 +206,9 @@ export const SIDE_MENU_DATA = [
 export const SIDE_MENU_USER_DATA = [
   {
     id: "01",
-    label: "Dashboard",
-    icon: LuLayoutDashboard,
-    path: "/user/dashboard",
+    label: "Generators Map View",
+    icon: LuLocate,
+    path: "/user/my-generators-map-view",
   },
   {
     id: "02",
@@ -217,16 +217,22 @@ export const SIDE_MENU_USER_DATA = [
     path: "/user/register-generator",
   },
   {
+    id: "03",
+    label: "Manage Generators",
+    icon: GiPowerGenerator,
+    path: "/user/generators",
+  },
+   {
     id: "04",
-    label: "Generators Map View",
-    icon: LuLocate,
-    path: "/user/my-generators-map-view",
+    label: "Inspections",
+    icon: LuUserPen,
+    path: "/user/my-inspections",
   },
   {
     id: "05",
-    label: "My Generators",
-    icon: GiPowerGenerator,
-    path: "/user/generators",
+    label: "Reports",
+    icon: LuFileText,
+    path: "/user/my-reports",
   },
   {
     id: "06",
@@ -235,15 +241,10 @@ export const SIDE_MENU_USER_DATA = [
     path: "/user/profile",
   },
   {
-    id: "05",
+    id: "07",
     label: "Logout",
     icon: LuLogOut,
     path: "logout",
   },
 ];
 
-export const STATUS_DATA = [
-  { label: "Pending", value: "Pending" },
-  { label: "In Progress", value: "In Progress" },
-  { label: "Completed", value: "Completed" },
-];

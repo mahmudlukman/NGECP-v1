@@ -40,7 +40,7 @@ InspectionReportRouter.put(
 InspectionReportRouter.get(
   "/get-all-reports",
   isAuthenticated,
-  authorizeRoles("admin", "editor"),
+  // authorizeRoles("admin", "editor"),
   getAllReports
 );
 

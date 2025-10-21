@@ -34,7 +34,11 @@ const Navbar = () => {
     }
   };
 
-  const initials = getInitials(user?.name, user?.accountType, user?.companyName);
+  const initials = getInitials(
+    user?.name,
+    user?.accountType,
+    user?.companyName
+  );
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -102,7 +106,7 @@ const Navbar = () => {
                           ) {
                             navigate("/admin/dashboard");
                           } else {
-                            navigate("/user/dashboard");
+                            navigate("/user/my-generators-map-view");
                           }
                           setOpenMenu(false);
                         }}

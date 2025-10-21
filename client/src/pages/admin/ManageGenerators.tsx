@@ -252,15 +252,15 @@ const ManageGenerators = () => {
                   <div className="text-xs space-y-1">
                     <p>
                       <span className="font-semibold">Address:</span>{" "}
-                      {g.location.address || "N/A"}
+                      {g.location?.address || "N/A"}
                     </p>
                     <p>
                       <span className="font-semibold">State:</span>{" "}
-                      {g.location.state || "N/A"}
+                      {g.location?.state || "N/A"}
                     </p>
                     <p>
                       <span className="font-semibold">LGA:</span>{" "}
-                      {g.location.lga || "N/A"}
+                      {g.location?.lga || "N/A"}
                     </p>
                     <p>
                       <span className="font-semibold">Coordinates:</span>{" "}
@@ -329,7 +329,7 @@ const ManageGenerators = () => {
 
                   <Tooltip text="View Generator" position="bottom">
                     <button
-                      onClick={() => navigate(`/generator/${g._id}`)}
+                      onClick={() => navigate(`/admin/generator/${g._id}`)}
                       className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition"
                     >
                       <Eye size={18} />

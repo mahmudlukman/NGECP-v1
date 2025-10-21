@@ -1,9 +1,12 @@
 import React from 'react'
+import AboutSection from '../components/AboutSection'
+import OurSpecs from '../components/OurSpecs'
 
 const About = () => {
   return (
-    <div>
-      About Page
+     <div className="mt-10">
+      <AboutSection />
+      <OurSpecs />
     </div>
   )
 }

@@ -238,7 +238,7 @@ const Footer = () => {
             ))}
           </div>
         </div>
-        <p className="py-4 text-sm text-slate-500">
+        <p className="py-4 text-sm text-center text-slate-500">
           Copyright {new Date().getFullYear()} © National Generator Emission
           Control Program, All Right Reserved.
         </p>

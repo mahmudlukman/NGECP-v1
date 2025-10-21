@@ -3,6 +3,7 @@ import { authorizeRoles, isAuthenticated } from "../middleware/auth";
 import {
   assignInspector,
   cancelInspection,
+  deleteInspection,
   getAllInspections,
   getInspectionById,
   getInspectionFee,
@@ -20,11 +21,7 @@ inspectionRouter.post(
 );
 inspectionRouter.get("/my-inspections", isAuthenticated, getMyInspections);
 inspectionRouter.get("/inspection/:id", isAuthenticated, getInspectionById);
-inspectionRouter.get(
-  "/inspection-fee",
-  isAuthenticated,
-  getInspectionFee
-);
+inspectionRouter.get("/inspection-fee", isAuthenticated, getInspectionFee);
 inspectionRouter.put(
   "/update-inspection-fee",
   isAuthenticated,
@@ -34,7 +31,7 @@ inspectionRouter.put(
 inspectionRouter.get(
   "/all-inspections",
   isAuthenticated,
-  authorizeRoles("admin", "editor"),
+  // authorizeRoles("admin", "editor"),
   getAllInspections
 );
 inspectionRouter.put(
@@ -54,6 +51,13 @@ inspectionRouter.put(
   "/cancel-inspection/:id",
   isAuthenticated,
   cancelInspection
+);
+
+inspectionRouter.delete(
+  "/delete-inspection/:id",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  deleteInspection
 );
 
 export default inspectionRouter;

@@ -142,7 +142,7 @@ const GeneratorsMapView = () => {
   }, [generators]);
 
   const handleViewDetails = (generatorId: string) => {
-    navigate(`/admin/generator-details/${generatorId}`);
+    navigate(`/admin/generator/${generatorId}`);
     setIsModalOpen(false);
   };
 

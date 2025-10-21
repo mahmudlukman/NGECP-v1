@@ -20,7 +20,7 @@ export const inspectionApi = apiSlice.injectEndpoints({
       providesTags: [{ type: "Inspection", id: "LIST" }],
     }),
     getInspectionById: builder.query({
-      query: ({ id }) => ({
+      query: (id) => ({
         url: `inspection/${id}`,
         method: "GET",
         credentials: "include" as const,

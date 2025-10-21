@@ -52,7 +52,7 @@ const Login = ({ setCurrentPage, closeModal }: LoginProps) => {
       if (role === "admin" || role === "editor") {
         navigate("/admin/dashboard");
       } else {
-        navigate("/user/dashboard");
+        navigate("/user/my-generators-map-view");
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {

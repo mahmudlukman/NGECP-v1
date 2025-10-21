@@ -62,7 +62,10 @@ const MyGenerators = () => {
     const map = new Map<string, IInspection>();
     if (inspectionsData?.inspections) {
       inspectionsData.inspections.forEach((inspection: IInspection) => {
-        if (["pending", "scheduled"].includes(inspection.status)) {
+        if (
+          ["pending", "scheduled"].includes(inspection.status) &&
+          inspection.generator?._id // ✅ Safe null check
+        ) {
           map.set(inspection.generator._id.toString(), inspection);
         }
       });
@@ -197,9 +200,9 @@ const MyGenerators = () => {
   };
 
   // View report handler
-  const handleViewReport = (id: string) => {
-    navigate(`/user/report-details/${id}`);
-  };
+  // const handleViewReport = (id: string) => {
+  //   navigate(`/user/report-details/${id}`);
+  // };
 
   if (isGeneratorsLoading || isInspectionsLoading) {
     return (
@@ -220,7 +223,7 @@ const MyGenerators = () => {
   }
 
   return (
-    <DashboardLayout activeMenu="My Generators">
+    <DashboardLayout activeMenu="Manage Generators">
       <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
@@ -280,9 +283,9 @@ const MyGenerators = () => {
             {filteredGenerators.map((g: IGenerator) => {
               const inspection = inspectionMap.get(g._id!.toString());
               const hasScheduledInspection = !!inspection;
-              const isPaymentPending =
-                inspection?.payment?.status === "pending";
-              const isPaymentPaid = inspection?.payment?.status === "paid";
+              // const isPaymentPending =
+              //   inspection?.payment?.status === "pending";
+              // const isPaymentPaid = inspection?.payment?.status === "paid";
 
               return (
                 <tr
@@ -291,15 +294,6 @@ const MyGenerators = () => {
                 >
                   {/* Generator Info */}
                   <td className="px-4 py-3 align-top">
-                    <p className="text-xs text-slate-500 mt-1">
-                      <span className="font-semibold">Owner:</span>{" "}
-                      {typeof g.owner === "string"
-                        ? g.owner
-                        : g.owner?.companyName ||
-                          g.owner?.name ||
-                          g.owner?.email ||
-                          "N/A"}
-                    </p>
                     <div className="text-xs text-slate-500">
                       ID:{" "}
                       <span className="font-mono text-slate-700">
@@ -329,10 +323,6 @@ const MyGenerators = () => {
                       <p>
                         <span className="font-semibold">Year:</span>{" "}
                         {g.yearOfManufacture || "N/A"}
-                      </p>
-                      <p>
-                        <span className="font-semibold">Fuel Type:</span>{" "}
-                        {g.fuelType || "N/A"}
                       </p>
                     </div>
                   </td>
@@ -391,72 +381,58 @@ const MyGenerators = () => {
                   </td>
                   {/* Status */}
                   <td className="px-4 py-3 text-center align-top">
-                    {hasScheduledInspection ? (
+                    {hasScheduledInspection &&
+                    inspection?.payment?.status === "pending" ? (
                       <div className="flex flex-col gap-2">
-                        {isPaymentPaid ? (
-                          <Tooltip
-                            text="View Inspection Report"
-                            position="bottom"
+                        <Tooltip text="Proceed to Payment" position="bottom">
+                          <button
+                            onClick={() =>
+                              handleProceedToPayment(inspection._id.toString())
+                            }
+                            disabled={isInitializingPayment}
+                            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:scale-103 active:scale-95 transition disabled:opacity-50"
                           >
-                            <button
-                              onClick={() =>
-                                handleViewReport(inspection._id.toString())
-                              }
-                              className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm hover:scale-103 active:scale-95 transition"
-                            >
-                              View Report
-                            </button>
-                          </Tooltip>
-                        ) : isPaymentPending ? (
-                          <>
-                            <Tooltip
-                              text="Proceed to Payment"
-                              position="bottom"
-                            >
-                              <button
-                                onClick={() =>
-                                  handleProceedToPayment(
-                                    inspection._id.toString()
-                                  )
-                                }
-                                disabled={isInitializingPayment}
-                                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:scale-103 active:scale-95 transition disabled:opacity-50"
-                              >
-                                {isInitializingPayment
-                                  ? "Initializing..."
-                                  : "Proceed to Payment"}
-                              </button>
-                            </Tooltip>
-                            <Tooltip text="Cancel Inspection" position="bottom">
-                              <button
-                                onClick={() =>
-                                  handleCancelInspection(
-                                    inspection._id.toString()
-                                  )
-                                }
-                                disabled={isCanceling}
-                                className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:scale-103 active:scale-95 transition disabled:opacity-50"
-                              >
-                                {isCanceling
-                                  ? "Canceling..."
-                                  : "Cancel Inspection"}
-                              </button>
-                            </Tooltip>
-                          </>
-                        ) : (
-                          <p className="text-sm text-gray-500">
-                            Payment {inspection?.payment?.status || "Unknown"}
-                          </p>
-                        )}
+                            {isInitializingPayment
+                              ? "Initializing..."
+                              : "Proceed to Payment"}
+                          </button>
+                        </Tooltip>
+                        <Tooltip text="Cancel Inspection" position="bottom">
+                          <button
+                            onClick={() =>
+                              handleCancelInspection(inspection._id.toString())
+                            }
+                            disabled={isCanceling}
+                            className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:scale-103 active:scale-95 transition disabled:opacity-50"
+                          >
+                            {isCanceling ? "Canceling..." : "Cancel Inspection"}
+                          </button>
+                        </Tooltip>
                       </div>
                     ) : (
-                      <Tooltip text="Schedule Inspection" position="bottom">
+                      <Tooltip
+                        text={
+                          hasScheduledInspection &&
+                          ["pending", "scheduled"].includes(
+                            inspection?.status || ""
+                          )
+                            ? "Inspection already scheduled"
+                            : "Schedule Inspection"
+                        }
+                        position="bottom"
+                      >
                         <button
                           onClick={() => {
                             setSelectedGenerator(g);
                             setIsModalOpen(true);
                           }}
-                          className="flex items-center gap-2 bg-slate-600 text-white px-4 py-2 rounded-lg text-sm hover:scale-103 active:scale-95 transition"
+                          disabled={
+                            hasScheduledInspection &&
+                            ["pending", "scheduled"].includes(
+                              inspection?.status || ""
+                            )
+                          }
+                          className="flex items-center gap-2 bg-slate-600 text-white px-4 py-2 rounded-lg text-sm hover:scale-103 active:scale-95 transition disabled:opacity-50"
                         >
                           Schedule Inspection
                         </button>
@@ -468,7 +444,7 @@ const MyGenerators = () => {
                     <Tooltip text="Edit Generator" position="bottom">
                       <button
                         onClick={() =>
-                          navigate(`/user/update-generator/${g._id}`)
+                          navigate(`/user/update-my-generator/${g._id}`)
                         }
                         className="p-2 rounded-full hover:bg-yellow-200 text-yellow-600 transition"
                       >
@@ -477,7 +453,7 @@ const MyGenerators = () => {
                     </Tooltip>
                     <Tooltip text="View Generator" position="bottom">
                       <button
-                        onClick={() => navigate(`/generator/${g._id}`)}
+                        onClick={() => navigate(`/user/generator/${g._id}`)}
                         className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition"
                       >
                         <Eye size={18} />

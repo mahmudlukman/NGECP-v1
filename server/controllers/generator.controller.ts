@@ -137,8 +137,8 @@ export const getGeneratorById = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
-      const userId = req.user?._id;
-      const userRole = req.user?.role;
+      // const userId = req.user?._id;
+      // const userRole = req.user?.role;
 
       const generator = await Generator.findById(id).populate(
         "owner",
@@ -150,15 +150,15 @@ export const getGeneratorById = catchAsyncError(
       }
 
       // Check if user has permission to view this generator
-      if (
-        userRole !== "admin" &&
-        userRole !== "editor" &&
-        generator.owner._id.toString() !== userId?.toString()
-      ) {
-        return next(
-          new ErrorHandler("You don't have permission to view this generator", 403)
-        );
-      }
+      // if (
+      //   userRole !== "admin" &&
+      //   userRole !== "editor" &&
+      //   generator.owner._id.toString() !== userId?.toString()
+      // ) {
+      //   return next(
+      //     new ErrorHandler("You don't have permission to view this generator", 403)
+      //   );
+      // }
 
       res.status(200).json({
         success: true,

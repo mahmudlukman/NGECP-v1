@@ -5,27 +5,29 @@ import Home from "./pages/Home";
 import ResetPassword from "./pages/auth/ResetPassword";
 import Activation from "./pages/auth/Activation";
 import NotFound from "./pages/NotFound";
-// import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Dashboard from "./pages/admin/Dashboard";
 import PrivateRoute from "./utils/PrivateRoute";
 import { useTokenRefresh } from "./utils/userRefreshToken";
-import UserDashboard from "./pages/user/UserDashboard";
 import MyGenerators from "./pages/user/MyGenerators";
 import UserProfile from "./pages/user/UserProfile";
 import ManageGenerators from "./pages/admin/ManageGenerators";
 import ManageUsers from "./pages/admin/ManageUsers";
 import RegisterGenerator from "./pages/admin/RegisterGenerator";
-import UpdateGenerator from "./pages/user/UpdateGenerator";
+import UpdateGenerator from "./pages/user/UpdateMyGenerator";
 import GeneratorsMapView from "./pages/admin/GeneratorsMapView";
-import GeneratorDetails from "./pages/user/GeneratorDetails";
 import MyGeneratorsMapView from "./pages/user/MyGeneratorsMapView";
 import PaymentSuccessPage from "./pages/PaymentSuccess";
 import Inspections from "./pages/admin/Inspections";
 import WriteReport from "./pages/admin/WriteReport";
 import Reports from "./pages/admin/Reports";
 import ReportDetails from "./pages/admin/ReportDetails";
+import GeneratorDetails from "./pages/GeneratorDetails";
+import MyReports from "./pages/user/MyReports";
+import InspectionReceipt from "./pages/InspectionReceipt";
+import UpdateMyGenerator from "./pages/user/UpdateMyGenerator";
+import MyInspections from "./pages/user/MyInspection";
 
 const router = createBrowserRouter([
   {
@@ -36,10 +38,13 @@ const router = createBrowserRouter([
       { path: "/contact", element: <Contact /> },
       { path: "/reset-password", element: <ResetPassword /> },
       { path: "/activation/:activation_token", element: <Activation /> },
-      { path: "/generator/:id", element: <GeneratorDetails /> },
       {
         path: "/payment/callback",
         element: <PaymentSuccessPage />,
+      },
+      {
+        path: "/receipt/:id",
+        element: <InspectionReceipt />,
       },
     ],
   },
@@ -55,11 +60,13 @@ const router = createBrowserRouter([
       { path: "register-generator", element: <RegisterGenerator /> },
       { path: "generators-map-view", element: <GeneratorsMapView /> },
       { path: "manage-generators", element: <ManageGenerators /> },
+      { path: "update-generator/:id", element: <UpdateGenerator /> },
       { path: "manage-users", element: <ManageUsers /> },
       { path: "inspections", element: <Inspections /> },
       { path: "write-report/:inspectionId", element: <WriteReport /> },
       { path: "reports", element: <Reports /> },
       { path: "report-details/:id", element: <ReportDetails /> },
+      { path: "generator/:id", element: <GeneratorDetails /> },
     ],
   },
   // user protected routes
@@ -67,12 +74,15 @@ const router = createBrowserRouter([
     path: "/user",
     element: <PrivateRoute allowedRoles={["user"]} />,
     children: [
-      { path: "dashboard", element: <UserDashboard /> },
       { path: "register-generator", element: <RegisterGenerator /> },
       { path: "my-generators-map-view", element: <MyGeneratorsMapView /> },
       { path: "generators", element: <MyGenerators /> },
-      { path: "update-generator/:id", element: <UpdateGenerator /> },
+      { path: "update-my-generator/:id", element: <UpdateMyGenerator /> },
       { path: "profile", element: <UserProfile /> },
+      { path: "generator/:id", element: <GeneratorDetails /> },
+      { path: "my-inspections", element: <MyInspections /> },
+      { path: "my-reports", element: <MyReports /> },
+      { path: "report-details/:id", element: <ReportDetails /> },
     ],
   },
   { path: "*", element: <NotFound /> },

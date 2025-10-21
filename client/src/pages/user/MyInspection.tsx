@@ -1,25 +1,19 @@
-import { useState, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo } from "react";
 import toast from "react-hot-toast";
 import {
-  useGetAllInspectionsQuery,
   useDeleteInspectionMutation,
-  useGetInspectionFeeQuery,
-  useUpdateInspectionFeeMutation,
+  useGetMyInspectionsQuery,
 } from "../../redux/features/inspection/inspectionApi";
-import type { IInspection, RootState, ServerError } from "../../@types";
+import type { IInspection, ServerError } from "../../@types";
 import Tooltip from "../../components/Tooltip";
 import DeleteAlert from "../../components/DeleteAlert";
 import Pagination from "../../components/Pagination";
 import Loading from "../../components/Loading";
-import { Trash2, FileText, Search, Plus } from "lucide-react";
+import { Trash2, Search } from "lucide-react";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import { format } from "date-fns";
-import Modal from "../../components/Modal";
-import { useSelector } from "react-redux";
 
-const Inspections = () => {
-  const { user } = useSelector((state: RootState) => state.auth);
+const MyInspections = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -27,52 +21,16 @@ const Inspections = () => {
   const [deleteInspectionId, setDeleteInspectionId] = useState<string | null>(
     null
   );
-  const isAdmin = user?.role === "admin";
-
-  const navigate = useNavigate();
 
   const {
     data: inspectionsData,
     isLoading: isInspectionsLoading,
     isError: isInspectionsError,
     refetch,
-  } = useGetAllInspectionsQuery({ page, pageSize });
-
-  const {
-    data: feeData,
-    isLoading: isFeeLoading,
-    isError: isFeeError,
-  } = useGetInspectionFeeQuery({});
+  } = useGetMyInspectionsQuery({ page, pageSize });
 
   // const [updateInspectionStatus] = useUpdateInspectionStatusMutation();
   const [deleteInspection] = useDeleteInspectionMutation();
-  const [updateInspectionFees, { isLoading: isUpdatingFees }] =
-    useUpdateInspectionFeeMutation();
-  const [feeAmount, setFeeAmount] = useState<number>(0);
-  const [feeDescription, setFeeDescription] = useState<string>("");
-
-  const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
-
-  useEffect(() => {
-    if (isFeeModalOpen && feeData?.fee) {
-      setFeeAmount(feeData.fee.amount || 0);
-      setFeeDescription(feeData.fee.description || "");
-    }
-  }, [isFeeModalOpen, feeData]);
-
-  // const handleStatusChange = async (id: string, newStatus: string) => {
-  //   try {
-  //     const res = await updateInspectionStatus({
-  //       id,
-  //       data: { status: newStatus },
-  //     }).unwrap();
-  //     toast.success(res.message || "Inspection status updated");
-  //     refetch();
-  //   } catch (err: unknown) {
-  //     const serverError = err as ServerError;
-  //     toast.error(serverError.data?.message || "Failed to update status");
-  //   }
-  // };
 
   const handleDeleteClick = (id: string) => setDeleteInspectionId(id);
   const handleCancelDelete = () => setDeleteInspectionId(null);
@@ -87,28 +45,6 @@ const Inspections = () => {
       toast.error(serverError.data?.message || "Failed to delete inspection");
     } finally {
       setDeleteInspectionId(null);
-    }
-  };
-
-  const handleWriteReport = (inspectionId: string) => {
-    navigate(`/admin/write-report/${inspectionId}`);
-  };
-
-  // ✅ Extracted reusable update function
-  const handleUpdateInspectionFee = async () => {
-    try {
-      await updateInspectionFees({
-        data: { amount: feeAmount, description: feeDescription },
-      }).unwrap();
-      toast.success("Inspection fee updated successfully");
-      setIsFeeModalOpen(false);
-    } catch (err: unknown) {
-      const serverError = err as ServerError;
-      const errorMessage =
-        serverError?.data?.message ||
-        serverError?.message ||
-        "Failed to register generator";
-      toast.error(errorMessage);
     }
   };
 
@@ -144,7 +80,7 @@ const Inspections = () => {
     });
   }, [inspectionsData, filterStatus, searchTerm]);
 
-  if (isInspectionsLoading || isFeeLoading) {
+  if (isInspectionsLoading) {
     return (
       <DashboardLayout activeMenu="Inspections">
         <Loading />
@@ -152,7 +88,7 @@ const Inspections = () => {
     );
   }
 
-  if (isInspectionsError || isFeeError) {
+  if (isInspectionsError) {
     return (
       <DashboardLayout activeMenu="Inspections">
         <div className="flex justify-center items-center h-[80vh]">
@@ -170,12 +106,6 @@ const Inspections = () => {
           <h1 className="text-2xl text-slate-600 font-semibold">
             Manage <span className="text-slate-800 font-bold">Inspections</span>
           </h1>
-          <button
-            onClick={() => setIsFeeModalOpen(true)}
-            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-primary/90 transition"
-          >
-            <Plus size={16} /> Update Inspection Fee
-          </button>
         </div>
 
         {/* Filter + Search */}
@@ -281,22 +211,6 @@ const Inspections = () => {
                     </p>
                   </div>
                 </td>
-                {/* <td className="px-4 py-3 hidden md:table-cell align-top">
-                  <div className="text-xs space-y-1">
-                    <p>
-                      <span className="font-semibold">Address:</span>{" "}
-                      {i.location?.address || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-semibold">State:</span>{" "}
-                      {i.location?.state || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-semibold">LGA:</span>{" "}
-                      {i.location?.lga || "N/A"}
-                    </p>
-                  </div>
-                </td> */}
                 <td className="px-4 py-3 text-center align-top">
                   <span
                     className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
@@ -316,24 +230,6 @@ const Inspections = () => {
                   </span>
                 </td>
                 <td className="px-4 py-3 flex gap-3 align-top">
-                  <Tooltip text="Write Report" position="bottom">
-                    <button
-                      onClick={() => handleWriteReport(i._id)}
-                      className="p-2 rounded-full hover:bg-green-200 text-green-600 transition"
-                    >
-                      <FileText size={18} />
-                    </button>
-                  </Tooltip>
-                  {/* <Tooltip text="View Inspection" position="bottom">
-                    <button
-                      onClick={() =>
-                        navigate(`/admin/report-details/${i._id}`)
-                      }
-                      className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition"
-                    >
-                      <Eye size={18} />
-                    </button>
-                  </Tooltip> */}
                   <Tooltip text="Delete Inspection" position="bottom">
                     <button
                       onClick={() => handleDeleteClick(i._id)}
@@ -430,65 +326,9 @@ const Inspections = () => {
             </div>
           </div>
         )}
-
-        {/* Update Inspection Fee Modal */}
-        <Modal
-          isOpen={isFeeModalOpen}
-          onClose={() => setIsFeeModalOpen(false)}
-          title="Update Inspection Fee"
-        >
-          <div className="p-6 space-y-4">
-            {isFeeLoading ? (
-              <p className="text-center text-gray-500">
-                Loading current fee...
-              </p>
-            ) : (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-1">
-                    Amount (₦)
-                  </label>
-                  <input
-                    type="number"
-                    value={feeAmount}
-                    onChange={(e) => setFeeAmount(Number(e.target.value))}
-                    className="w-full border border-gray-300 text-slate-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    value={feeDescription}
-                    onChange={(e) => setFeeDescription(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 h-24 text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
-                  <button
-                    onClick={() => setIsFeeModalOpen(false)}
-                    className="px-4 py-2 rounded-lg border border-gray-300 text-slate-600 hover:bg-gray-100 transition"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    disabled={!isAdmin || isUpdatingFees}
-                    onClick={handleUpdateInspectionFee}
-                    className="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 transition disabled:opacity-50"
-                  >
-                    {isUpdatingFees ? "Updating..." : "Save Changes"}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </Modal>
       </div>
     </DashboardLayout>
   );
 };
 
-export default Inspections;
+export default MyInspections;

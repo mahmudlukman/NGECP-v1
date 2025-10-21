@@ -12,24 +12,46 @@ import {
   FileText,
   Clock,
   Award,
-  Edit,
+  Eye,
 } from "lucide-react";
 import { format } from "date-fns";
-import { useSelector } from "react-redux";
-import type { RootState } from "../@types";
+import type { IInspection, IInspectionReport } from "../@types";
 import { useGetGeneratorByIdQuery } from "../redux/features/generator/generatorApi";
+import { useGetAllInspectionsQuery } from "../redux/features/inspection/inspectionApi";
+import { useGetAllReportsQuery } from "../redux/features/report/reportApi";
 import DashboardLayout from "../components/Layouts/DashboardLayout";
 import Loading from "../components/Loading";
 
 const GeneratorDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useSelector((state: RootState) => state.auth);
-  const isAdmin = user?.role === "admin" || user?.role === "editor";
 
-  const { data, isLoading, isError } = useGetGeneratorByIdQuery(id);
+  const {
+    data: generatorsData,
+    isLoading,
+    isError,
+  } = useGetGeneratorByIdQuery({ id });
 
-  if (isLoading) {
+  // Fetch inspections for this generator
+  const { data: inspectionsData, isLoading: isLoadingInspections } =
+    useGetAllInspectionsQuery({ page: 1, pageSize: 100 });
+
+  // Fetch reports for this generator
+  const { data: reportsData, isLoading: isLoadingReports } =
+    useGetAllReportsQuery({ page: 1, pageSize: 100 });
+
+  // Filter inspections and reports for this generator
+  const generatorInspections =
+    inspectionsData?.inspections?.filter(
+      (inspection: IInspection) => inspection.generator?._id === id
+    ) || [];
+
+  const generatorReports =
+    reportsData?.reports?.filter(
+      (report: IInspectionReport) => report.generator?._id === id
+    ) || [];
+
+  if (isLoading || isLoadingInspections || isLoadingReports) {
     return (
       <DashboardLayout activeMenu="Generators">
         <Loading />
@@ -37,7 +59,7 @@ const GeneratorDetails = () => {
     );
   }
 
-  if (isError || !data?.generator) {
+  if (isError || !generatorsData?.generator) {
     return (
       <DashboardLayout activeMenu="Generators">
         <div className="flex justify-center items-center h-[80vh]">
@@ -47,7 +69,7 @@ const GeneratorDetails = () => {
     );
   }
 
-  const generator = data.generator;
+  const generator = generatorsData?.generator || [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -81,13 +103,13 @@ const GeneratorDetails = () => {
   };
 
   return (
-    <DashboardLayout activeMenu="Generators">
+    <DashboardLayout activeMenu="Manage Generators">
       <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate("/admin/generators")}
+              onClick={() => navigate("/admin/manage-generators")}
               className="p-2 rounded-full hover:bg-gray-200 text-gray-600 transition"
             >
               <ArrowLeft size={20} />
@@ -97,20 +119,15 @@ const GeneratorDetails = () => {
               <span className="text-slate-800 font-bold">Details</span>
             </h1>
           </div>
-          {isAdmin && (
-            <button
-              onClick={() => navigate(`/admin/edit-generator/${id}`)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition text-sm"
-            >
-              <Edit size={16} />
-              Edit Generator
-            </button>
-          )}
         </div>
 
         {/* Status Banner */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className={`rounded-lg p-4 border ${getStatusColor(generator.status)}`}>
+          <div
+            className={`rounded-lg p-4 border ${getStatusColor(
+              generator.status
+            )}`}
+          >
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0">
                 {getStatusIcon(generator.status)}
@@ -153,7 +170,10 @@ const GeneratorDetails = () => {
                     Registered
                   </p>
                   <p className="text-lg font-bold text-slate-800">
-                    {format(new Date(generator.registrationDate), "dd MMM yyyy")}
+                    {format(
+                      new Date(generator.registrationDate),
+                      "dd MMM yyyy"
+                    )}
                   </p>
                 </div>
               </div>
@@ -202,14 +222,12 @@ const GeneratorDetails = () => {
                   {generator.yearOfManufacture || "N/A"}
                 </span>
               </div>
-              {generator.purchaseDate && (
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Purchase Date:</span>
-                  <span className="font-medium text-slate-800">
-                    {format(new Date(generator.purchaseDate), "dd MMM yyyy")}
-                  </span>
-                </div>
-              )}
+              <div className="flex justify-between">
+                <span className="text-slate-600">Capacity:</span>
+                <span className="font-medium text-slate-800">
+                  {generator.capacity || "N/A"}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -223,45 +241,28 @@ const GeneratorDetails = () => {
             </div>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-600">Power Rating:</span>
-                <span className="font-medium text-slate-800">
-                  {generator.powerRating
-                    ? `${generator.powerRating} kVA`
-                    : "N/A"}
-                </span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-slate-600">Fuel Type:</span>
                 <span className="font-medium text-slate-800 capitalize">
                   {generator.fuelType || "N/A"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Engine Type:</span>
+                <span className="text-slate-600">Capacity:</span>
                 <span className="font-medium text-slate-800">
-                  {generator.engineType || "N/A"}
+                  {generator.capacity || "N/A"}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Voltage Rating:</span>
-                <span className="font-medium text-slate-800">
-                  {generator.voltageRating
-                    ? `${generator.voltageRating} V`
-                    : "N/A"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Frequency:</span>
-                <span className="font-medium text-slate-800">
-                  {generator.frequency ? `${generator.frequency} Hz` : "N/A"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Phase:</span>
-                <span className="font-medium text-slate-800">
-                  {generator.phase || "N/A"}
-                </span>
-              </div>
+              {generator.registrationDate && (
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Registration Date:</span>
+                  <span className="font-medium text-slate-800">
+                    {format(
+                      new Date(generator.registrationDate),
+                      "dd MMM yyyy"
+                    )}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -274,7 +275,7 @@ const GeneratorDetails = () => {
               </h3>
             </div>
             <div className="space-y-3 text-sm">
-              <div>
+              <div className="flex justify-between">
                 <span className="text-slate-600 block mb-1">Name:</span>
                 <span className="font-medium text-slate-800">
                   {typeof generator.owner === "object"
@@ -284,7 +285,7 @@ const GeneratorDetails = () => {
                     : "N/A"}
                 </span>
               </div>
-              <div>
+              <div className="flex justify-between">
                 <span className="text-slate-600 block mb-1">Email:</span>
                 <span className="font-medium text-slate-800">
                   {typeof generator.owner === "object"
@@ -292,7 +293,7 @@ const GeneratorDetails = () => {
                     : "N/A"}
                 </span>
               </div>
-              <div>
+              <div className="flex justify-between">
                 <span className="text-slate-600 block mb-1">Phone:</span>
                 <span className="font-medium text-slate-800">
                   {typeof generator.owner === "object"
@@ -300,7 +301,7 @@ const GeneratorDetails = () => {
                     : "N/A"}
                 </span>
               </div>
-              <div>
+              <div className="flex justify-between">
                 <span className="text-slate-600 block mb-1">Account Type:</span>
                 <span className="font-medium text-slate-800 capitalize">
                   {typeof generator.owner === "object"
@@ -320,16 +321,10 @@ const GeneratorDetails = () => {
               </h3>
             </div>
             <div className="space-y-3 text-sm">
-              <div>
-                <span className="text-slate-600 block mb-1">Address:</span>
+              <div className="flex justify-between">
+                <span className="text-slate-600 mb-1">Address:</span>
                 <span className="font-medium text-slate-800">
                   {generator.location?.address || "N/A"}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">City:</span>
-                <span className="font-medium text-slate-800">
-                  {generator.location?.city || "N/A"}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -344,15 +339,18 @@ const GeneratorDetails = () => {
                   {generator.location?.lga || "N/A"}
                 </span>
               </div>
-              {generator.location?.coordinates && (
-                <div className="pt-2 border-t border-gray-200">
-                  <span className="text-slate-600 block mb-1">Coordinates:</span>
-                  <span className="font-medium text-slate-800 text-xs">
-                    Lat: {generator.location.coordinates.lat}, Lng:{" "}
-                    {generator.location.coordinates.lng}
-                  </span>
-                </div>
-              )}
+              {generator.location?.coordinates?.latitude &&
+                generator.location?.coordinates?.longitude && (
+                  <div className="flex justify-between pt-2 border-t border-gray-200">
+                    <span className="text-slate-600 block mb-1">
+                      Coordinates:
+                    </span>
+                    <span className="font-medium text-slate-800 text-xs">
+                      Lat: {generator.location.coordinates.latitude}, Lng:{" "}
+                      {generator.location.coordinates.longitude}
+                    </span>
+                  </div>
+                )}
             </div>
           </div>
         </div>
@@ -397,101 +395,157 @@ const GeneratorDetails = () => {
               </div>
             )}
 
-            {generator.inspectionCount !== undefined && (
-              <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <FileText size={18} className="text-blue-600" />
-                  <span className="text-sm text-blue-700 font-medium">
-                    Total Inspections
-                  </span>
-                </div>
-                <p className="text-lg font-bold text-blue-900">
-                  {generator.inspectionCount}
-                </p>
+            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <FileText size={18} className="text-blue-600" />
+                <span className="text-sm text-blue-700 font-medium">
+                  Total Inspections
+                </span>
               </div>
-            )}
+              <p className="text-lg font-bold text-blue-900">
+                {generatorInspections.length}
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Usage Information */}
-        {(generator.usageType || generator.operatingHours !== undefined) && (
+        {/* Inspections List */}
+        {generatorInspections.length > 0 && (
           <div className="border border-gray-200 rounded-lg p-5 mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Zap size={20} className="text-slate-600" />
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-800">
-                Usage Information
+                Inspections ({generatorInspections.length})
               </h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {generator.usageType && (
-                <div className="bg-slate-50 rounded-lg p-4">
-                  <span className="text-sm text-slate-600 block mb-1">
-                    Usage Type:
-                  </span>
-                  <span className="text-lg font-bold text-slate-800 capitalize">
-                    {generator.usageType}
-                  </span>
-                </div>
-              )}
-              {generator.operatingHours !== undefined && (
-                <div className="bg-slate-50 rounded-lg p-4">
-                  <span className="text-sm text-slate-600 block mb-1">
-                    Operating Hours:
-                  </span>
-                  <span className="text-lg font-bold text-slate-800">
-                    {generator.operatingHours.toLocaleString()} hrs
-                  </span>
-                </div>
+            <div className="space-y-3">
+              {generatorInspections
+                .slice(0, 5)
+                .map((inspection: IInspection) => (
+                  <div
+                    key={inspection._id}
+                    className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            inspection.status === "completed"
+                              ? "bg-green-100 text-green-700"
+                              : inspection.status === "scheduled"
+                              ? "bg-blue-100 text-blue-700"
+                              : inspection.status === "pending"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {inspection.status}
+                        </span>
+                        {inspection.scheduledDate && (
+                          <span className="text-sm text-slate-600">
+                            {format(
+                              new Date(inspection.scheduledDate),
+                              "dd MMM yyyy"
+                            )}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-slate-700">
+                        Inspector: {inspection.inspector?.name || "N/A"}
+                      </p>
+                      {inspection.payment?.amount && (
+                        <p className="text-xs text-slate-500">
+                          Amount: ₦{inspection.payment.amount.toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                    {/* <button
+                      onClick={() =>
+                        navigate(`/admin/inspection-details/${inspection._id}`)
+                      }
+                      className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition"
+                    >
+                      <Eye size={18} />
+                    </button> */}
+                  </div>
+                ))}
+              {generatorInspections.length > 5 && (
+                <button
+                  onClick={() => navigate("/admin/inspections")}
+                  className="w-full text-center text-sm text-primary hover:underline py-2"
+                >
+                  View all {generatorInspections.length} inspections
+                </button>
               )}
             </div>
           </div>
         )}
 
-        {/* Documents */}
-        {/* {generator.documents && generator.documents.length > 0 && (
-          <div className="border border-gray-200 rounded-lg p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <FileText size={20} className="text-slate-600" />
+        {/* Reports List */}
+        {generatorReports.length > 0 && (
+          <div className="border border-gray-200 rounded-lg p-5 mb-6">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-slate-800">
-                Documents
+                Inspection Reports ({generatorReports.length})
               </h3>
             </div>
-            <div className="space-y-2">
-              {generator.documents.map((doc, index) => (
-                <a
-                  key={index}
-                  href={doc.fileUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition"
+            <div className="space-y-3">
+              {generatorReports.slice(0, 5).map((report: IInspectionReport) => (
+                <div
+                  key={report._id}
+                  className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition"
                 >
-                  <div className="flex items-center gap-3">
-                    <FileText size={18} className="text-slate-600" />
-                    <div>
-                      <p className="text-sm font-medium text-slate-800">
-                        {doc.fileName}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        {doc.fileType || "Document"}
-                      </p>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          report.overallCompliance
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {report.overallCompliance
+                          ? "Compliant"
+                          : "Non-Compliant"}
+                      </span>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          report.isApproved
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-orange-100 text-orange-700"
+                        }`}
+                      >
+                        {report.isApproved ? "Approved" : "Pending"}
+                      </span>
+                      <span className="text-sm text-slate-600">
+                        Score: {report.complianceScore}%
+                      </span>
                     </div>
+                    <p className="text-sm text-slate-700">
+                      Inspector: {report.inspector?.name || "N/A"}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {format(new Date(report.createdAt), "dd MMM yyyy, HH:mm")}
+                    </p>
                   </div>
-                  <span className="text-xs text-primary">View →</span>
-                </a>
+                  <button
+                    onClick={() =>
+                      navigate(`/user/report-details/${report._id}`)
+                    }
+                    className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition"
+                  >
+                    <Eye size={18} />
+                  </button>
+                </div>
               ))}
+              {generatorReports.length > 5 && (
+                <button
+                  onClick={() => navigate("/user/my-reports")}
+                  className="w-full text-center text-sm text-primary hover:underline py-2"
+                >
+                  View all {generatorReports.length} reports
+                </button>
+              )}
             </div>
-          </div>
-        )} */}
-
-        {/* Notes */}
-        {generator.notes && (
-          <div className="border border-gray-200 rounded-lg p-5 mt-6">
-            <h3 className="text-lg font-semibold text-slate-800 mb-3">
-              Additional Notes
-            </h3>
-            <p className="text-sm text-slate-700 whitespace-pre-wrap">
-              {generator.notes}
-            </p>
           </div>
         )}
       </div>
