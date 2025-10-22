@@ -8,7 +8,10 @@ dotenv_1.default.config();
 const config = {
     PORT: process.env.PORT || 8000,
     NODE_ENV: process.env.NODE_ENV,
-    WHITELIST_ORIGINS: ["http://localhost:5173"],
+    WHITELIST_ORIGINS: [
+        "https://ngecp-v1.netlify.app",
+        "http://localhost:5173",
+    ],
     FRONTEND_URL: process.env.FRONTEND_URL,
     DB_URL: process.env.DB_URL,
     ACTIVATION_SECRET: process.env.ACTIVATION_SECRET,
@@ -18,9 +21,6 @@ const config = {
     REFRESH_TOKEN_EXPIRES: process.env.REFRESH_TOKEN_EXPIRES,
     defaultResLimit: 20,
     defaultResOffset: 0,
-    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
-    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
-    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     FLW_PUBLIC_KEY: process.env.FLW_PUBLIC_KEY,
     FLW_SECRET_KEY: process.env.FLW_SECRET_KEY,
