@@ -31,6 +31,7 @@ const corsOptions: CorsOptions = {
     if (
       config.NODE_ENV === "development" ||
       !origin ||
+      origin.includes("onrender.com") ||
       config.WHITELIST_ORIGINS.includes(origin)
     ) {
       callback(null, true);
