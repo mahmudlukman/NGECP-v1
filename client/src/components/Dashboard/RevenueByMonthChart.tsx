@@ -1,33 +1,36 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { prepareRevenueByMonthChartData } from "../../utils/helper";
 import CustomBarChart from "../Charts/CustomBarChart";
 
 interface Props {
-  data: {
+  data?: {
     month: string;
     revenue: number;
   }[];
 }
 
-const RevenueByMonthChart = ({ data }: Props) => {
-  const [chartData, setChartData] = useState<
-    { month: string; amount: number }[]
-  >([]);
-
-  useEffect(() => {
-    // Log data for debugging
-    console.log("RevenueByMonthChart data:", data);
-    const result = prepareRevenueByMonthChartData(data);
-    setChartData(result);
+const RevenueByMonthChart = ({ data = [] }: Props) => {
+  // Compute chart data directly during render using useMemo
+  const chartData = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    return prepareRevenueByMonthChartData(data);
   }, [data]);
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 col-span-1">
-      <div className="flex items-center justify-between">
-        <h5 className="text-lg">Revenue by Month</h5>
+    <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 col-span-1">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-semibold text-slate-900">
+          Revenue by Month
+        </h3>
       </div>
 
-      <CustomBarChart data={chartData} />
+      {chartData.length > 0 ? (
+        <CustomBarChart data={chartData} />
+      ) : (
+        <div className="h-64 flex items-center justify-center text-xs text-slate-400">
+          No monthly revenue data available.
+        </div>
+      )}
     </div>
   );
 };

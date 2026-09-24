@@ -16,9 +16,11 @@ const ManageUsers = () => {
 
   if (isError) {
     return (
-      <div className="flex justify-center items-center h-[95vh]">
-        <p className="text-red-500">Failed to load orders.</p>
-      </div>
+      <DashboardLayout activeMenu="Manage Users">
+        <div className="flex justify-center items-center h-[70vh]">
+          <p className="text-red-500">Failed to load users.</p>
+        </div>
+      </DashboardLayout>
     );
   }
 
@@ -26,18 +28,14 @@ const ManageUsers = () => {
 
   return (
     <DashboardLayout activeMenu="Manage Users">
-      <div className="mt-5 mb-10">
-        {isLoading && <p className="text-gray-500 mt-4">Loading users...</p>}
+      <div className="mt-5 mb-10 w-full">
+        <div className="mb-6">
+          <h1 className="text-2xl text-slate-600 font-semibold">
+            Manage <span className="text-slate-800 font-bold">Users</span>
+          </h1>
+        </div>
 
-        {isError && <p className="text-red-500 mt-4">Error fetching users</p>}
-      </div>
-
-      <div className="md:col-span-2">
-        <h1 className="text-2xl text-slate-500 mb-5">
-          All <span className="text-slate-800 font-medium">Users</span>
-        </h1>
-        <div className="card">
-          <div className="flex items-center justify-between"></div>
+        <div className="bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50">
           <UsersTable usersData={users} />
         </div>
       </div>

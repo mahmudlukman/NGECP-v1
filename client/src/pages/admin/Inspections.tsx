@@ -1,6 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
+import { format } from "date-fns";
+import { Trash2, FileText, Search, Plus } from "lucide-react";
+
 import {
   useGetAllInspectionsQuery,
   useDeleteInspectionMutation,
@@ -8,51 +12,53 @@ import {
   useUpdateInspectionFeeMutation,
 } from "../../redux/features/inspection/inspectionApi";
 import type { IInspection, RootState, ServerError } from "../../@types";
+
 import Tooltip from "../../components/Tooltip";
 import DeleteAlert from "../../components/DeleteAlert";
 import Pagination from "../../components/Pagination";
 import Loading from "../../components/Loading";
-import { Trash2, FileText, Search, Plus } from "lucide-react";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
-import { format } from "date-fns";
 import Modal from "../../components/Modal";
-import { useSelector } from "react-redux";
 
 const Inspections = () => {
   const { user } = useSelector((state: RootState) => state.auth);
+  const isAdmin = user?.role === "admin";
+  const navigate = useNavigate();
+
+  // Table & Filter State
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
+
+  // Modal & Mutation State
   const [deleteInspectionId, setDeleteInspectionId] = useState<string | null>(
-    null
+    null,
   );
-  const isAdmin = user?.role === "admin";
+  const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
+  const [feeAmount, setFeeAmount] = useState<number>(0);
+  const [feeDescription, setFeeDescription] = useState<string>("");
 
-  const navigate = useNavigate();
-
+  // RTK Query Hooks
   const {
     data: inspectionsData,
     isLoading: isInspectionsLoading,
     isError: isInspectionsError,
-    refetch,
+    refetch: refetchInspections,
   } = useGetAllInspectionsQuery({ page, pageSize });
 
   const {
     data: feeData,
     isLoading: isFeeLoading,
     isError: isFeeError,
+    refetch: refetchFee,
   } = useGetInspectionFeeQuery({});
 
-  // const [updateInspectionStatus] = useUpdateInspectionStatusMutation();
   const [deleteInspection] = useDeleteInspectionMutation();
   const [updateInspectionFees, { isLoading: isUpdatingFees }] =
     useUpdateInspectionFeeMutation();
-  const [feeAmount, setFeeAmount] = useState<number>(0);
-  const [feeDescription, setFeeDescription] = useState<string>("");
 
-  const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
-
+  // Populate Fee Modal Fields
   useEffect(() => {
     if (isFeeModalOpen && feeData?.fee) {
       setFeeAmount(feeData.fee.amount || 0);
@@ -60,28 +66,16 @@ const Inspections = () => {
     }
   }, [isFeeModalOpen, feeData]);
 
-  // const handleStatusChange = async (id: string, newStatus: string) => {
-  //   try {
-  //     const res = await updateInspectionStatus({
-  //       id,
-  //       data: { status: newStatus },
-  //     }).unwrap();
-  //     toast.success(res.message || "Inspection status updated");
-  //     refetch();
-  //   } catch (err: unknown) {
-  //     const serverError = err as ServerError;
-  //     toast.error(serverError.data?.message || "Failed to update status");
-  //   }
-  // };
-
+  // Handlers: Delete Inspection
   const handleDeleteClick = (id: string) => setDeleteInspectionId(id);
   const handleCancelDelete = () => setDeleteInspectionId(null);
+
   const handleConfirmDelete = async () => {
     if (!deleteInspectionId) return;
     try {
       await deleteInspection(deleteInspectionId).unwrap();
       toast.success("Inspection deleted successfully");
-      refetch();
+      refetchInspections();
     } catch (err: unknown) {
       const serverError = err as ServerError;
       toast.error(serverError.data?.message || "Failed to delete inspection");
@@ -90,28 +84,30 @@ const Inspections = () => {
     }
   };
 
-  const handleWriteReport = (inspectionId: string) => {
-    navigate(`/admin/write-report/${inspectionId}`);
-  };
-
-  // ✅ Extracted reusable update function
+  // Handlers: Fee Updates
   const handleUpdateInspectionFee = async () => {
     try {
       await updateInspectionFees({
         data: { amount: feeAmount, description: feeDescription },
       }).unwrap();
       toast.success("Inspection fee updated successfully");
+      refetchFee();
       setIsFeeModalOpen(false);
     } catch (err: unknown) {
       const serverError = err as ServerError;
       const errorMessage =
         serverError?.data?.message ||
         serverError?.message ||
-        "Failed to register generator";
+        "Failed to update inspection fee";
       toast.error(errorMessage);
     }
   };
 
+  const handleWriteReport = (inspectionId: string) => {
+    navigate(`/admin/write-report/${inspectionId}`);
+  };
+
+  // Filtered Inspections Memo
   const filteredInspections = useMemo(() => {
     const inspections = inspectionsData?.inspections || [];
     return inspections.filter((i: IInspection) => {
@@ -131,6 +127,7 @@ const Inspections = () => {
         const generator = `${i.generator?.brand || ""} ${
           i.generator?.model || ""
         }`.toLowerCase();
+
         return (
           i.generator?.generatorId?.toLowerCase().includes(search) ||
           generator.includes(search) ||
@@ -144,6 +141,7 @@ const Inspections = () => {
     });
   }, [inspectionsData, filterStatus, searchTerm]);
 
+  // Loading State
   if (isInspectionsLoading || isFeeLoading) {
     return (
       <DashboardLayout activeMenu="Inspections">
@@ -152,11 +150,12 @@ const Inspections = () => {
     );
   }
 
+  // Error State
   if (isInspectionsError || isFeeError) {
     return (
       <DashboardLayout activeMenu="Inspections">
         <div className="flex justify-center items-center h-[80vh]">
-          <p className="text-red-500">Failed to load data.</p>
+          <p className="text-red-500">Failed to load inspection data.</p>
         </div>
       </DashboardLayout>
     );
@@ -178,12 +177,12 @@ const Inspections = () => {
           </button>
         </div>
 
-        {/* Filter + Search */}
+        {/* Filter & Search Controls */}
         <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="border border-gray-300 text-sm rounded-lg px-4 py-2 text-gray-700 bg-gray-50"
+            className="border border-gray-300 text-sm rounded-lg px-4 py-2 text-gray-700 bg-gray-50 outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -191,39 +190,36 @@ const Inspections = () => {
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
           </select>
+
           <form
             onSubmit={(e) => e.preventDefault()}
-            className="flex items-center w-64 text-sm gap-2 bg-slate-100 px-4 py-2 rounded-full"
+            className="flex items-center w-64 text-sm gap-2 bg-slate-100 px-4 py-2 rounded-full border border-slate-200 focus-within:ring-2 focus-within:ring-primary/20"
           >
-            <Search size={16} className="text-slate-600" />
+            <Search size={16} className="text-slate-500" />
             <input
               type="text"
-              placeholder="Search by generator, owner, location, etc."
+              placeholder="Search generator, owner, location..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-transparent outline-none placeholder-slate-600"
+              className="w-full bg-transparent outline-none placeholder-slate-500 text-slate-700"
             />
           </form>
         </div>
 
         {/* Table */}
-        <table className="w-full text-left ring ring-slate-200 rounded overflow-hidden text-sm">
-          <thead className="bg-slate-50 text-gray-700 uppercase tracking-wider">
+        <table className="w-full text-left ring-1 ring-slate-200 rounded-lg overflow-hidden text-sm">
+          <thead className="bg-slate-50 text-slate-700 uppercase tracking-wider text-xs font-semibold">
             <tr>
               <th className="px-4 py-3">Inspection</th>
               <th className="px-4 py-3 hidden md:table-cell">Generator</th>
               <th className="px-4 py-3 hidden md:table-cell">Owner</th>
-              {/* <th className="px-4 py-3 hidden md:table-cell">Location</th> */}
               <th className="px-4 py-3 text-center">Status</th>
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
-          <tbody className="text-slate-700">
+          <tbody className="text-slate-700 divide-y divide-gray-200">
             {filteredInspections.map((i: IInspection) => (
-              <tr
-                key={i._id}
-                className="border-t border-gray-200 hover:bg-gray-50 transition"
-              >
+              <tr key={i._id} className="hover:bg-gray-50/80 transition">
                 <td className="px-4 py-3 align-top">
                   <div className="text-xs space-y-1">
                     <p>
@@ -281,63 +277,34 @@ const Inspections = () => {
                     </p>
                   </div>
                 </td>
-                {/* <td className="px-4 py-3 hidden md:table-cell align-top">
-                  <div className="text-xs space-y-1">
-                    <p>
-                      <span className="font-semibold">Address:</span>{" "}
-                      {i.location?.address || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-semibold">State:</span>{" "}
-                      {i.location?.state || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-semibold">LGA:</span>{" "}
-                      {i.location?.lga || "N/A"}
-                    </p>
-                  </div>
-                </td> */}
                 <td className="px-4 py-3 text-center align-top">
                   <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold capitalize ${
                       i.status === "completed"
                         ? "bg-green-100 text-green-700"
                         : i.status === "scheduled"
-                        ? "bg-blue-100 text-blue-700"
-                        : i.status === "pending"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-red-100 text-red-700"
+                          ? "bg-blue-100 text-blue-700"
+                          : i.status === "pending"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
                     }`}
                   >
-                    {i.status === "pending" && "Pending"}
-                    {i.status === "scheduled" && "Scheduled"}
-                    {i.status === "completed" && "Completed"}
-                    {i.status === "cancelled" && "Cancelled"}
+                    {i.status}
                   </span>
                 </td>
-                <td className="px-4 py-3 flex gap-3 align-top">
+                <td className="px-4 py-3 flex gap-2 align-top">
                   <Tooltip text="Write Report" position="bottom">
                     <button
                       onClick={() => handleWriteReport(i._id)}
-                      className="p-2 rounded-full hover:bg-green-200 text-green-600 transition"
+                      className="p-2 rounded-full hover:bg-green-100 text-green-600 transition"
                     >
                       <FileText size={18} />
                     </button>
                   </Tooltip>
-                  {/* <Tooltip text="View Inspection" position="bottom">
-                    <button
-                      onClick={() =>
-                        navigate(`/admin/report-details/${i._id}`)
-                      }
-                      className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition"
-                    >
-                      <Eye size={18} />
-                    </button>
-                  </Tooltip> */}
                   <Tooltip text="Delete Inspection" position="bottom">
                     <button
                       onClick={() => handleDeleteClick(i._id)}
-                      className="p-2 rounded-full hover:bg-red-200 text-red-600 transition"
+                      className="p-2 rounded-full hover:bg-red-100 text-red-600 transition"
                     >
                       <Trash2 size={18} />
                     </button>
@@ -348,7 +315,7 @@ const Inspections = () => {
           </tbody>
         </table>
 
-        {/* Pagination Controls */}
+        {/* Pagination Summary & Selector */}
         <div className="flex justify-between items-center my-5">
           {inspectionsData?.pagination && (
             <p className="text-sm text-gray-600">
@@ -360,7 +327,7 @@ const Inspections = () => {
               <span className="font-medium text-slate-700">
                 {Math.min(
                   inspectionsData.pagination.currentPage * pageSize,
-                  inspectionsData.pagination.totalItems
+                  inspectionsData.pagination.totalItems,
                 )}
               </span>{" "}
               of{" "}
@@ -384,7 +351,7 @@ const Inspections = () => {
                 setPageSize(Number(e.target.value));
                 setPage(1);
               }}
-              className="border rounded px-2 py-1 text-sm"
+              className="border rounded px-2 py-1 text-sm bg-white border-gray-300"
             >
               {[5, 10, 20, 50].map((size) => (
                 <option key={size} value={size}>
@@ -395,7 +362,7 @@ const Inspections = () => {
           </div>
         </div>
 
-        {/* Pagination */}
+        {/* Pagination Control */}
         {inspectionsData?.pagination && (
           <Pagination
             currentPage={inspectionsData.pagination.currentPage}
@@ -408,7 +375,7 @@ const Inspections = () => {
         {deleteInspectionId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div
-              className="absolute inset-0 cursor-pointer bg-black/20"
+              className="absolute inset-0 cursor-pointer bg-black/30 backdrop-blur-sm"
               onClick={handleCancelDelete}
             ></div>
             <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 z-10">
@@ -418,7 +385,7 @@ const Inspections = () => {
                 </h3>
                 <button
                   onClick={handleCancelDelete}
-                  className="text-gray-400 hover:text-gray-600 cursor-pointer"
+                  className="text-gray-400 hover:text-gray-600 cursor-pointer text-lg"
                 >
                   ✕
                 </button>

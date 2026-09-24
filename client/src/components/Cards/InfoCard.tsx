@@ -1,21 +1,28 @@
+import React from "react";
+
 interface InfoCardProps {
   icon: React.ReactNode;
   label: string;
   value: number | string;
-  color: string;
+  color?: string; // Kept for interface compatibility
 }
 
-const InfoCard = ({ icon, label, value, color }: InfoCardProps) => {
+const InfoCard = ({ icon, label, value }: InfoCardProps) => {
   return (
-    <div className="flex gap-6 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50">
-      <div
-        className={`w-14 h-14 flex items-center justify-center text-[26px] text-white ${color} rounded-full drop-shadow-xl`}
-      >
+    <div className="flex items-center gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:border-emerald-300 transition-all duration-200 group">
+      {/* Icon Wrapper */}
+      <div className="w-12 h-12 flex items-center justify-center text-xl text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl flex-shrink-0 group-hover:bg-emerald-100 transition-colors">
         {icon}
       </div>
-      <div>
-        <h6 className="text-sm text-gray-500 mb-1">{label}</h6>
-        <span className="text-[22px]"> {value}</span>
+
+      {/* Label and Value */}
+      <div className="min-w-0">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide truncate">
+          {label}
+        </p>
+        <h4 className="text-xl sm:text-2xl font-extrabold text-slate-800 tracking-tight mt-0.5 truncate">
+          {value}
+        </h4>
       </div>
     </div>
   );

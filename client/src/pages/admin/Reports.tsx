@@ -11,13 +11,7 @@ import Tooltip from "../../components/Tooltip";
 import DeleteAlert from "../../components/DeleteAlert";
 import Pagination from "../../components/Pagination";
 import Loading from "../../components/Loading";
-import {
-  Eye,
-  Trash2,
-  Search,
-  CheckCircle,
-  Edit,
-} from "lucide-react";
+import { Eye, Trash2, Search, CheckCircle, Edit } from "lucide-react";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import { format } from "date-fns";
 import { useSelector } from "react-redux";
@@ -118,15 +112,9 @@ const Reports = () => {
   const filteredReports = useMemo(() => {
     const reports = reportsData?.reports || [];
     return reports.filter((r: IReport) => {
-      if (
-        filterCompliance === "compliant" &&
-        !r.overallCompliance
-      )
+      if (filterCompliance === "compliant" && !r.overallCompliance)
         return false;
-      if (
-        filterCompliance === "non_compliant" &&
-        r.overallCompliance
-      )
+      if (filterCompliance === "non_compliant" && r.overallCompliance)
         return false;
 
       if (filterApproved === "approved" && !r.isApproved) return false;
@@ -188,7 +176,7 @@ const Reports = () => {
             <select
               value={filterCompliance}
               onChange={(e) => setFilterCompliance(e.target.value)}
-              className="border border-gray-300 text-sm rounded-lg px-4 py-2 text-gray-700 bg-gray-50"
+              className="border border-gray-300 text-sm rounded-lg px-4 py-2 text-gray-700 bg-gray-50 outline-none cursor-pointer"
             >
               <option value="all">All Compliance</option>
               <option value="compliant">Compliant</option>
@@ -198,7 +186,7 @@ const Reports = () => {
             <select
               value={filterApproved}
               onChange={(e) => setFilterApproved(e.target.value)}
-              className="border border-gray-300 text-sm rounded-lg px-4 py-2 text-gray-700 bg-gray-50"
+              className="border border-gray-300 text-sm rounded-lg px-4 py-2 text-gray-700 bg-gray-50 outline-none cursor-pointer"
             >
               <option value="all">All Status</option>
               <option value="approved">Approved</option>
@@ -223,7 +211,7 @@ const Reports = () => {
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left ring ring-slate-200 rounded overflow-hidden text-sm">
+          <table className="w-full text-left ring-1 ring-slate-200 rounded overflow-hidden text-sm">
             <thead className="bg-slate-50 text-gray-700 uppercase tracking-wider">
               <tr>
                 <th className="px-4 py-3">Generator</th>
@@ -286,8 +274,8 @@ const Reports = () => {
                         report.complianceScore >= 80
                           ? "bg-green-100 text-green-700"
                           : report.complianceScore >= 60
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
                       }`}
                     >
                       {report.complianceScore}%
@@ -312,7 +300,10 @@ const Reports = () => {
                         </span>
                         {report.approvalDate && (
                           <p className="text-xs text-slate-500">
-                            {format(new Date(report.approvalDate), "dd MMM yyyy")}
+                            {format(
+                              new Date(report.approvalDate),
+                              "dd MMM yyyy",
+                            )}
                           </p>
                         )}
                       </div>
@@ -339,7 +330,7 @@ const Reports = () => {
                       <Tooltip text="View Report" position="bottom">
                         <button
                           onClick={() => handleViewReport(report._id)}
-                          className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition"
+                          className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition cursor-pointer"
                         >
                           <Eye size={18} />
                         </button>
@@ -349,7 +340,7 @@ const Reports = () => {
                         <Tooltip text="Edit Report" position="bottom">
                           <button
                             onClick={() => handleEditReport(report._id)}
-                            className="p-2 rounded-full hover:bg-yellow-200 text-yellow-600 transition"
+                            className="p-2 rounded-full hover:bg-yellow-200 text-yellow-600 transition cursor-pointer"
                           >
                             <Edit size={18} />
                           </button>
@@ -361,7 +352,7 @@ const Reports = () => {
                           <button
                             onClick={() => handleApprove(report._id)}
                             disabled={isApproving}
-                            className="p-2 rounded-full hover:bg-green-200 text-green-600 transition disabled:opacity-50"
+                            className="p-2 rounded-full hover:bg-green-200 text-green-600 transition disabled:opacity-50 cursor-pointer"
                           >
                             <CheckCircle size={18} />
                           </button>
@@ -372,7 +363,7 @@ const Reports = () => {
                         <Tooltip text="Delete Report" position="bottom">
                           <button
                             onClick={() => handleDeleteClick(report._id)}
-                            className="p-2 rounded-full hover:bg-red-200 text-red-600 transition"
+                            className="p-2 rounded-full hover:bg-red-200 text-red-600 transition cursor-pointer"
                           >
                             <Trash2 size={18} />
                           </button>
@@ -393,8 +384,8 @@ const Reports = () => {
           </div>
         )}
 
-        {/* Pagination Controls */}
-        <div className="flex justify-between items-center my-5">
+        {/* Pagination Controls Info & Size Selector */}
+        <div className="flex justify-between items-center my-5 flex-wrap gap-4">
           {reportsData?.pagination && (
             <p className="text-sm text-gray-600">
               Showing{" "}
@@ -405,7 +396,7 @@ const Reports = () => {
               <span className="font-medium text-slate-700">
                 {Math.min(
                   reportsData.pagination.currentPage * pageSize,
-                  reportsData.pagination.totalItems
+                  reportsData.pagination.totalItems,
                 )}
               </span>{" "}
               of{" "}
@@ -429,7 +420,7 @@ const Reports = () => {
                 setPageSize(Number(e.target.value));
                 setPage(1);
               }}
-              className="border rounded px-2 py-1 text-sm"
+              className="border rounded px-2 py-1 text-sm bg-gray-50 outline-none cursor-pointer"
             >
               {[5, 10, 20, 50].map((size) => (
                 <option key={size} value={size}>
@@ -440,7 +431,7 @@ const Reports = () => {
           </div>
         </div>
 
-        {/* Pagination */}
+        {/* Pagination Numbers Component */}
         {reportsData?.pagination && (
           <Pagination
             currentPage={reportsData.pagination.currentPage}

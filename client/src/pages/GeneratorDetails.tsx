@@ -1,3 +1,4 @@
+import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -22,15 +23,15 @@ import { useGetAllReportsQuery } from "../redux/features/report/reportApi";
 import DashboardLayout from "../components/Layouts/DashboardLayout";
 import Loading from "../components/Loading";
 
-const GeneratorDetails = () => {
-  const { id } = useParams();
+const GeneratorDetails: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
   const {
     data: generatorsData,
     isLoading,
     isError,
-  } = useGetGeneratorByIdQuery({ id });
+  } = useGetGeneratorByIdQuery({ id }, { skip: !id });
 
   // Fetch inspections for this generator
   const { data: inspectionsData, isLoading: isLoadingInspections } =
@@ -40,101 +41,148 @@ const GeneratorDetails = () => {
   const { data: reportsData, isLoading: isLoadingReports } =
     useGetAllReportsQuery({ page: 1, pageSize: 100 });
 
-  // Filter inspections and reports for this generator
-  const generatorInspections =
+  // Safe object assignment
+  const generator = generatorsData?.generator;
+
+  // Filter inspections and reports safely
+  const generatorInspections: IInspection[] =
     inspectionsData?.inspections?.filter(
-      (inspection: IInspection) => inspection.generator?._id === id
+      (inspection: IInspection) =>
+        (typeof inspection.generator === "string"
+          ? inspection.generator
+          : inspection.generator?._id) === id,
     ) || [];
 
-  const generatorReports =
+  const generatorReports: IInspectionReport[] =
     reportsData?.reports?.filter(
-      (report: IInspectionReport) => report.generator?._id === id
+      (report: IInspectionReport) =>
+        (typeof report.generator === "string"
+          ? report.generator
+          : report.generator?._id) === id,
     ) || [];
 
   if (isLoading || isLoadingInspections || isLoadingReports) {
     return (
       <DashboardLayout activeMenu="Generators">
-        <Loading />
-      </DashboardLayout>
-    );
-  }
-
-  if (isError || !generatorsData?.generator) {
-    return (
-      <DashboardLayout activeMenu="Generators">
-        <div className="flex justify-center items-center h-[80vh]">
-          <p className="text-red-500">Failed to load generator details.</p>
+        <div className="min-h-[70vh] flex items-center justify-center">
+          <Loading />
         </div>
       </DashboardLayout>
     );
   }
 
-  const generator = generatorsData?.generator || [];
+  if (isError || !generator) {
+    return (
+      <DashboardLayout activeMenu="Generators">
+        <div className="min-h-[70vh] flex flex-col items-center justify-center text-center p-4">
+          <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mb-3">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-800">
+            Failed to load details
+          </h3>
+          <p className="text-sm text-slate-500 max-w-sm mt-1 mb-4">
+            The generator record could not be found or an API error occurred.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
       case "compliant":
-        return "bg-green-100 text-green-700";
+        return "bg-emerald-50 border-emerald-200 text-emerald-700";
       case "non_compliant":
-        return "bg-red-100 text-red-700";
+        return "bg-rose-50 border-rose-200 text-rose-700";
       case "pending":
-        return "bg-yellow-100 text-yellow-700";
+        return "bg-amber-50 border-amber-200 text-amber-700";
       case "active":
-        return "bg-blue-100 text-blue-700";
+        return "bg-blue-50 border-blue-200 text-blue-700";
       case "inactive":
-        return "bg-gray-100 text-gray-700";
+        return "bg-slate-100 border-slate-200 text-slate-600";
       default:
-        return "bg-slate-100 text-slate-700";
+        return "bg-slate-50 border-slate-200 text-slate-700";
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status?: string) => {
     switch (status) {
       case "compliant":
       case "active":
-        return <CheckCircle size={20} />;
+        return <CheckCircle className="w-5 h-5 text-emerald-600" />;
       case "non_compliant":
-        return <XCircle size={20} />;
+        return <XCircle className="w-5 h-5 text-rose-600" />;
       case "pending":
-        return <Clock size={20} />;
+        return <Clock className="w-5 h-5 text-amber-600" />;
       default:
-        return <AlertTriangle size={20} />;
+        return <AlertTriangle className="w-5 h-5 text-slate-500" />;
     }
   };
+
+  // Safe Owner extraction
+  const ownerName =
+    typeof generator.owner === "object"
+      ? generator.owner?.companyName || generator.owner?.name || "N/A"
+      : "N/A";
+
+  const ownerEmail =
+    typeof generator.owner === "object"
+      ? generator.owner?.email || "N/A"
+      : "N/A";
+
+  const ownerPhone =
+    typeof generator.owner === "object"
+      ? generator.owner?.phoneNumber || "N/A"
+      : "N/A";
+
+  const ownerAccountType =
+    typeof generator.owner === "object"
+      ? generator.owner?.accountType || "N/A"
+      : "N/A";
 
   return (
     <DashboardLayout activeMenu="Manage Generators">
-      <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
+      <div className="my-5 bg-white p-6 sm:p-8 rounded-2xl shadow-xs border border-slate-200/80 w-full max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+          <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate("/admin/manage-generators")}
-              className="p-2 rounded-full hover:bg-gray-200 text-gray-600 transition"
+              type="button"
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors focus:outline-none"
+              title="Back"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeft className="w-5 h-5" />
             </button>
-            <h1 className="text-2xl text-slate-600 font-semibold">
+            <h1 className="text-xl sm:text-2xl text-slate-600 font-medium">
               Generator{" "}
-              <span className="text-slate-800 font-bold">Details</span>
+              <span className="text-slate-900 font-bold">Details</span>
             </h1>
           </div>
         </div>
 
-        {/* Status Banner */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* Status & Overview Banner */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div
-            className={`rounded-lg p-4 border ${getStatusColor(
-              generator.status
-            )}`}
+            className={`rounded-xl p-4 border ${getStatusColor(generator.status)}`}
           >
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0">
                 {getStatusIcon(generator.status)}
               </div>
               <div>
-                <p className="text-sm font-medium opacity-80">Status</p>
-                <p className="text-lg font-bold capitalize">
+                <p className="text-xs font-semibold uppercase tracking-wider opacity-75">
+                  Status
+                </p>
+                <p className="text-base font-bold capitalize mt-0.5">
                   {generator.status?.replace("_", " ") || "N/A"}
                 </p>
               </div>
@@ -142,16 +190,16 @@ const GeneratorDetails = () => {
           </div>
 
           {generator.complianceScore !== undefined && (
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-full bg-blue-100 text-blue-600">
-                  <Award size={20} />
+                <div className="p-2.5 rounded-lg bg-blue-100 text-blue-600">
+                  <Award className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-600 font-medium">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     Compliance Score
                   </p>
-                  <p className="text-lg font-bold text-slate-800">
+                  <p className="text-base font-bold text-slate-800 mt-0.5">
                     {generator.complianceScore}%
                   </p>
                 </div>
@@ -160,19 +208,19 @@ const GeneratorDetails = () => {
           )}
 
           {generator.registrationDate && (
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-full bg-purple-100 text-purple-600">
-                  <Calendar size={20} />
+                <div className="p-2.5 rounded-lg bg-purple-100 text-purple-600">
+                  <Calendar className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-600 font-medium">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                     Registered
                   </p>
-                  <p className="text-lg font-bold text-slate-800">
+                  <p className="text-base font-bold text-slate-800 mt-0.5">
                     {format(
                       new Date(generator.registrationDate),
-                      "dd MMM yyyy"
+                      "dd MMM yyyy",
                     )}
                   </p>
                 </div>
@@ -181,49 +229,49 @@ const GeneratorDetails = () => {
           )}
         </div>
 
-        {/* Main Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Main Information Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Basic Details */}
-          <div className="border border-gray-200 rounded-lg p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Building2 size={20} className="text-slate-600" />
-              <h3 className="text-lg font-semibold text-slate-800">
+          <div className="border border-slate-200/80 rounded-xl p-5 bg-white">
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
+              <Building2 className="w-5 h-5 text-slate-500" />
+              <h3 className="text-base font-bold text-slate-800">
                 Basic Information
               </h3>
             </div>
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-600">Generator ID:</span>
-                <span className="font-medium text-slate-800">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Generator ID:</span>
+                <span className="font-mono font-semibold text-slate-800">
                   {generator.generatorId || "N/A"}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Brand:</span>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Brand:</span>
                 <span className="font-medium text-slate-800">
                   {generator.brand || "N/A"}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Model:</span>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Model:</span>
                 <span className="font-medium text-slate-800">
                   {generator.model || "N/A"}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Serial Number:</span>
-                <span className="font-medium text-slate-800">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Serial Number:</span>
+                <span className="font-mono text-slate-800">
                   {generator.serialNumber || "N/A"}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Year of Manufacture:</span>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Year of Manufacture:</span>
                 <span className="font-medium text-slate-800">
                   {generator.yearOfManufacture || "N/A"}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Capacity:</span>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Capacity:</span>
                 <span className="font-medium text-slate-800">
                   {generator.capacity || "N/A"}
                 </span>
@@ -232,33 +280,33 @@ const GeneratorDetails = () => {
           </div>
 
           {/* Technical Specifications */}
-          <div className="border border-gray-200 rounded-lg p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Zap size={20} className="text-slate-600" />
-              <h3 className="text-lg font-semibold text-slate-800">
+          <div className="border border-slate-200/80 rounded-xl p-5 bg-white">
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
+              <Zap className="w-5 h-5 text-slate-500" />
+              <h3 className="text-base font-bold text-slate-800">
                 Technical Specifications
               </h3>
             </div>
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-600">Fuel Type:</span>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Fuel Type:</span>
                 <span className="font-medium text-slate-800 capitalize">
                   {generator.fuelType || "N/A"}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">Capacity:</span>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Capacity:</span>
                 <span className="font-medium text-slate-800">
                   {generator.capacity || "N/A"}
                 </span>
               </div>
               {generator.registrationDate && (
-                <div className="flex justify-between">
-                  <span className="text-slate-600">Registration Date:</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Registration Date:</span>
                   <span className="font-medium text-slate-800">
                     {format(
                       new Date(generator.registrationDate),
-                      "dd MMM yyyy"
+                      "dd MMM yyyy",
                     )}
                   </span>
                 </div>
@@ -267,86 +315,70 @@ const GeneratorDetails = () => {
           </div>
 
           {/* Owner Information */}
-          <div className="border border-gray-200 rounded-lg p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <User size={20} className="text-slate-600" />
-              <h3 className="text-lg font-semibold text-slate-800">
+          <div className="border border-slate-200/80 rounded-xl p-5 bg-white">
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
+              <User className="w-5 h-5 text-slate-500" />
+              <h3 className="text-base font-bold text-slate-800">
                 Owner Information
               </h3>
             </div>
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-600 block mb-1">Name:</span>
-                <span className="font-medium text-slate-800">
-                  {typeof generator.owner === "object"
-                    ? generator.owner?.companyName ||
-                      generator.owner?.name ||
-                      "N/A"
-                    : "N/A"}
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Name / Org:</span>
+                <span className="font-semibold text-slate-800">
+                  {ownerName}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600 block mb-1">Email:</span>
-                <span className="font-medium text-slate-800">
-                  {typeof generator.owner === "object"
-                    ? generator.owner?.email || "N/A"
-                    : "N/A"}
-                </span>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Email:</span>
+                <span className="font-medium text-slate-800">{ownerEmail}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600 block mb-1">Phone:</span>
-                <span className="font-medium text-slate-800">
-                  {typeof generator.owner === "object"
-                    ? generator.owner?.phoneNumber || "N/A"
-                    : "N/A"}
-                </span>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Phone:</span>
+                <span className="font-medium text-slate-800">{ownerPhone}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600 block mb-1">Account Type:</span>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Account Type:</span>
                 <span className="font-medium text-slate-800 capitalize">
-                  {typeof generator.owner === "object"
-                    ? generator.owner?.accountType || "N/A"
-                    : "N/A"}
+                  {ownerAccountType}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Location Information */}
-          <div className="border border-gray-200 rounded-lg p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <MapPin size={20} className="text-slate-600" />
-              <h3 className="text-lg font-semibold text-slate-800">
+          {/* Location Details */}
+          <div className="border border-slate-200/80 rounded-xl p-5 bg-white">
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
+              <MapPin className="w-5 h-5 text-slate-500" />
+              <h3 className="text-base font-bold text-slate-800">
                 Location Details
               </h3>
             </div>
             <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-600 mb-1">Address:</span>
-                <span className="font-medium text-slate-800">
+              <div className="flex justify-between items-start gap-4">
+                <span className="text-slate-500">Address:</span>
+                <span className="font-medium text-slate-800 text-right">
                   {generator.location?.address || "N/A"}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">State:</span>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">State:</span>
                 <span className="font-medium text-slate-800">
                   {generator.location?.state || "N/A"}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600">LGA:</span>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">LGA:</span>
                 <span className="font-medium text-slate-800">
                   {generator.location?.lga || "N/A"}
                 </span>
               </div>
               {generator.location?.coordinates?.latitude &&
                 generator.location?.coordinates?.longitude && (
-                  <div className="flex justify-between pt-2 border-t border-gray-200">
-                    <span className="text-slate-600 block mb-1">
-                      Coordinates:
-                    </span>
-                    <span className="font-medium text-slate-800 text-xs">
-                      Lat: {generator.location.coordinates.latitude}, Lng:{" "}
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                    <span className="text-slate-500">Coordinates:</span>
+                    <span className="font-mono text-xs text-slate-700">
+                      {generator.location.coordinates.latitude},{" "}
                       {generator.location.coordinates.longitude}
                     </span>
                   </div>
@@ -355,54 +387,48 @@ const GeneratorDetails = () => {
           </div>
         </div>
 
-        {/* Inspection History */}
-        <div className="border border-gray-200 rounded-lg p-5 mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <FileText size={20} className="text-slate-600" />
-            <h3 className="text-lg font-semibold text-slate-800">
-              Inspection History
+        {/* Inspection History Overview */}
+        <div className="border border-slate-200/80 rounded-xl p-5 mb-8 bg-white">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
+            <FileText className="w-5 h-5 text-slate-500" />
+            <h3 className="text-base font-bold text-slate-800">
+              Inspection Schedule
             </h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {generator.lastInspectionDate && (
-              <div className="bg-slate-50 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar size={18} className="text-slate-600" />
-                  <span className="text-sm text-slate-600 font-medium">
-                    Last Inspection
-                  </span>
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-200/60">
+                <div className="flex items-center gap-2 mb-1 text-slate-500 text-xs font-semibold uppercase">
+                  <Calendar className="w-4 h-4 text-slate-600" />
+                  <span>Last Inspection</span>
                 </div>
-                <p className="text-lg font-bold text-slate-800">
+                <p className="text-base font-bold text-slate-800">
                   {format(
                     new Date(generator.lastInspectionDate),
-                    "dd MMM yyyy"
+                    "dd MMM yyyy",
                   )}
                 </p>
               </div>
             )}
 
             {generator.nextInspectionDue && (
-              <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock size={18} className="text-orange-600" />
-                  <span className="text-sm text-orange-700 font-medium">
-                    Next Inspection Due
-                  </span>
+              <div className="bg-amber-50 rounded-xl p-4 border border-amber-200/80">
+                <div className="flex items-center gap-2 mb-1 text-amber-700 text-xs font-semibold uppercase">
+                  <Clock className="w-4 h-4 text-amber-600" />
+                  <span>Next Inspection Due</span>
                 </div>
-                <p className="text-lg font-bold text-orange-900">
+                <p className="text-base font-bold text-amber-900">
                   {format(new Date(generator.nextInspectionDue), "dd MMM yyyy")}
                 </p>
               </div>
             )}
 
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <div className="flex items-center gap-2 mb-2">
-                <FileText size={18} className="text-blue-600" />
-                <span className="text-sm text-blue-700 font-medium">
-                  Total Inspections
-                </span>
+            <div className="bg-blue-50 rounded-xl p-4 border border-blue-200/80">
+              <div className="flex items-center gap-2 mb-1 text-blue-700 text-xs font-semibold uppercase">
+                <FileText className="w-4 h-4 text-blue-600" />
+                <span>Total Inspections</span>
               </div>
-              <p className="text-lg font-bold text-blue-900">
+              <p className="text-base font-bold text-blue-900">
                 {generatorInspections.length}
               </p>
             </div>
@@ -411,10 +437,10 @@ const GeneratorDetails = () => {
 
         {/* Inspections List */}
         {generatorInspections.length > 0 && (
-          <div className="border border-gray-200 rounded-lg p-5 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-800">
-                Inspections ({generatorInspections.length})
+          <div className="border border-slate-200/80 rounded-xl p-5 mb-8 bg-white">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+              <h3 className="text-base font-bold text-slate-800">
+                Linked Inspections ({generatorInspections.length})
               </h3>
             </div>
             <div className="space-y-3">
@@ -423,68 +449,56 @@ const GeneratorDetails = () => {
                 .map((inspection: IInspection) => (
                   <div
                     key={inspection._id}
-                    className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100/80 transition-colors gap-3"
                   >
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center gap-2.5 mb-2 flex-wrap">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          className={`px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${
                             inspection.status === "completed"
-                              ? "bg-green-100 text-green-700"
+                              ? "bg-emerald-100 text-emerald-800"
                               : inspection.status === "scheduled"
-                              ? "bg-blue-100 text-blue-700"
-                              : inspection.status === "pending"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-red-100 text-red-700"
+                                ? "bg-blue-100 text-blue-800"
+                                : inspection.status === "pending"
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-rose-100 text-rose-800"
                           }`}
                         >
                           {inspection.status}
                         </span>
                         {inspection.scheduledDate && (
-                          <span className="text-sm text-slate-600">
+                          <span className="text-xs font-medium text-slate-500">
                             {format(
                               new Date(inspection.scheduledDate),
-                              "dd MMM yyyy"
+                              "dd MMM yyyy",
                             )}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-slate-700">
-                        Inspector: {inspection.inspector?.name || "N/A"}
+                      <p className="text-xs text-slate-600">
+                        Inspector:{" "}
+                        <span className="font-medium text-slate-800">
+                          {inspection.inspector?.name || "Unassigned"}
+                        </span>
                       </p>
                       {inspection.payment?.amount && (
-                        <p className="text-xs text-slate-500">
-                          Amount: ₦{inspection.payment.amount.toLocaleString()}
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Amount Paid: ₦
+                          {inspection.payment.amount.toLocaleString()}
                         </p>
                       )}
                     </div>
-                    {/* <button
-                      onClick={() =>
-                        navigate(`/admin/inspection-details/${inspection._id}`)
-                      }
-                      className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition"
-                    >
-                      <Eye size={18} />
-                    </button> */}
                   </div>
                 ))}
-              {generatorInspections.length > 5 && (
-                <button
-                  onClick={() => navigate("/admin/inspections")}
-                  className="w-full text-center text-sm text-primary hover:underline py-2"
-                >
-                  View all {generatorInspections.length} inspections
-                </button>
-              )}
             </div>
           </div>
         )}
 
         {/* Reports List */}
         {generatorReports.length > 0 && (
-          <div className="border border-gray-200 rounded-lg p-5 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-slate-800">
+          <div className="border border-slate-200/80 rounded-xl p-5 bg-white">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+              <h3 className="text-base font-bold text-slate-800">
                 Inspection Reports ({generatorReports.length})
               </h3>
             </div>
@@ -492,15 +506,15 @@ const GeneratorDetails = () => {
               {generatorReports.slice(0, 5).map((report: IInspectionReport) => (
                 <div
                   key={report._id}
-                  className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition"
+                  className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100/80 transition-colors"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                           report.overallCompliance
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "bg-rose-100 text-rose-800"
                         }`}
                       >
                         {report.overallCompliance
@@ -508,43 +522,38 @@ const GeneratorDetails = () => {
                           : "Non-Compliant"}
                       </span>
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                           report.isApproved
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-orange-100 text-orange-700"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-amber-100 text-amber-800"
                         }`}
                       >
-                        {report.isApproved ? "Approved" : "Pending"}
+                        {report.isApproved ? "Approved" : "Pending Review"}
                       </span>
-                      <span className="text-sm text-slate-600">
+                      <span className="text-xs font-semibold text-slate-500">
                         Score: {report.complianceScore}%
                       </span>
                     </div>
-                    <p className="text-sm text-slate-700">
-                      Inspector: {report.inspector?.name || "N/A"}
+                    <p className="text-xs text-slate-600">
+                      Inspector:{" "}
+                      <span className="font-medium text-slate-800">
+                        {report.inspector?.name || "N/A"}
+                      </span>
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-400 mt-0.5">
                       {format(new Date(report.createdAt), "dd MMM yyyy, HH:mm")}
                     </p>
                   </div>
                   <button
-                    onClick={() =>
-                      navigate(`/user/report-details/${report._id}`)
-                    }
-                    className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition"
+                    type="button"
+                    onClick={() => navigate(`/report-details/${report._id}`)}
+                    className="p-2 rounded-lg hover:bg-blue-100 text-blue-600 transition-colors"
+                    title="View Report"
                   >
-                    <Eye size={18} />
+                    <Eye className="w-4 h-4" />
                   </button>
                 </div>
               ))}
-              {generatorReports.length > 5 && (
-                <button
-                  onClick={() => navigate("/user/my-reports")}
-                  className="w-full text-center text-sm text-primary hover:underline py-2"
-                >
-                  View all {generatorReports.length} reports
-                </button>
-              )}
             </div>
           </div>
         )}

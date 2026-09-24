@@ -1,23 +1,28 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Input from "../../components/Inputs/Input";
 import { validateEmail } from "../../utils/helper";
 import { useLoginMutation } from "../../redux/features/auth/authApi";
 import { useNavigate } from "react-router-dom";
-// import { useSelector } from "react-redux";
-// import type { RootState } from "../../@types";
+import { AlertCircle, Loader2 } from "lucide-react";
 
 interface LoginProps {
   setCurrentPage: (page: string) => void;
   closeModal: () => void;
 }
 
-const Login = ({ setCurrentPage, closeModal }: LoginProps) => {
-  // const { user } = useSelector((state: RootState) => state.auth);
+interface CustomFetchBaseQueryError {
+  data?: {
+    message?: string;
+  };
+  status?: number;
+}
+
+const Login: React.FC<LoginProps> = ({ setCurrentPage, closeModal }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [login, { isLoading }] = useLoginMutation();
 
+  const [login, { isLoading }] = useLoginMutation();
   const navigate = useNavigate();
 
   // Auto clear error after 5s
@@ -37,14 +42,14 @@ const Login = ({ setCurrentPage, closeModal }: LoginProps) => {
       return;
     }
     if (!password) {
-      setError("Please enter the password");
+      setError("Please enter your password.");
       return;
     }
 
     setError(null);
 
     try {
-      const response = await login({ email, password }).unwrap(); // ✅ get the fresh data
+      const response = await login({ email, password }).unwrap();
       closeModal();
 
       const role = response.user?.role;
@@ -54,10 +59,10 @@ const Login = ({ setCurrentPage, closeModal }: LoginProps) => {
       } else {
         navigate("/user/my-generators-map-view");
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      if (err.data?.message) {
-        setError(err.data.message);
+    } catch (err: unknown) {
+      const apiError = err as CustomFetchBaseQueryError;
+      if (apiError.data?.message) {
+        setError(apiError.data.message);
       } else {
         setError("Something went wrong. Please try again.");
       }
@@ -65,59 +70,80 @@ const Login = ({ setCurrentPage, closeModal }: LoginProps) => {
   };
 
   return (
-    <div className="w-[90vw] md:w-[33vw] p-7 flex flex-col justify-center">
-      <h3 className="text-lg font-semibold text-black m-auto">Welcome Back</h3>
-      <p className="text-xs text-slate-700 mt-[5px] mb-6 m-auto">
-        Please enter your details to log in
-      </p>
+    <div className="w-full max-w-md p-6 sm:p-8 flex flex-col justify-center bg-white rounded-xl">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+          Welcome Back
+        </h3>
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          Please enter your details to log in
+        </p>
+      </div>
 
-      <form onSubmit={handleLogin}>
+      <form onSubmit={handleLogin} className="space-y-4">
+        {/* Email Input */}
         <Input
           value={email}
           onChange={({ target }) => setEmail(target.value)}
           label="Email Address"
           placeholder="john@example.com"
-          type="text"
+          type="email"
         />
 
-        <Input
-          value={password}
-          onChange={({ target }) => setPassword(target.value)}
-          label="Password"
-          placeholder="Min 8 Characters"
-          type="password"
-        />
-
-        {/* ✅ Forgot Password link */}
-        <div className="flex justify-end mb-2">
-          <button
-            type="button"
-            className="text-[12px] text-primary underline cursor-pointer hover:text-primary/80"
-            onClick={() => setCurrentPage("forgotPassword")}
-          >
-            Forgot Password?
-          </button>
+        {/* Password Input */}
+        <div>
+          <Input
+            value={password}
+            onChange={({ target }) => setPassword(target.value)}
+            label="Password"
+            placeholder="••••••••"
+            type="password"
+          />
+          <div className="flex justify-end mt-1.5">
+            <button
+              type="button"
+              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors focus:outline-none"
+              onClick={() => setCurrentPage("forgotPassword")}
+            >
+              Forgot Password?
+            </button>
+          </div>
         </div>
 
-        {error && <p className="text-red-500 text-xs pb-2.5">{error}</p>}
+        {/* Error Alert Box */}
+        {error && (
+          <div className="flex items-center gap-2 p-3 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-lg animate-fade-in">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
 
+        {/* Submit Button */}
         <button
           type="submit"
-          className="bg-primary hover:bg-primary-dull transition-all text-white w-full py-2 my-3 text-sm rounded-md cursor-pointer"
           disabled={isLoading}
+          className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm rounded-lg transition-all shadow-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
         >
-          {isLoading ? "Logging In..." : "Login"}
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Signing In...</span>
+            </>
+          ) : (
+            "Login"
+          )}
         </button>
 
-        <p className="text-[13px] text-slate-800 mt-3">
+        {/* Footer Toggle */}
+        <p className="text-xs text-center text-slate-600 pt-2">
           Don’t have an account?{" "}
           <button
-            className="font-medium text-primary underline cursor-pointer"
-            onClick={() => {
-              setCurrentPage("signup");
-            }}
+            type="button"
+            className="font-semibold text-emerald-600 hover:text-emerald-700 underline focus:outline-none"
+            onClick={() => setCurrentPage("signup")}
           >
-            SignUp
+            Sign Up
           </button>
         </p>
       </form>

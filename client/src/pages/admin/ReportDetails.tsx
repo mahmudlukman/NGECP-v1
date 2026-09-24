@@ -1,5 +1,9 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useGetReportByIdQuery } from "../../redux/features/report/reportApi";
+import toast from "react-hot-toast";
+import {
+  useGetReportByIdQuery,
+  useApproveInspectionReportMutation,
+} from "../../redux/features/report/reportApi";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import Loading from "../../components/Loading";
 import {
@@ -13,6 +17,7 @@ import {
   Award,
   Download,
   AlertTriangle,
+  ShieldCheck,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -20,7 +25,23 @@ const ReportDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data, isLoading, isError } = useGetReportByIdQuery({ id });
+  const { data, isLoading, isError, refetch } = useGetReportByIdQuery({ id });
+  const [approveReport, { isLoading: isApproving }] =
+    useApproveInspectionReportMutation();
+
+  const handleApprove = async () => {
+    if (!id) return;
+    try {
+      await approveReport(id).unwrap();
+      toast.success("Report approved successfully");
+      refetch();
+    } catch (err: unknown) {
+      const errorMsg =
+        (err as { data?: { message?: string } })?.data?.message ||
+        "Failed to approve report";
+      toast.error(errorMsg);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -50,7 +71,7 @@ const ReportDetails = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/admin/reports")}
-              className="p-2 rounded-full hover:bg-gray-200 text-gray-600 transition"
+              className="p-2 rounded-full hover:bg-gray-200 text-gray-600 transition cursor-pointer"
             >
               <ArrowLeft size={20} />
             </button>
@@ -61,7 +82,7 @@ const ReportDetails = () => {
           </div>
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition text-sm cursor-pointer"
           >
             <Download size={16} />
             Download PDF
@@ -88,19 +109,29 @@ const ReportDetails = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-            <AlertTriangle
-              size={24}
-              className="text-orange-600 flex-shrink-0 mt-0.5"
-            />
-            <div className="flex-1">
-              <h3 className="font-semibold text-orange-900 mb-1">
-                Pending Approval
-              </h3>
-              <p className="text-sm text-orange-700">
-                This report is awaiting approval from an administrator.
-              </p>
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6 flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle
+                size={24}
+                className="text-orange-600 flex-shrink-0 mt-0.5"
+              />
+              <div>
+                <h3 className="font-semibold text-orange-900 mb-1">
+                  Pending Approval
+                </h3>
+                <p className="text-sm text-orange-700">
+                  This report is awaiting approval from an administrator.
+                </p>
+              </div>
             </div>
+            <button
+              onClick={handleApprove}
+              disabled={isApproving}
+              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-sm font-medium disabled:opacity-50 cursor-pointer"
+            >
+              <ShieldCheck size={16} />
+              {isApproving ? "Approving..." : "Approve Report"}
+            </button>
           </div>
         )}
 
@@ -164,7 +195,7 @@ const ReportDetails = () => {
                 <p className="text-lg font-bold text-slate-800">
                   {format(
                     new Date(report.reportDate || report.createdAt),
-                    "dd MMM yyyy"
+                    "dd MMM yyyy",
                   )}
                 </p>
               </div>
@@ -417,7 +448,7 @@ const ReportDetails = () => {
                         {report.maintenanceStatus.issues.map(
                           (issue: string, index: number) => (
                             <li key={index}>{issue}</li>
-                          )
+                          ),
                         )}
                       </ul>
                     </div>
@@ -458,7 +489,7 @@ const ReportDetails = () => {
                         {report.safetyCompliance.issues.map(
                           (issue: string, index: number) => (
                             <li key={index}>{issue}</li>
-                          )
+                          ),
                         )}
                       </ul>
                     </div>

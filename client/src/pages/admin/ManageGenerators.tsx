@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -22,25 +22,42 @@ const ManageGenerators = () => {
   const [pageSize, setPageSize] = useState(10);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
   const [deleteGeneratorId, setDeleteGeneratorId] = useState<string | null>(
-    null
+    null,
   );
 
   const isAdmin = user?.role === "admin";
-
   const navigate = useNavigate();
+
+  // Handle search debouncing
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(1);
+    }, 300);
+
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
 
   const {
     data: generatorsData,
     isLoading,
     isError,
     refetch,
-  } = useGetAllGeneratorsQuery({ page, pageSize });
+  } = useGetAllGeneratorsQuery({
+    page,
+    pageSize,
+    status: filterStatus !== "all" ? filterStatus : undefined,
+    search: debouncedSearch.trim() || undefined,
+  });
 
   const [updateGeneratorStatus] = useUpdateGeneratorStatusMutation();
-  const [deleteGenerator] = useDeleteGeneratorMutation();
+  const [deleteGenerator, { isLoading: isDeleting }] =
+    useDeleteGeneratorMutation();
 
   const pagination = generatorsData?.pagination;
+  const generators = generatorsData?.generators || [];
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
@@ -61,59 +78,23 @@ const ManageGenerators = () => {
   };
 
   const handleDeleteClick = (id: string) => setDeleteGeneratorId(id);
-  const handleCancelDelete = () => setDeleteGeneratorId(null);
+  const handleCancelDelete = () => {
+    if (isDeleting) return;
+    setDeleteGeneratorId(null);
+  };
+
   const handleConfirmDelete = async () => {
     if (!deleteGeneratorId) return;
     try {
       await deleteGenerator(deleteGeneratorId).unwrap();
       toast.success("Generator deleted successfully");
+      setDeleteGeneratorId(null);
       refetch();
     } catch (err: unknown) {
       const serverError = err as ServerError;
       toast.error(serverError.data?.message || "Failed to delete generator");
-    } finally {
-      setDeleteGeneratorId(null);
     }
   };
-
-  const filteredGenerators = useMemo(() => {
-    const generators = generatorsData?.generators || [];
-
-    return generators.filter((g: IGenerator) => {
-      // --- Filter by status ---
-      if (filterStatus !== "all" && g.status !== filterStatus) return false;
-
-      // --- Search term match ---
-      if (searchTerm.trim() !== "") {
-        const search = searchTerm.toLowerCase();
-
-        const ownerName =
-          typeof g.owner === "string"
-            ? g.owner.toLowerCase()
-            : g.owner?.companyName?.toLowerCase() ||
-              g.owner?.name?.toLowerCase() ||
-              g.owner?.email?.toLowerCase() ||
-              "";
-
-        const address = g.location?.address?.toLowerCase() || "";
-        const state = g.location?.state?.toLowerCase() || "";
-        const lga = g.location?.lga?.toLowerCase() || "";
-
-        return (
-          g.generatorId?.toLowerCase().includes(search) ||
-          g.brand?.toLowerCase().includes(search) ||
-          g.model?.toLowerCase().includes(search) ||
-          g.serialNumber?.toLowerCase().includes(search) ||
-          ownerName.includes(search) ||
-          address.includes(search) ||
-          state.includes(search) ||
-          lga.includes(search)
-        );
-      }
-
-      return true;
-    });
-  }, [generatorsData, filterStatus, searchTerm]);
 
   if (isLoading) {
     return (
@@ -143,7 +124,7 @@ const ManageGenerators = () => {
 
           <button
             onClick={() => navigate("/admin/register-generator")}
-            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-primary/90 transition"
+            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm hover:bg-primary/90 transition cursor-pointer"
           >
             <Plus size={16} /> Add New Generator
           </button>
@@ -153,8 +134,11 @@ const ManageGenerators = () => {
         <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="border border-gray-300 text-sm rounded-lg px-4 py-2 text-gray-700 bg-gray-50"
+            onChange={(e) => {
+              setFilterStatus(e.target.value);
+              setPage(1);
+            }}
+            className="border border-gray-300 text-sm rounded-lg px-4 py-2 text-gray-700 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -171,7 +155,7 @@ const ManageGenerators = () => {
             <Search size={16} className="text-slate-600" />
             <input
               type="text"
-              placeholder="Search by brand, owner, location, etc."
+              placeholder="Search brand, owner, state..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-transparent outline-none placeholder-slate-600"
@@ -180,190 +164,220 @@ const ManageGenerators = () => {
         </div>
 
         {/* Table */}
-        <table className="w-full text-left ring ring-slate-200 rounded overflow-hidden text-sm">
-          <thead className="bg-slate-50 text-gray-700 uppercase tracking-wider">
-            <tr>
-              <th className="px-4 py-3">Generator</th>
-              <th className="px-4 py-3 hidden md:table-cell">Details</th>
-              <th className="px-4 py-3 hidden md:table-cell">Location</th>
-              <th className="px-4 py-3 hidden md:table-cell">Compliance</th>
-              <th className="px-4 py-3 text-center">Status</th>
-              <th className="px-4 py-3">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody className="text-slate-700">
-            {filteredGenerators.map((g: IGenerator) => (
-              <tr
-                key={g._id!}
-                className="border-t border-gray-200 hover:bg-gray-50 transition"
-              >
-                {/* Generator Info */}
-                <td className="px-4 py-3 align-top">
-                  <p className="text-xs text-slate-500 mt-1">
-                    <span className="font-semibold">Owner:</span>{" "}
-                    {typeof g.owner === "string"
-                      ? g.owner
-                      : g.owner?.companyName ||
-                        g.owner?.name ||
-                        g.owner?.email ||
-                        "N/A"}
-                  </p>
-                  <div className="text-xs text-slate-500">
-                    ID:{" "}
-                    <span className="font-mono text-slate-700">
-                      {g.generatorId}
-                    </span>
-                  </div>
-                </td>
-
-                {/* Details */}
-                <td className="px-4 py-3 hidden md:table-cell align-top">
-                  <div className="text-xs space-y-1">
-                    <p>
-                      <span className="font-semibold">Brand:</span>{" "}
-                      {g.brand || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Model:</span>{" "}
-                      {g.model || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Serial No:</span>{" "}
-                      {g.serialNumber || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Capacity:</span>{" "}
-                      {g.capacity || "N/A"}KVA
-                    </p>
-                    <p>
-                      <span className="font-semibold">Year:</span>{" "}
-                      {g.yearOfManufacture || "N/A"}
-                    </p>
-                    {/* <p>
-                      <span className="font-semibold">Fuel Type:</span>{" "}
-                      {g.fuelType || "N/A"}
-                    </p> */}
-                  </div>
-                </td>
-
-                {/* Location */}
-                <td className="px-4 py-3 hidden md:table-cell align-top">
-                  <div className="text-xs space-y-1">
-                    <p>
-                      <span className="font-semibold">Address:</span>{" "}
-                      {g.location?.address || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-semibold">State:</span>{" "}
-                      {g.location?.state || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-semibold">LGA:</span>{" "}
-                      {g.location?.lga || "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Coordinates:</span>{" "}
-                      {g.location?.coordinates
-                        ? `${g.location.coordinates.latitude}, ${g.location.coordinates.longitude}`
-                        : "N/A"}
-                    </p>
-                  </div>
-                </td>
-
-                {/* Compliance */}
-                <td className="px-4 py-3 hidden md:table-cell align-top">
-                  <div className="text-xs space-y-1">
-                    <p>
-                      <span className="font-semibold">Score:</span>{" "}
-                      {g.complianceScore ?? "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Next Inspection:</span>{" "}
-                      {g.nextInspectionDue
-                        ? format(new Date(g.nextInspectionDue), "dd MMM yyyy")
-                        : "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Last Inspection:</span>{" "}
-                      {g.lastInspectionDate
-                        ? format(new Date(g.lastInspectionDate), "dd MMM yyyy")
-                        : "N/A"}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Registered:</span>{" "}
-                      {g.registrationDate
-                        ? format(new Date(g.registrationDate), "dd MMM yyyy")
-                        : "N/A"}
-                    </p>
-                  </div>
-                </td>
-
-                {/* Status */}
-                <td className="px-4 py-3 text-center align-top">
-                  <select
-                    value={g.status}
-                    onChange={(e) => handleStatusChange(g._id, e.target.value)}
-                    className="border border-gray-300 text-sm rounded-lg px-3 py-2 text-gray-700 bg-gray-50"
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="under_inspection">Under Inspection</option>
-                    <option value="compliant">Compliant</option>
-                    <option value="non_compliant">Non-Compliant</option>
-                  </select>
-                </td>
-
-                {/* Actions */}
-                <td className="px-4 py-3 flex gap-3 align-top">
-                  <Tooltip text="Edit Generator" position="bottom">
-                    <button
-                      onClick={() =>
-                        navigate(`/admin/update-generator/${g._id}`)
-                      }
-                      className="p-2 rounded-full hover:bg-yellow-200 text-yellow-600 transition"
-                    >
-                      <Pencil size={18} />
-                    </button>
-                  </Tooltip>
-
-                  <Tooltip text="View Generator" position="bottom">
-                    <button
-                      onClick={() => navigate(`/admin/generator/${g._id}`)}
-                      className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition"
-                    >
-                      <Eye size={18} />
-                    </button>
-                  </Tooltip>
-
-                  <Tooltip text="Delete Generator" position="bottom">
-                    <button
-                      disabled={!isAdmin}
-                      onClick={() => handleDeleteClick(g._id!)}
-                      className="p-2 rounded-full hover:bg-red-200 text-red-600 transition"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </Tooltip>
-                </td>
+        <div className="overflow-x-auto ring ring-slate-200 rounded-lg">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-50 text-gray-700 uppercase tracking-wider">
+              <tr>
+                <th className="px-4 py-3">Generator</th>
+                <th className="px-4 py-3 hidden md:table-cell">Details</th>
+                <th className="px-4 py-3 hidden md:table-cell">Location</th>
+                <th className="px-4 py-3 hidden md:table-cell">Compliance</th>
+                <th className="px-4 py-3 text-center">Status</th>
+                <th className="px-4 py-3">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody className="text-slate-700 divide-y divide-gray-200">
+              {generators.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-8 text-gray-500">
+                    No generators found matching your criteria.
+                  </td>
+                </tr>
+              ) : (
+                generators.map((g: IGenerator) => (
+                  <tr key={g._id!} className="hover:bg-gray-50 transition">
+                    {/* Generator Info */}
+                    <td className="px-4 py-3 align-top">
+                      <p className="text-xs text-slate-500 mt-1">
+                        <span className="font-semibold">Owner:</span>{" "}
+                        {typeof g.owner === "string"
+                          ? g.owner
+                          : g.owner?.companyName ||
+                            g.owner?.name ||
+                            g.owner?.email ||
+                            "N/A"}
+                      </p>
+                      <div className="text-xs text-slate-500">
+                        ID:{" "}
+                        <span className="font-mono text-slate-700">
+                          {g.generatorId}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Details */}
+                    <td className="px-4 py-3 hidden md:table-cell align-top">
+                      <div className="text-xs space-y-1">
+                        <p>
+                          <span className="font-semibold">Brand:</span>{" "}
+                          {g.brand || "N/A"}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Model:</span>{" "}
+                          {g.model || "N/A"}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Serial No:</span>{" "}
+                          {g.serialNumber || "N/A"}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Capacity:</span>{" "}
+                          {g.capacity || "N/A"}KVA
+                        </p>
+                        <p>
+                          <span className="font-semibold">Year:</span>{" "}
+                          {g.yearOfManufacture || "N/A"}
+                        </p>
+                      </div>
+                    </td>
+
+                    {/* Location */}
+                    <td className="px-4 py-3 hidden md:table-cell align-top">
+                      <div className="text-xs space-y-1">
+                        <p>
+                          <span className="font-semibold">Address:</span>{" "}
+                          {g.location?.address || "N/A"}
+                        </p>
+                        <p>
+                          <span className="font-semibold">State:</span>{" "}
+                          {g.location?.state || "N/A"}
+                        </p>
+                        <p>
+                          <span className="font-semibold">LGA:</span>{" "}
+                          {g.location?.lga || "N/A"}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Coordinates:</span>{" "}
+                          {g.location?.coordinates
+                            ? `${g.location.coordinates.latitude}, ${g.location.coordinates.longitude}`
+                            : "N/A"}
+                        </p>
+                      </div>
+                    </td>
+
+                    {/* Compliance */}
+                    <td className="px-4 py-3 hidden md:table-cell align-top">
+                      <div className="text-xs space-y-1">
+                        <p>
+                          <span className="font-semibold">Score:</span>{" "}
+                          {g.complianceScore ?? "N/A"}
+                        </p>
+                        <p>
+                          <span className="font-semibold">
+                            Next Inspection:
+                          </span>{" "}
+                          {g.nextInspectionDue
+                            ? format(
+                                new Date(g.nextInspectionDue),
+                                "dd MMM yyyy",
+                              )
+                            : "N/A"}
+                        </p>
+                        <p>
+                          <span className="font-semibold">
+                            Last Inspection:
+                          </span>{" "}
+                          {g.lastInspectionDate
+                            ? format(
+                                new Date(g.lastInspectionDate),
+                                "dd MMM yyyy",
+                              )
+                            : "N/A"}
+                        </p>
+                        <p>
+                          <span className="font-semibold">Registered:</span>{" "}
+                          {g.registrationDate
+                            ? format(
+                                new Date(g.registrationDate),
+                                "dd MMM yyyy",
+                              )
+                            : "N/A"}
+                        </p>
+                      </div>
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-4 py-3 text-center align-top">
+                      <select
+                        value={g.status}
+                        onChange={(e) =>
+                          handleStatusChange(g._id, e.target.value)
+                        }
+                        className="border border-gray-300 text-sm rounded-lg px-3 py-2 text-gray-700 bg-gray-50 focus:outline-none"
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="under_inspection">
+                          Under Inspection
+                        </option>
+                        <option value="compliant">Compliant</option>
+                        <option value="non_compliant">Non-Compliant</option>
+                      </select>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-4 py-3 align-top">
+                      <div className="flex gap-2 items-center">
+                        <Tooltip text="Edit Generator" position="bottom">
+                          <button
+                            onClick={() =>
+                              navigate(`/admin/update-generator/${g._id}`)
+                            }
+                            className="p-2 rounded-full hover:bg-yellow-200 text-yellow-600 transition cursor-pointer"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                        </Tooltip>
+
+                        <Tooltip text="View Generator" position="bottom">
+                          <button
+                            onClick={() =>
+                              navigate(`/admin/generator/${g._id}`)
+                            }
+                            className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition cursor-pointer"
+                          >
+                            <Eye size={18} />
+                          </button>
+                        </Tooltip>
+
+                        <Tooltip text="Delete Generator" position="bottom">
+                          <button
+                            disabled={!isAdmin}
+                            onClick={() => handleDeleteClick(g._id!)}
+                            className={`p-2 rounded-full transition ${
+                              isAdmin
+                                ? "hover:bg-red-200 text-red-600 cursor-pointer"
+                                : "opacity-50 cursor-not-allowed text-gray-400"
+                            }`}
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </Tooltip>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {/* Pagination Controls */}
-        <div className="flex justify-between items-center my-5">
+        <div className="flex justify-between items-center my-5 flex-wrap gap-4">
           {pagination && (
             <p className="text-sm text-gray-600">
               Showing{" "}
               <span className="font-medium text-slate-700">
-                {(pagination.currentPage - 1) * pageSize + 1}
+                {pagination.totalItems === 0
+                  ? 0
+                  : (pagination.currentPage - 1) * pageSize + 1}
               </span>{" "}
               –{" "}
               <span className="font-medium text-slate-700">
                 {Math.min(
                   pagination.currentPage * pageSize,
-                  pagination.totalItems
+                  pagination.totalItems,
                 )}
               </span>{" "}
               of{" "}
@@ -388,7 +402,7 @@ const ManageGenerators = () => {
                 setPageSize(Number(e.target.value));
                 setPage(1);
               }}
-              className="border rounded px-2 py-1 text-sm"
+              className="border rounded px-2 py-1 text-sm bg-gray-50 text-gray-700 focus:outline-none"
             >
               {[5, 10, 20, 50].map((size) => (
                 <option key={size} value={size}>
@@ -399,8 +413,8 @@ const ManageGenerators = () => {
           </div>
         </div>
 
-        {/* Pagination */}
-        {pagination && (
+        {/* Pagination Component */}
+        {pagination && pagination.totalPages > 1 && (
           <Pagination
             currentPage={pagination.currentPage}
             totalPages={pagination.totalPages}
@@ -422,13 +436,18 @@ const ManageGenerators = () => {
                 </h3>
                 <button
                   onClick={handleCancelDelete}
+                  disabled={isDeleting}
                   className="text-gray-400 hover:text-gray-600 cursor-pointer"
                 >
                   ✕
                 </button>
               </div>
               <DeleteAlert
-                content="Are you sure you want to delete this generator? This action cannot be undone."
+                content={
+                  isDeleting
+                    ? "Deleting generator..."
+                    : "Are you sure you want to delete this generator? This action cannot be undone."
+                }
                 onDelete={handleConfirmDelete}
               />
             </div>

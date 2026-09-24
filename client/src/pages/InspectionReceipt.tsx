@@ -1,12 +1,21 @@
-import { useRef } from "react";
+import React, { useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGetInspectionByIdQuery } from "../redux/features/inspection/inspectionApi";
 import { format } from "date-fns";
-import { Download, ArrowLeft } from "lucide-react";
+import {
+  Download,
+  ArrowLeft,
+  CheckCircle2,
+  ShieldAlert,
+  MapPin,
+  User,
+  Zap,
+  CreditCard,
+} from "lucide-react";
 import Loading from "../components/Loading";
 import { useReactToPrint } from "react-to-print";
 
-const InspectionReceipt = () => {
+const InspectionReceipt: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const receiptRef = useRef<HTMLDivElement>(null);
@@ -19,18 +28,12 @@ const InspectionReceipt = () => {
 
   const handlePrint = useReactToPrint({
     contentRef: receiptRef,
-    documentTitle: `Inspection-Receipt-${inspection?._id}`,
+    documentTitle: `Inspection-Receipt-${inspection?._id || "download"}`,
   });
-
-  const handleDownload = () => {
-    if (handlePrint) {
-      handlePrint();
-    }
-  };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex justify-center items-center">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <Loading />
       </div>
     );
@@ -38,12 +41,22 @@ const InspectionReceipt = () => {
 
   if (isError || !inspection) {
     return (
-      <div className="min-h-screen flex justify-center items-center">
-        <div className="text-center">
-          <p className="text-red-500 text-xl mb-4">Inspection not found</p>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="max-w-md w-full bg-white border border-slate-200 p-8 rounded-2xl shadow-xs text-center">
+          <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <ShieldAlert className="w-6 h-6" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-900">
+            Inspection Not Found
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-500 mt-2 mb-6">
+            We couldn't retrieve the requested receipt. The inspection record
+            may have been deleted or doesn't exist.
+          </p>
           <button
+            type="button"
             onClick={() => navigate(-1)}
-            className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90"
+            className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors"
           >
             Go Back
           </button>
@@ -52,245 +65,280 @@ const InspectionReceipt = () => {
     );
   }
 
-  const displayOwnerName = typeof inspection.owner === "string"
-    ? inspection.owner
-    : inspection.owner?.companyName || inspection.owner?.name || "N/A";
+  // Safe Owner details resolution
+  const displayOwnerName =
+    typeof inspection.owner === "string"
+      ? inspection.owner
+      : inspection.owner?.companyName || inspection.owner?.name || "N/A";
 
-  const displayOwnerEmail = typeof inspection.owner === "string"
-    ? ""
-    : inspection.owner?.email || "";
+  const displayOwnerEmail =
+    typeof inspection.owner === "string" ? "" : inspection.owner?.email || "";
 
-  const displayOwnerType = typeof inspection.owner === "string"
-    ? ""
-    : inspection.owner?.accountType || "";
+  const displayOwnerType =
+    typeof inspection.owner === "string"
+      ? ""
+      : inspection.owner?.accountType || "";
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Action Buttons */}
+    <div className="min-h-screen bg-slate-100 py-8 px-4 print:bg-white print:p-0">
+      <div className="max-w-3xl mx-auto">
+        {/* Action Header (Hidden on Print) */}
         <div className="flex justify-between items-center mb-6 print:hidden">
           <button
+            type="button"
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:text-slate-900 transition"
+            className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors focus:outline-none"
           >
-            <ArrowLeft size={20} />
-            Back
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back</span>
           </button>
+
           <button
-            onClick={handleDownload}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition"
+            type="button"
+            onClick={() => handlePrint()}
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg shadow-xs transition-all focus:outline-none"
           >
-            <Download size={18} />
-            Download Receipt
+            <Download className="w-4 h-4" />
+            <span>Download / Print Receipt</span>
           </button>
         </div>
 
-        {/* Receipt */}
+        {/* Printable Receipt Container */}
         <div
           ref={receiptRef}
-          className="bg-white rounded-lg shadow-lg p-8 print:shadow-none"
+          className="bg-white border border-slate-200 rounded-2xl shadow-xs p-8 sm:p-10 print:shadow-none print:border-none print:p-0"
         >
           {/* Header */}
-          <div className="text-center mb-8 pb-6 border-b-2 border-primary">
-            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-              ✓
+          <div className="text-center pb-8 mb-8 border-b border-slate-200">
+            <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 border border-emerald-100 print:border-none">
+              <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h1 className="text-3xl font-bold text-slate-800 mb-2">
-              Inspection Payment Receipt
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+              Payment Receipt
             </h1>
-            <p className="text-slate-500">Thank you for your payment!</p>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Official Inspection Payment Confirmation
+            </p>
           </div>
 
-          {/* Payment Info */}
-          <div className="grid grid-cols-2 gap-4 mb-8 bg-slate-50 p-6 rounded-lg">
+          {/* Payment Meta Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 bg-slate-50 rounded-xl border border-slate-200/60 mb-8 print:bg-slate-50 print:border-slate-200">
             {inspection.payment?.transactionReference && (
-              <div className="col-span-2">
-                <p className="text-sm text-slate-500 mb-1">Transaction Reference</p>
-                <p className="font-semibold text-slate-800 break-all">
+              <div className="sm:col-span-2 pb-3 border-b border-slate-200/60">
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                  Transaction Reference
+                </span>
+                <p className="text-sm font-mono font-bold text-slate-900 break-all mt-0.5">
                   {inspection.payment.transactionReference}
                 </p>
               </div>
             )}
             <div>
-              <p className="text-sm text-slate-500 mb-1">Payment Date</p>
-              <p className="font-semibold text-slate-800">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                Payment Date
+              </span>
+              <p className="text-sm font-medium text-slate-800 mt-0.5">
                 {inspection.payment?.paymentDate
-                  ? format(new Date(inspection.payment.paymentDate), "dd MMMM yyyy, hh:mm a")
+                  ? format(
+                      new Date(inspection.payment.paymentDate),
+                      "dd MMMM yyyy, hh:mm a",
+                    )
                   : "N/A"}
               </p>
             </div>
             <div>
-              <p className="text-sm text-slate-500 mb-1">Payment Method</p>
-              <p className="font-semibold text-slate-800 capitalize">
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                Payment Method
+              </span>
+              <p className="text-sm font-medium text-slate-800 capitalize mt-0.5">
                 {inspection.payment?.paymentMethod || "Online Payment"}
               </p>
             </div>
             <div>
-              <p className="text-sm text-slate-500 mb-1">Payment Status</p>
-              <span className="inline-block px-3 py-1 text-xs rounded-full font-semibold bg-green-100 text-green-700">
-                Paid
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                Scheduled Date
               </span>
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 mb-1">Scheduled Date</p>
-              <p className="font-semibold text-slate-800">
+              <p className="text-sm font-medium text-slate-800 mt-0.5">
                 {inspection.scheduledDate
                   ? format(new Date(inspection.scheduledDate), "dd MMMM yyyy")
                   : "N/A"}
               </p>
             </div>
+            <div>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                Payment Status
+              </span>
+              <div className="mt-1">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                  Paid
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Owner & Generator Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 print:grid-cols-2 print:gap-4">
-            <div>
-              <h3 className="font-semibold text-slate-800 mb-3">Owner Details</h3>
-              <div className="text-sm text-slate-600 space-y-1">
-                <p className="font-medium text-slate-800">{displayOwnerName}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {/* Owner Section */}
+            <div className="p-4 border border-slate-200/80 rounded-xl">
+              <div className="flex items-center gap-2 mb-3 text-slate-900 font-bold text-sm">
+                <User className="w-4 h-4 text-emerald-600" />
+                <h3>Owner Details</h3>
+              </div>
+              <div className="text-xs space-y-1.5 text-slate-600">
+                <p className="font-semibold text-slate-800 text-sm">
+                  {displayOwnerName}
+                </p>
                 {displayOwnerEmail && <p>{displayOwnerEmail}</p>}
                 {displayOwnerType && (
-                  <p className="capitalize">
-                    <span className="font-semibold">Account Type:</span> {displayOwnerType}
+                  <p className="capitalize text-slate-500">
+                    Account Type:{" "}
+                    <span className="font-medium text-slate-700">
+                      {displayOwnerType}
+                    </span>
                   </p>
                 )}
               </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-slate-800 mb-3">Generator Details</h3>
-              <div className="text-sm text-slate-600 space-y-1">
+
+            {/* Generator Section */}
+            <div className="p-4 border border-slate-200/80 rounded-xl">
+              <div className="flex items-center gap-2 mb-3 text-slate-900 font-bold text-sm">
+                <Zap className="w-4 h-4 text-emerald-600" />
+                <h3>Generator Details</h3>
+              </div>
+              <div className="text-xs space-y-1.5 text-slate-600">
                 <p>
-                  <span className="font-semibold">Generator ID:</span>{" "}
-                  {inspection.generator?.generatorId || "N/A"}
+                  <span className="font-medium text-slate-500">ID:</span>{" "}
+                  <span className="font-mono text-slate-800">
+                    {inspection.generator?.generatorId || "N/A"}
+                  </span>
                 </p>
                 <p>
-                  <span className="font-semibold">Brand:</span>{" "}
-                  {inspection.generator?.brand || "N/A"}
+                  <span className="font-medium text-slate-500">
+                    Brand / Model:
+                  </span>{" "}
+                  <span className="text-slate-800">
+                    {inspection.generator?.brand || "N/A"}{" "}
+                    {inspection.generator?.model || ""}
+                  </span>
                 </p>
                 <p>
-                  <span className="font-semibold">Model:</span>{" "}
-                  {inspection.generator?.model || "N/A"}
-                </p>
-                <p>
-                  <span className="font-semibold">Serial Number:</span>{" "}
-                  {inspection.generator?.serialNumber || "N/A"}
+                  <span className="font-medium text-slate-500">Serial No:</span>{" "}
+                  <span className="font-mono text-slate-800">
+                    {inspection.generator?.serialNumber || "N/A"}
+                  </span>
                 </p>
                 {inspection.generator?.capacity && (
                   <p>
-                    <span className="font-semibold">Capacity:</span>{" "}
-                    {inspection.generator.capacity}
+                    <span className="font-medium text-slate-500">
+                      Capacity:
+                    </span>{" "}
+                    <span className="text-slate-800">
+                      {inspection.generator.capacity}
+                    </span>
                   </p>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Location Info */}
+          {/* Location Details */}
           {inspection.location && (
-            <div className="mb-8 p-4 bg-slate-50 rounded-lg">
-              <h3 className="font-semibold text-slate-800 mb-3">Inspection Location</h3>
-              <div className="text-sm text-slate-600 space-y-1">
+            <div className="mb-8 p-4 border border-slate-200/80 rounded-xl">
+              <div className="flex items-center gap-2 mb-2 text-slate-900 font-bold text-sm">
+                <MapPin className="w-4 h-4 text-emerald-600" />
+                <h3>Inspection Site Location</h3>
+              </div>
+              <div className="text-xs text-slate-600 space-y-1">
                 <p>
-                  <span className="font-semibold">Address:</span>{" "}
+                  <span className="font-medium text-slate-500">Address:</span>{" "}
                   {inspection.location.address || "N/A"}
                 </p>
                 <p>
-                  <span className="font-semibold">City/LGA:</span>{" "}
-                  {inspection.location.lga || "N/A"}
-                </p>
-                <p>
-                  <span className="font-semibold">State:</span>{" "}
+                  <span className="font-medium text-slate-500">
+                    LGA / State:
+                  </span>{" "}
+                  {inspection.location.lga || "N/A"},{" "}
                   {inspection.location.state || "N/A"}
                 </p>
-                {inspection.location.coordinates && (
-                  <p>
-                    <span className="font-semibold">Coordinates:</span>{" "}
-                    {inspection.location.coordinates.latitude},{" "}
-                    {inspection.location.coordinates.longitude}
-                  </p>
-                )}
               </div>
             </div>
           )}
 
-          {/* Payment Summary */}
-          <div className="bg-slate-50 rounded-lg p-6 mb-8">
-            <h3 className="font-semibold text-slate-800 mb-4">Payment Summary</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm text-slate-600">
-                <span>Inspection Fee</span>
+          {/* Financial Summary */}
+          <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-5 mb-8">
+            <h3 className="font-bold text-slate-900 text-sm mb-3">
+              Payment Summary
+            </h3>
+            <div className="space-y-2 text-xs sm:text-sm">
+              <div className="flex justify-between text-slate-600">
+                <span>Inspection Processing Fee</span>
                 <span className="font-medium text-slate-800">
                   ₦{inspection.payment?.amount?.toLocaleString() || "0"}
                 </span>
               </div>
-              <div className="pt-3 border-t-2 border-slate-300">
-                <div className="flex justify-between text-lg font-bold text-slate-800">
-                  <span>Total Amount Paid</span>
-                  <span className="text-primary">
-                    ₦{inspection.payment?.amount?.toLocaleString() || "0"}
-                  </span>
-                </div>
+              <div className="pt-3 border-t border-slate-200 flex justify-between text-base font-bold text-slate-900">
+                <span>Total Amount Paid</span>
+                <span className="text-emerald-600">
+                  ₦{inspection.payment?.amount?.toLocaleString() || "0"}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Inspection Status */}
-          <div className="p-4 bg-blue-50 border-l-4 border-primary rounded mb-8">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-600">Inspection Status:</span>
-              <span
-                className={`px-3 py-1 text-sm rounded-full font-semibold ${
-                  inspection.status === "completed"
-                    ? "bg-green-100 text-green-700"
-                    : inspection.status === "scheduled"
-                    ? "bg-blue-100 text-blue-700"
+          {/* Status Badge */}
+          <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200/80 rounded-xl mb-8">
+            <span className="text-xs font-semibold text-slate-600">
+              Inspection Status
+            </span>
+            <span
+              className={`px-3 py-1 text-xs rounded-full font-semibold capitalize ${
+                inspection.status === "completed"
+                  ? "bg-emerald-100 text-emerald-800"
+                  : inspection.status === "scheduled"
+                    ? "bg-blue-100 text-blue-800"
                     : inspection.status === "pending"
-                    ? "bg-yellow-100 text-yellow-700"
-                    : "bg-red-100 text-red-700"
-                }`}
-              >
-                {inspection.status === "pending" && "Pending Assignment"}
-                {inspection.status === "scheduled" && "Scheduled"}
-                {inspection.status === "completed" && "Completed"}
-                {inspection.status === "cancelled" && "Cancelled"}
-              </span>
-            </div>
+                      ? "bg-amber-100 text-amber-800"
+                      : "bg-rose-100 text-rose-800"
+              }`}
+            >
+              {inspection.status === "pending"
+                ? "Pending Assignment"
+                : inspection.status}
+            </span>
           </div>
 
-          {/* Payment Metadata */}
+          {/* Card / Gateway Metadata */}
           {inspection.payment?.metadata && (
-            <div className="mb-8 text-xs text-slate-500">
-              <h4 className="font-semibold text-slate-700 mb-2">Transaction Details</h4>
+            <div className="mb-8 pt-4 border-t border-slate-100 text-xs text-slate-500 space-y-1">
+              <div className="flex items-center gap-1.5 font-bold text-slate-700 mb-1">
+                <CreditCard className="w-3.5 h-3.5 text-slate-400" />
+                <span>Gateway Payment Info</span>
+              </div>
               {inspection.payment.metadata.flutterwaveTransactionId && (
                 <p>
-                  <span className="font-semibold">Transaction ID:</span>{" "}
+                  Gateway Ref ID:{" "}
                   {inspection.payment.metadata.flutterwaveTransactionId}
-                </p>
-              )}
-              {inspection.payment.metadata.cardType && (
-                <p>
-                  <span className="font-semibold">Card Type:</span>{" "}
-                  {inspection.payment.metadata.cardType}
                 </p>
               )}
               {inspection.payment.metadata.cardLast4 && (
                 <p>
-                  <span className="font-semibold">Card:</span> **** {inspection.payment.metadata.cardLast4}
+                  Card: {inspection.payment.metadata.cardType || "Card"} ending
+                  in **** {inspection.payment.metadata.cardLast4}
                 </p>
               )}
             </div>
           )}
 
           {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-slate-200 text-center text-sm text-slate-500">
-            <p className="mb-2">
-              This receipt confirms your payment for generator inspection services. An inspector will be assigned shortly.
+          <div className="pt-6 border-t border-slate-200 text-center text-xs text-slate-400 space-y-1">
+            <p>
+              This is a computer-generated document confirming inspection fee
+              payment.
             </p>
-            <p className="mb-2">
-              For any inquiries, please contact our support team with your transaction reference.
-            </p>
-            <p className="text-xs">
-              © {new Date().getFullYear()} National Generator Emission
-          Control Program. All rights reserved.
+            <p>
+              © {new Date().getFullYear()} National Generator Emission Control
+              Program. All rights reserved.
             </p>
           </div>
         </div>

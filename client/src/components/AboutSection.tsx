@@ -1,56 +1,84 @@
-import { assets } from "../utils/data";
+import React from "react";
+import { Cpu, Check } from "lucide-react";
 
-const AboutSection = () => {
+const AboutSection: React.FC = () => {
+  const highlights = [
+    "Instant emission level checks and diagnostic reports.",
+    "Automated SMS/Email inspection schedules and alerts.",
+    "Centralized registry for commercial and residential generators.",
+    "Transparent scoring system for federal and state compliance.",
+  ];
+
   return (
-    <section className="bg-gray-50 py-16 px-6 md:px-16 lg:px-24 xl:px-32">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12">
-        {/* Left Image */}
-        <div className="w-full md:w-1/2">
-          <img
-            src={assets.about_img}
-            alt="About the Program"
-            className="w-full h-auto rounded-2xl shadow-lg"
-          />
-        </div>
+    <section className="py-20 bg-white border-y border-slate-200/80">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* Left Side: Impact Visual Cards */}
+          <div className="lg:col-span-5 space-y-4">
+            <div className="bg-slate-50 p-6 sm:p-8 rounded-2xl border border-slate-200/80 space-y-6">
+              <div className="w-12 h-12 bg-emerald-600 text-white rounded-xl flex items-center justify-center font-bold shadow-xs">
+                <Cpu className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800">
+                Smart Monitoring Infrastructure
+              </h3>
+              <p className="text-slate-600 text-sm leading-relaxed">
+                Replacing traditional manual paper auditing with instant data
+                extraction, QR verification, and real-time inspector feedback
+                loops.
+              </p>
+            </div>
 
-        {/* Right Content */}
-        <div className="w-full md:w-1/2">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-800">
-            About the{" "}
-            <span className="text-transparent bg-clip-text bg-[radial-gradient(circle,_#7182ff_0%,_#3cff52_100%)] bg-[length:200%_200%] animate-text-shine">
-              Initiative
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-5 bg-emerald-50/60 rounded-xl border border-emerald-200/60 text-center">
+                <p className="text-2xl sm:text-3xl font-extrabold text-emerald-700">
+                  100%
+                </p>
+                <p className="text-xs font-medium text-slate-600 mt-1">
+                  Audit Traceability
+                </p>
+              </div>
+              <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 text-center">
+                <p className="text-2xl sm:text-3xl font-extrabold text-slate-800">
+                  24/7
+                </p>
+                <p className="text-xs font-medium text-slate-600 mt-1">
+                  Status Verification
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side: Content */}
+          <div className="lg:col-span-7 space-y-6">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-3 py-1 rounded-full">
+              Why It Matters
             </span>
-          </h2>
 
-          <p className="text-slate-600 text-sm leading-relaxed mb-6">
-            The National Generator Emission Control Program (NGECP) is a
-            government-driven initiative committed to promoting environmental
-            sustainability across Nigeria. Our mission is to monitor, regulate,
-            and minimize harmful emissions from generators, ensuring cleaner air
-            and a healthier future for all.
-          </p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-800 tracking-tight">
+              Pioneering Clean Air & Reliable Energy Standards
+            </h2>
 
-          <p className="text-slate-600 text-sm leading-relaxed mb-8">
-            Through modern technology, strict compliance frameworks, and public
-            awareness campaigns, we aim to create an eco-friendly energy
-            ecosystem that supports national growth while preserving our
-            environment for future generations.
-          </p>
+            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+              Uncontrolled power generator emissions contribute significantly to
+              local air pollution and acoustic disturbance. Our platform bridges
+              the gap between asset owners and field inspectors to maintain
+              eco-friendly operations seamlessly.
+            </p>
 
-          <ul className="space-y-3 text-slate-700">
-            <li className="flex items-center text-sm gap-2">
-              ✅ Promote sustainable generator use.
-            </li>
-            <li className="flex items-center text-sm gap-2">
-              ✅ Enforce national emission standards.
-            </li>
-            <li className="flex items-center text-sm gap-2">
-              ✅ Encourage renewable energy adoption.
-            </li>
-            <li className="flex items-center text-sm gap-2">
-              ✅ Protect public health and the environment.
-            </li>
-          </ul>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              {highlights.map((item, index) => (
+                <div key={index} className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <Check className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-xs sm:text-sm font-medium text-slate-700">
+                    {item}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

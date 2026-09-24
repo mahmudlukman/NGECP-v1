@@ -3,10 +3,10 @@ import {
   useUpdateUserStatusMutation,
 } from "../../redux/features/user/userApi";
 import { toast } from "react-hot-toast";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import type { RootState, ServerError, User } from "../../@types";
 import DeleteAlert from "../DeleteAlert";
-import { Trash2, Search } from "lucide-react";
+import { Trash2, Search, User as UserIcon, Building2 } from "lucide-react";
 import { getInitials } from "../../utils/helper";
 import Pagination from "../Pagination";
 import { useSelector } from "react-redux";
@@ -23,59 +23,54 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Search state
+  // Filter & Search states
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [activeTab, setActiveTab] = useState<"all" | "individual" | "company">(
+    "all",
+  );
 
   const users = useMemo(() => usersData ?? [], [usersData]);
   const isAdmin = user?.role === "admin";
-//   const isEditor = loggedInUser?.role === "editor";
 
-  // Filter Tabs state
-  const [activeTab, setActiveTab] = useState<"all" | "individual" | "company">(
-    "all"
-  );
+  // Filter combined search + tab logic in single memo
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      const matchesSearch =
+        searchQuery.trim().length === 0 ||
+        u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.companyName?.toLowerCase().includes(searchQuery.toLowerCase());
 
-  // Filter users based on the active tab
-  const filteredByType = useMemo(() => {
-    if (activeTab === "individual") {
-      return filteredUsers.filter((u) => u.accountType === "individual");
-    } else if (activeTab === "company") {
-      return filteredUsers.filter((u) => u.accountType === "company");
-    }
-    return filteredUsers;
-  }, [filteredUsers, activeTab]);
+      const matchesTab = activeTab === "all" || u.accountType === activeTab;
 
-  // Apply search filter
-  useEffect(() => {
-    if (searchQuery.trim().length > 0) {
-      setFilteredUsers(
-        users.filter(
-          (user: User) =>
-            user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            user.email?.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      );
-    } else {
-      setFilteredUsers(users);
-    }
-    setPage(1); // reset when searching
-  }, [users, searchQuery]);
+      return matchesSearch && matchesTab;
+    });
+  }, [users, searchQuery, activeTab]);
 
-  // Pagination logic
+  // Handlers with page reset
+  const handleTabChange = (tab: "all" | "individual" | "company") => {
+    setActiveTab(tab);
+    setPage(1);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setPage(1);
+  };
+
+  // Pagination calculations
   const totalUsers = filteredUsers.length;
-  const totalPages = Math.ceil(totalUsers / pageSize);
+  const totalPages = Math.ceil(totalUsers / pageSize) || 1;
   const indexOfLastUser = page * pageSize;
   const indexOfFirstUser = indexOfLastUser - pageSize;
-  //   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-  const currentUsers = filteredByType.slice(indexOfFirstUser, indexOfLastUser);
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
 
   const availableRoles = ["admin", "editor", "user"];
 
   const handleUserStatusChange = async (
     userId: string,
     newRole?: string,
-    isActive?: boolean
+    isActive?: boolean,
   ) => {
     try {
       const updateData: { id: string; role?: string; isActive?: boolean } = {
@@ -108,7 +103,7 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
       toast.error(
         serverError?.data?.message ||
           serverError?.message ||
-          "Failed to delete user"
+          "Failed to delete user",
       );
     } finally {
       setDeleteUserId(null);
@@ -117,54 +112,78 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
 
   const handleCancelDelete = () => setDeleteUserId(null);
 
+  // Styling helper for roles
+  const getRoleBadgeClass = (role?: string) => {
+    switch (role) {
+      case "admin":
+        return "bg-slate-900 text-slate-100 border-slate-800";
+      case "editor":
+        return "bg-emerald-50 text-emerald-700 border-emerald-200/80 font-medium";
+      default:
+        return "bg-slate-100 text-slate-700 border-slate-200 font-medium";
+    }
+  };
+
+  // Styling helper for status
+  const getStatusBadgeClass = (isActive?: boolean) => {
+    return isActive
+      ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 font-semibold"
+      : "bg-rose-50 text-rose-700 border-rose-200/80 font-semibold";
+  };
+
   return (
-    <div className="overflow-x-auto max-w-6xl rounded-md shadow border border-gray-200 bg-white p-4">
-      {/* Tabs and Search Row */}
-      <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-        {/* Tabs for user type filtering */}
-        <div className="flex gap-4">
+    <div className="w-full max-w-6xl rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+      {/* Filter Tabs and Search Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl">
           <button
-            onClick={() => setActiveTab("all")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${
+            onClick={() => handleTabChange("all")}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               activeTab === "all"
-                ? "bg-primary text-white"
-                : "bg-gray-100 text-gray-600"
+                ? "bg-white text-slate-900 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            All
+            All Users
           </button>
           <button
-            onClick={() => setActiveTab("individual")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center ${
+            onClick={() => handleTabChange("individual")}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
               activeTab === "individual"
-                ? "bg-primary text-white"
-                : "bg-gray-100 text-gray-600"
+                ? "bg-white text-slate-900 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            Individual Users
+            <UserIcon size={13} />
+            Individual
             <span
-              className={`ml-1 text-xs ${
-                activeTab === "individual" ? "text-white" : "text-gray-500"
+              className={`px-1.5 py-0.5 rounded-md text-[10px] ${
+                activeTab === "individual"
+                  ? "bg-slate-100 text-slate-800"
+                  : "bg-slate-200/60 text-slate-600"
               }`}
             >
-              ({users.filter((u) => u.accountType === "individual").length})
+              {users.filter((u) => u.accountType === "individual").length}
             </span>
           </button>
           <button
-            onClick={() => setActiveTab("company")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center ${
+            onClick={() => handleTabChange("company")}
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
               activeTab === "company"
-                ? "bg-primary text-white"
-                : "bg-gray-100 text-gray-600"
+                ? "bg-white text-slate-900 shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            Company Users
+            <Building2 size={13} />
+            Company
             <span
-              className={`ml-1 text-xs ${
-                activeTab === "company" ? "text-white" : "text-gray-500"
+              className={`px-1.5 py-0.5 rounded-md text-[10px] ${
+                activeTab === "company"
+                  ? "bg-slate-100 text-slate-800"
+                  : "bg-slate-200/60 text-slate-600"
               }`}
             >
-              ({users.filter((u) => u.accountType === "company").length})
+              {users.filter((u) => u.accountType === "company").length}
             </span>
           </button>
         </div>
@@ -172,75 +191,76 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
         {/* Search */}
         <form
           onSubmit={(e) => e.preventDefault()}
-          className="flex items-center w-64 text-sm gap-2 bg-slate-100 px-4 py-2 rounded-full"
+          className="flex items-center w-64 text-xs gap-2 bg-slate-50 border border-slate-200/80 px-3 py-2 rounded-xl focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500/20 transition-all"
         >
-          <Search size={16} className="text-slate-600" />
+          <Search size={15} className="text-slate-400 shrink-0" />
           <input
             type="text"
-            placeholder="Search users"
+            placeholder="Search by name or email..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-transparent outline-none placeholder-slate-600"
+            onChange={handleSearchChange}
+            className="w-full bg-transparent outline-none placeholder-slate-400 text-slate-800"
           />
         </form>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto w-full">
-        {/* Desktop Table */}
-        <table className="hidden md:table w-full text-sm text-left text-gray-600">
-          <thead className="bg-gray-50 text-gray-700 text-xs uppercase tracking-wider">
+      {/* Table Section */}
+      <div className="overflow-x-auto w-full rounded-xl border border-slate-100">
+        {/* Desktop View */}
+        <table className="hidden md:table w-full text-left text-xs">
+          <thead className="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-100">
             <tr>
-              <th className="py-3 px-4">Initials</th>
-              <th className="py-3 px-4">Name</th>
+              <th className="py-3 px-4">User</th>
+              <th className="py-3 px-4">Account Type</th>
               <th className="py-3 px-4">Email</th>
               <th className="py-3 px-4">Role</th>
               <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4">Action</th>
+              <th className="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
-            {currentUsers.map((user) => {
+          <tbody className="divide-y divide-slate-100 text-slate-700">
+            {currentUsers.map((u) => {
               const initials = getInitials(
-                user.name,
-                user.accountType,
-                user.companyName
+                u.name,
+                u.accountType,
+                u.companyName,
               );
-              const roleClass =
-                user.role === "admin"
-                  ? "bg-primary text-white cursor-not-allowed"
-                  : user.role === "editor"
-                  ? "bg-cyan-500 text-white"
-                  : "bg-blue-500 text-white";
-
-              const statusClass = user.isActive
-                ? "bg-purple-500 text-white"
-                : "bg-red-500 text-white";
+              const displayName =
+                u.accountType === "company"
+                  ? u.companyName || u.name || "N/A"
+                  : u.name || "N/A";
 
               return (
                 <tr
-                  key={user._id}
-                  className="hover:bg-gray-50 transition-colors"
+                  key={u._id}
+                  className="hover:bg-slate-50/70 transition-colors"
                 >
                   <td className="px-4 py-3">
-                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium text-sm">
-                      {initials}
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-emerald-100/70 text-emerald-800 font-bold flex items-center justify-center shrink-0">
+                        {initials}
+                      </div>
+                      <span className="font-semibold text-slate-900">
+                        {displayName}
+                      </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3">
-                    {user.accountType === "company"
-                      ? user.companyName || "N/A"
-                      : user.name || "N/A"}
+                  <td className="px-4 py-3 capitalize text-slate-500">
+                    {u.accountType || "Individual"}
                   </td>
-                  <td className="px-4 py-3">{user.email || "N/A"}</td>
+                  <td className="px-4 py-3 text-slate-600">
+                    {u.email || "N/A"}
+                  </td>
                   <td className="px-4 py-3">
                     <select
-                      value={user.role || "user"}
+                      value={u.role || "user"}
                       onChange={(e) =>
-                        handleUserStatusChange(user._id, e.target.value)
+                        handleUserStatusChange(u._id, e.target.value)
                       }
                       disabled={!isAdmin || isUpdating}
-                      className={`px-2 py-1 text-xs rounded border focus:outline-none cursor-pointer ${roleClass}`}
+                      className={`px-2 py-1 text-[11px] rounded-lg border focus:outline-none cursor-pointer transition-colors ${getRoleBadgeClass(
+                        u.role,
+                      )}`}
                     >
                       {availableRoles.map((role) => (
                         <option key={role} value={role}>
@@ -251,28 +271,31 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
                   </td>
                   <td className="px-4 py-3">
                     <select
-                      value={user.isActive ? "active" : "suspended"}
+                      value={u.isActive ? "active" : "suspended"}
                       onChange={(e) =>
                         handleUserStatusChange(
-                          user._id,
+                          u._id,
                           undefined,
-                          e.target.value === "active"
+                          e.target.value === "active",
                         )
                       }
                       disabled={!isAdmin || isUpdating}
-                      className={`px-2 py-1 text-xs rounded border cursor-pointer ${statusClass}`}
+                      className={`px-2 py-1 text-[11px] rounded-lg border focus:outline-none cursor-pointer transition-colors ${getStatusBadgeClass(
+                        u.isActive,
+                      )}`}
                     >
                       <option value="active">Active</option>
                       <option value="suspended">Suspended</option>
                     </select>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-right">
                     <button
-                      onClick={() => handleDeleteClick(user._id)}
+                      onClick={() => handleDeleteClick(u._id)}
                       disabled={!isAdmin || isDeleting}
-                      className="p-2 rounded-full hover:bg-red-200 text-red-600 transition"
+                      title="Delete User"
+                      className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors disabled:opacity-50"
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={16} />
                     </button>
                   </td>
                 </tr>
@@ -281,45 +304,53 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
           </tbody>
         </table>
 
-        {/* Mobile Cards */}
-        <div className="space-y-4 md:hidden">
-          {currentUsers.map((user) => {
-            const initial = getInitials(user.name);
-            const roleClass =
-              user.role === "admin"
-                ? "bg-primary text-white cursor-not-allowed"
-                : "bg-blue-100 text-blue-800";
-            const statusClass = user.isActive
-              ? "bg-purple-100 text-purple-800"
-              : "bg-red-100 text-red-800";
+        {/* Mobile View Cards */}
+        <div className="space-y-3 md:hidden p-1">
+          {currentUsers.map((u) => {
+            const initials = getInitials(u.name, u.accountType, u.companyName);
+            const displayName =
+              u.accountType === "company"
+                ? u.companyName || u.name || "N/A"
+                : u.name || "N/A";
 
             return (
               <div
-                key={user._id}
-                className="shadow-md shadow-gray-100 border border-gray-200/50 rounded-md p-4 bg-white space-y-3"
+                key={u._id}
+                className="border border-slate-200/80 rounded-xl p-4 bg-white space-y-3"
               >
-                {/* Header */}
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-medium text-sm">
-                    {initial}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-emerald-100/70 text-emerald-800 font-bold text-xs flex items-center justify-center shrink-0">
+                      {initials}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-900 text-sm">
+                        {displayName}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {u.email || "N/A"}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">{user.name || "N/A"}</p>
-                    <p className="text-xs text-gray-500">
-                      {user.email || "N/A"}
-                    </p>
-                  </div>
+                  <button
+                    onClick={() => handleDeleteClick(u._id)}
+                    disabled={!isAdmin || isDeleting}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
 
-                {/* Role + Status */}
-                <div className="flex justify-between items-center text-sm">
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 gap-2">
                   <select
-                    value={user.role || "user"}
+                    value={u.role || "user"}
                     onChange={(e) =>
-                      handleUserStatusChange(user._id, e.target.value)
+                      handleUserStatusChange(u._id, e.target.value)
                     }
-                    disabled={isUpdating}
-                    className={`px-2 py-1 text-xs rounded border focus:outline-none cursor-pointer ${roleClass}`}
+                    disabled={!isAdmin || isUpdating}
+                    className={`px-2 py-1 text-xs rounded-lg border ${getRoleBadgeClass(
+                      u.role,
+                    )}`}
                   >
                     {availableRoles.map((role) => (
                       <option key={role} value={role}>
@@ -329,31 +360,22 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
                   </select>
 
                   <select
-                    value={user.isActive ? "active" : "suspended"}
+                    value={u.isActive ? "active" : "suspended"}
                     onChange={(e) =>
                       handleUserStatusChange(
-                        user._id,
+                        u._id,
                         undefined,
-                        e.target.value === "active"
+                        e.target.value === "active",
                       )
                     }
-                    disabled={isUpdating}
-                    className={`px-2 py-1 text-xs rounded border cursor-pointer ${statusClass}`}
+                    disabled={!isAdmin || isUpdating}
+                    className={`px-2 py-1 text-xs rounded-lg border ${getStatusBadgeClass(
+                      u.isActive,
+                    )}`}
                   >
                     <option value="active">Active</option>
                     <option value="suspended">Suspended</option>
                   </select>
-                </div>
-
-                {/* Actions */}
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => handleDeleteClick(user._id)}
-                    disabled={isDeleting}
-                    className="p-2 rounded-full hover:bg-red-200 text-red-600 transition"
-                  >
-                    <Trash2 size={18} />
-                  </button>
                 </div>
               </div>
             );
@@ -361,69 +383,73 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
         </div>
       </div>
 
-      {/* Empty state */}
+      {/* Empty State */}
       {totalUsers === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          <p>No users found</p>
+        <div className="text-center py-12 text-slate-400">
+          <p className="text-sm font-medium">No matching users found.</p>
         </div>
       )}
 
-      {/* Pagination footer */}
+      {/* Pagination Footer */}
       {totalUsers > 0 && (
-        <div className="mt-4 flex flex-col md:flex-row justify-between items-center gap-3">
-          {/* Showing x–y of z */}
-          <p className="text-sm text-gray-600">
-            Showing <span className="font-medium">{indexOfFirstUser + 1}</span>{" "}
-            –{" "}
-            <span className="font-medium">
+        <div className="mt-5 flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-100 text-xs text-slate-500">
+          <p>
+            Showing{" "}
+            <span className="font-semibold text-slate-800">
+              {indexOfFirstUser + 1}
+            </span>{" "}
+            to{" "}
+            <span className="font-semibold text-slate-800">
               {Math.min(indexOfLastUser, totalUsers)}
             </span>{" "}
-            of <span className="font-medium">{totalUsers}</span> users
+            of{" "}
+            <span className="font-semibold text-slate-800">{totalUsers}</span>{" "}
+            users
           </p>
 
-          {/* Rows per page */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">Rows per page:</label>
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="border rounded px-2 py-1 text-sm"
-            >
-              {[5, 10, 20, 50].map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span>Rows:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="border border-slate-200 rounded-lg px-2 py-1 bg-white text-slate-800 outline-none"
+              >
+                {[5, 10, 20, 50].map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          {/* Pagination controls */}
-          <Pagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
+          </div>
         </div>
       )}
 
-      {/* Delete modal */}
+      {/* Delete Confirmation Modal */}
       {deleteUserId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 cursor-pointer bg-black/20"
+            className="absolute inset-0 bg-slate-900/30 backdrop-blur-xs transition-opacity"
             onClick={handleCancelDelete}
           />
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 z-10">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full z-10 border border-slate-100">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-base font-semibold text-slate-900">
                 Confirm Deletion
               </h3>
               <button
                 onClick={handleCancelDelete}
-                className="text-gray-400 hover:text-gray-600 cursor-pointer"
+                className="text-slate-400 hover:text-slate-600 text-sm font-bold"
               >
                 ✕
               </button>

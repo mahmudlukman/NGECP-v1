@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import toast from "react-hot-toast";
+import { Search, Navigation, Info, CheckCircle, Loader2 } from "lucide-react";
 
 interface GeneratorLocationSelectorProps {
   onLocationSelect: (location: {
@@ -20,8 +21,12 @@ interface GeneratorLocationSelectorProps {
   };
 }
 
+// Fix standard Leaflet default marker icons issue in React
 const markerIcon = new L.Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
@@ -90,7 +95,7 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
   initialLocation,
 }) => {
   const [selectedState, setSelectedState] = useState(
-    initialLocation?.state || ""
+    initialLocation?.state || "",
   );
   const [selectedLGA, setSelectedLGA] = useState(initialLocation?.lga || "");
   const [address, setAddress] = useState(initialLocation?.address || "");
@@ -99,13 +104,15 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
     initialLocation?.coordinates?.longitude || 8.6753,
   ]);
   const [zoom, setZoom] = useState(
-    initialLocation?.coordinates?.latitude ? 15 : 6
+    initialLocation?.coordinates?.latitude ? 15 : 6,
   );
+  const [isSearching, setIsSearching] = useState(false);
+  const [isLocatingUser, setIsLocatingUser] = useState(false);
   const [locationFound, setLocationFound] = useState(
-    !!initialLocation?.coordinates?.latitude
+    !!initialLocation?.coordinates?.latitude,
   );
 
-  // Reset form when initialLocation changes (useful for edit mode)
+  // Sync initial location changes
   useEffect(() => {
     if (initialLocation) {
       setSelectedState(initialLocation.state || "");
@@ -120,8 +127,7 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
     }
   }, [initialLocation]);
 
-  // Auto-update parent whenever location data changes
-  // Use useRef to prevent infinite loops
+  // Prevent redundant trigger loop to parent
   const prevLocationRef = useRef({
     state: "",
     lga: "",
@@ -131,7 +137,6 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
   });
 
   useEffect(() => {
-    // Only update if values actually changed
     const hasChanged =
       prevLocationRef.current.state !== selectedState ||
       prevLocationRef.current.lga !== selectedLGA ||
@@ -160,12 +165,13 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
   const handleGetCoordinates = async () => {
     if (!selectedState || !selectedLGA) return;
 
+    setIsSearching(true);
     const query = address
       ? `${address}, ${selectedLGA}, ${selectedState}, Nigeria`
       : `${selectedLGA}, ${selectedState}, Nigeria`;
 
     const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-      query
+      query,
     )}`;
 
     try {
@@ -178,18 +184,45 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
         setCoordinates([lat, lon]);
         setZoom(15);
         setLocationFound(true);
+        toast.success("Location pinned on map!");
       } else {
         toast.error(
-          "Location not found. You can click on the map or drag the marker to set your location manually."
+          "Address not found automatically. Drag the marker or click on the map to set location manually.",
         );
         setLocationFound(false);
       }
     } catch (error) {
-      console.error("Error fetching coordinates:", error);
-      toast.error(
-        "Failed to fetch location. You can click on the map or drag the marker to set your location manually."
-      );
+      console.error("Geocoding error:", error);
+      toast.error("Failed to connect to location service.");
+    } finally {
+      setIsSearching(false);
     }
+  };
+
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setIsLocatingUser(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setCoordinates([lat, lng]);
+        setZoom(16);
+        setLocationFound(true);
+        setIsLocatingUser(false);
+        toast.success("Current location captured!");
+      },
+      (err) => {
+        console.error("GPS error:", err);
+        toast.error("Unable to access current device GPS position.");
+        setIsLocatingUser(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
   };
 
   const handleMarkerDrag = (newPos: [number, number]) => {
@@ -200,29 +233,26 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
   const handleMapClick = (newPos: [number, number]) => {
     setCoordinates(newPos);
     setLocationFound(true);
-    if (zoom < 13) {
-      setZoom(15);
-    }
+    if (zoom < 13) setZoom(15);
   };
 
   return (
-    <div className="space-y-4">
-      <div className="grid md:grid-cols-3 gap-4">
+    <div className="space-y-5">
+      {/* Location Input Controls */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-200/80">
         <div>
-          <label className="block mb-1 font-semibold text-slate-600">
-            State <span className="text-red-500">*</span>
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            State <span className="text-rose-500">*</span>
           </label>
           <select
-            className="w-full border border-gray-300 outline-none focus:ring-2 focus:ring-primary text-slate-600 rounded-lg p-2"
+            className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
             value={selectedState}
             onChange={(e) => {
               setSelectedState(e.target.value);
               setSelectedLGA("");
             }}
           >
-            <option value="" className="text-slate-600">
-              Select a state
-            </option>
+            <option value="">Select State</option>
             {naijaStates.states().map((state) => (
               <option key={state} value={state}>
                 {state}
@@ -232,16 +262,16 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
         </div>
 
         <div>
-          <label className="block mb-1 font-semibold text-slate-600">
-            LGA <span className="text-red-500">*</span>
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            LGA <span className="text-rose-500">*</span>
           </label>
           <select
-            className="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-primary"
+            className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all disabled:bg-slate-100 disabled:text-slate-400"
             value={selectedLGA}
             onChange={(e) => setSelectedLGA(e.target.value)}
             disabled={!selectedState}
           >
-            <option value="" className="text-slate-600">Select LGA</option>
+            <option value="">Select LGA</option>
             {selectedState &&
               naijaStates.lgas(selectedState)?.lgas?.map((lga: string) => (
                 <option key={lga} value={lga}>
@@ -252,42 +282,62 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
         </div>
 
         <div>
-          <label className="block mb-1 font-semibold text-slate-600">
-            Address<span className="text-red-500">*</span>
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+            Street Address <span className="text-rose-500">*</span>
           </label>
           <input
             type="text"
-            placeholder="e.g., No. 10, Ado Bayero Road"
+            placeholder="e.g., Plot 12, Commercial Layout"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-primary"
+            className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-400"
           />
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={handleGetCoordinates}
-        disabled={!selectedState || !selectedLGA}
-        className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Find Location on Map
-      </button>
+      {/* Action Buttons */}
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={handleGetCoordinates}
+          disabled={!selectedState || !selectedLGA || isSearching}
+          className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm shadow-sm transition-all disabled:opacity-50 disabled:pointer-events-none"
+        >
+          {isSearching ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Search className="w-4 h-4" />
+          )}
+          <span>Search Map Location</span>
+        </button>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-        <p className="font-semibold mb-1">💡 How to set your location:</p>
-        <ul className="list-disc list-inside space-y-1">
-          <li>Click "Find Location on Map" to auto-detect coordinates</li>
-          <li>Drag the marker to adjust the exact position</li>
-          <li>Or click anywhere on the map to place the marker</li>
-          <li>
-            Location updates automatically - just click "Register Generator"
-            when done
-          </li>
-        </ul>
+        <button
+          type="button"
+          onClick={handleGetCurrentLocation}
+          disabled={isLocatingUser}
+          className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm shadow-sm transition-all disabled:opacity-50"
+        >
+          {isLocatingUser ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Navigation className="w-4 h-4 text-emerald-400" />
+          )}
+          <span>Use Current GPS Location</span>
+        </button>
       </div>
 
-      <div className="w-full h-96 rounded-lg overflow-hidden mt-4 shadow border-2 border-gray-300">
+      {/* Helper Callout Box */}
+      <div className="flex items-start gap-3 p-3.5 bg-sky-50/70 border border-sky-100 rounded-xl text-sky-900 text-xs sm:text-sm">
+        <Info className="w-4 h-4 text-sky-600 mt-0.5 flex-shrink-0" />
+        <p className="leading-relaxed">
+          <span className="font-bold">Tips for positioning:</span> Drag the red
+          pin or tap directly on the map to fine-tune the exact generator
+          placement coordinates.
+        </p>
+      </div>
+
+      {/* Map Display Container */}
+      <div className="relative w-full h-80 sm:h-96 rounded-2xl overflow-hidden shadow-md border border-slate-200 z-0">
         <MapContainer
           center={coordinates}
           zoom={zoom}
@@ -295,7 +345,7 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution="© OpenStreetMap contributors"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           <DraggableMarker
             position={coordinates}
@@ -304,16 +354,17 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
           <MapClickHandler onMapClick={handleMapClick} />
           <ChangeMapView coords={coordinates} zoom={zoom} />
         </MapContainer>
-      </div>
 
-      {locationFound && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-800">
-          <p>
-            <span className="font-semibold">✓ Location Set:</span> Lat:{" "}
-            {coordinates[0].toFixed(6)}, Lng: {coordinates[1].toFixed(6)}
-          </p>
-        </div>
-      )}
+        {/* Live Coordinate Badge Overlay */}
+        {locationFound && (
+          <div className="absolute bottom-3 left-3 z-[400] bg-slate-900/90 backdrop-blur-md text-white px-3.5 py-2 rounded-xl text-xs font-mono flex items-center gap-2 border border-slate-700/60 shadow-lg">
+            <CheckCircle className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+            <span>
+              Lat: {coordinates[0].toFixed(5)}, Lng: {coordinates[1].toFixed(5)}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

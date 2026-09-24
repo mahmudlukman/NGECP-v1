@@ -92,14 +92,14 @@ function FitBounds({ generators }: { generators: Generator[] }) {
         .filter(
           (gen) =>
             gen.location?.coordinates?.latitude &&
-            gen.location?.coordinates?.longitude
+            gen.location?.coordinates?.longitude,
         )
         .map(
           (gen) =>
             [
               gen.location.coordinates!.latitude,
               gen.location.coordinates!.longitude,
-            ] as [number, number]
+            ] as [number, number],
         );
 
       if (bounds.length > 0) {
@@ -116,7 +116,7 @@ const GeneratorsMapView = () => {
   const [page] = useState(1);
   const [pageSize] = useState(1000); // Load all generators for map
   const [selectedGenerator, setSelectedGenerator] = useState<Generator | null>(
-    null
+    null,
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -180,7 +180,7 @@ const GeneratorsMapView = () => {
       gen.location?.coordinates?.latitude &&
       gen.location?.coordinates?.longitude &&
       gen.location.coordinates.latitude !== 0 &&
-      gen.location.coordinates.longitude !== 0
+      gen.location.coordinates.longitude !== 0,
   );
 
   return (
@@ -352,18 +352,18 @@ const GeneratorsMapView = () => {
                       normalizeStatus(selectedGenerator.status) === "active"
                         ? "bg-[#875CF5] text-white"
                         : normalizeStatus(selectedGenerator.status) ===
-                          "inactive"
-                        ? "bg-[#FA2C37] text-white"
-                        : normalizeStatus(selectedGenerator.status) ===
-                          "underinspection"
-                        ? "bg-[#06B6D4] text-white"
-                        : normalizeStatus(selectedGenerator.status) ===
-                          "compliant"
-                        ? "bg-[#4fbf8b] text-white"
-                        : normalizeStatus(selectedGenerator.status) ===
-                          "noncompliant"
-                        ? "bg-[#c40477ff] text-white"
-                        : "bg-[#6B7280] text-white"
+                            "inactive"
+                          ? "bg-[#FA2C37] text-white"
+                          : normalizeStatus(selectedGenerator.status) ===
+                              "underinspection"
+                            ? "bg-[#06B6D4] text-white"
+                            : normalizeStatus(selectedGenerator.status) ===
+                                "compliant"
+                              ? "bg-[#4fbf8b] text-white"
+                              : normalizeStatus(selectedGenerator.status) ===
+                                  "noncompliant"
+                                ? "bg-[#c40477ff] text-white"
+                                : "bg-[#6B7280] text-white"
                     }`}
                   >
                     {selectedGenerator.status?.replace("_", " ") || "Unknown"}

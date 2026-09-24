@@ -198,3 +198,77 @@ export interface IInspectionReport {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface EmissionsTestData {
+  passed: boolean;
+  co2Level: number;
+  noxLevel: number;
+  particulateLevel: number;
+  notes: string;
+}
+
+export interface NoiseLevelData {
+  passed: boolean;
+  decibelReading: number;
+  notes: string;
+}
+
+export interface FuelEfficiencyData {
+  passed: boolean;
+  rating: string;
+  notes: string;
+}
+
+export interface IssueListData {
+  passed: boolean;
+  issues: string[];
+  notes: string;
+}
+
+export interface InspectionReportFormData {
+  overallCompliance: boolean;
+  complianceScore: number;
+  emissionsTest: EmissionsTestData;
+  noiseLevel: NoiseLevelData;
+  fuelEfficiency: FuelEfficiencyData;
+  maintenanceStatus: IssueListData;
+  safetyCompliance: IssueListData;
+  recommendations: string[];
+  requiredActions: string[];
+  nextInspectionDate: string;
+}
+
+export const initialReportFormData: InspectionReportFormData = {
+  overallCompliance: true,
+  complianceScore: 0,
+  emissionsTest: {
+    passed: true,
+    co2Level: 0,
+    noxLevel: 0,
+    particulateLevel: 0,
+    notes: "",
+  },
+  noiseLevel: {
+    passed: true,
+    decibelReading: 0,
+    notes: "",
+  },
+  fuelEfficiency: {
+    passed: true,
+    rating: "",
+    notes: "",
+  },
+  maintenanceStatus: {
+    passed: true,
+    issues: [],
+    notes: "",
+  },
+  safetyCompliance: {
+    passed: true,
+    issues: [],
+    notes: "",
+  },
+  recommendations: [],
+  requiredActions: [],
+  nextInspectionDate: "",
+};

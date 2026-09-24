@@ -30,7 +30,7 @@ const PaymentSuccess = () => {
       tx_ref: tx_ref || "",
       transaction_id: transaction_id || "",
     },
-    { skip: !status || !tx_ref || !transaction_id }
+    { skip: !status || !tx_ref || !transaction_id },
   );
 
   // Handle verification success → redirect after delay

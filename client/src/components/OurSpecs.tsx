@@ -1,39 +1,75 @@
-import Title from "./Title";
-import { ourSpecsData } from "../utils/data";
+import React from "react";
+import { ShieldCheck, FileCheck, BellRing, Smartphone } from "lucide-react";
 
-const OurSpecs = () => {
+const OurSpecs: React.FC = () => {
+  const specs = [
+    {
+      icon: ShieldCheck,
+      title: "Emission Compliance",
+      description:
+        "Comprehensive testing protocols measuring CO2, sound decibels, and particulate thresholds.",
+    },
+    {
+      icon: FileCheck,
+      title: "Digital Certification",
+      description:
+        "Instantly generated digital reports and downloadable compliance certificates upon passing inspections.",
+    },
+    {
+      icon: BellRing,
+      title: "Automated Reminders",
+      description:
+        "Proactive automated notifications before inspection due dates to ensure continuous compliance.",
+    },
+    {
+      icon: Smartphone,
+      title: "Mobile Field Inspection",
+      description:
+        "Optimized mobile portal for inspectors to log technical generator specs directly on-site.",
+    },
+  ];
+
   return (
-    <div className="px-6 my-20 max-w-6xl mx-auto">
-      <Title
-        visibleButton={false}
-        title="Key Features"
-        description="The NGECP Website offers a range of key features designed to streamline generator registration and monitoring in Nigeria. Users can access real-time data, compliance resources, and insightful reports to support environmental sustainability efforts."
-      />
+    <section className="py-20 bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-3 py-1 rounded-full">
+            Core Features
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-800 tracking-tight">
+            Engineered for Precision & Convenience
+          </h2>
+          <p className="text-slate-600 text-sm sm:text-base">
+            Everything required to manage equipment registration, schedule field
+            audits, and monitor emission benchmarks.
+          </p>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 gap-y-10 mt-26">
-        {ourSpecsData.map((spec, index) => {
-          return (
-            <div
-              className="relative h-44 px-8 flex flex-col items-center justify-center w-full text-center border rounded-lg group"
-              style={{
-                backgroundColor: spec.accent + 10,
-                borderColor: spec.accent + 30,
-              }}
-              key={index}
-            >
-              <h3 className="text-slate-800 font-medium">{spec.title}</h3>
-              <p className="text-sm text-slate-600 mt-3">{spec.description}</p>
+        {/* Feature Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {specs.map((spec, index) => {
+            const Icon = spec.icon;
+            return (
               <div
-                className="absolute -top-5 text-white size-10 flex items-center justify-center rounded-md group-hover:scale-105 transition"
-                style={{ backgroundColor: spec.accent }}
+                key={index}
+                className="bg-white p-6 rounded-2xl border border-slate-200/80 hover:border-emerald-300 transition-all hover:shadow-xs group"
               >
-                <spec.icon size={20} />
+                <div className="w-12 h-12 bg-slate-100 group-hover:bg-emerald-600 text-slate-700 group-hover:text-white rounded-xl flex items-center justify-center mb-5 transition-colors">
+                  <Icon className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">
+                  {spec.title}
+                </h3>
+                <p className="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                  {spec.description}
+                </p>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 

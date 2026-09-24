@@ -1,4 +1,5 @@
-import { useState} from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useRegisterGeneratorMutation } from "../../redux/features/generator/generatorApi";
 import type { ServerError } from "../../@types";
@@ -6,15 +7,15 @@ import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import GeneratorLocationSelector from "../../components/GeneratorLocationSelector";
 
 const RegisterGenerator = () => {
+  const navigate = useNavigate();
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const [serialNumber, setSerialNumber] = useState("");
   const [capacity, setCapacity] = useState("");
   const [yearOfManufacture, setYearOfManufacture] = useState("");
   const [fuelType, setFuelType] = useState("");
-  const [formKey, setFormKey] = useState(0); // Key to force component re-render
+  const [formKey, setFormKey] = useState(0);
 
-  // Location details come from GeneratorLocationSelector
   const [location, setLocation] = useState({
     address: "",
     state: "",
@@ -24,7 +25,6 @@ const RegisterGenerator = () => {
 
   const [registerGenerator, { isLoading }] = useRegisterGeneratorMutation();
 
-  // When child component selects a location, update parent state
   const handleLocationSelect = (data: {
     address: string;
     state: string;
@@ -83,7 +83,10 @@ const RegisterGenerator = () => {
         lga: "",
         coordinates: { latitude: 0, longitude: 0 },
       });
-      setFormKey((prev) => prev + 1); // Increment key to force re-render
+      setFormKey((prev) => prev + 1);
+
+      // Optional: Navigate back to manage generators list after successful registration
+      navigate("/admin/manage-generators");
     } catch (err: unknown) {
       const serverError = err as ServerError;
       const errorMessage =
@@ -94,11 +97,10 @@ const RegisterGenerator = () => {
     }
   };
 
-  // Generate year options from 1980 to current year
   const currentYear = new Date().getFullYear();
   const years = Array.from(
     { length: currentYear - 1979 },
-    (_, i) => currentYear - i
+    (_, i) => currentYear - i,
   );
 
   return (
@@ -127,7 +129,7 @@ const RegisterGenerator = () => {
                   value={brand}
                   onChange={(e) => setBrand(e.target.value)}
                   placeholder="e.g. Perkins"
-                  className="w-full px-3 py-2 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary bg-gray-50 text-gray-700"
                   required
                 />
               </div>
@@ -140,7 +142,7 @@ const RegisterGenerator = () => {
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
                   placeholder="e.g. 404D-22G"
-                  className="w-full px-3 py-2 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary bg-gray-50 text-gray-700"
                   required
                 />
               </div>
@@ -156,7 +158,7 @@ const RegisterGenerator = () => {
                 value={serialNumber}
                 onChange={(e) => setSerialNumber(e.target.value)}
                 placeholder="Unique serial number"
-                className="w-full px-3 py-2 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary bg-gray-50 text-gray-700"
                 required
               />
             </div>
@@ -172,7 +174,7 @@ const RegisterGenerator = () => {
                   value={capacity}
                   onChange={(e) => setCapacity(e.target.value)}
                   placeholder="e.g. 150"
-                  className="w-full px-3 py-2 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary bg-gray-50 text-gray-700"
                   required
                 />
               </div>
@@ -183,7 +185,7 @@ const RegisterGenerator = () => {
                 <select
                   value={yearOfManufacture}
                   onChange={(e) => setYearOfManufacture(e.target.value)}
-                  className="w-full px-3 py-2 border text-slate-600 border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 border text-slate-600 border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary bg-gray-50"
                   required
                 >
                   <option value="">Select year</option>
@@ -204,7 +206,7 @@ const RegisterGenerator = () => {
               <select
                 value={fuelType}
                 onChange={(e) => setFuelType(e.target.value)}
-                className="w-full px-3 py-2 border text-slate-600 border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border text-slate-600 border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary bg-gray-50"
                 required
               >
                 <option value="">Select fuel type</option>
@@ -228,7 +230,7 @@ const RegisterGenerator = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full md:w-auto px-6 py-2.5 bg-primary text-white font-medium rounded-lg shadow hover:bg-primary/90 transition disabled:opacity-50"
+              className="w-full md:w-auto px-6 py-2.5 bg-primary text-white font-medium rounded-lg shadow hover:bg-primary/90 transition disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? "Registering..." : "Register Generator"}
             </button>

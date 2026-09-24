@@ -20,7 +20,6 @@ const UpdateGenerator = () => {
   const [capacity, setCapacity] = useState("");
   const [yearOfManufacture, setYearOfManufacture] = useState("");
   const [fuelType, setFuelType] = useState("");
-  const [isInitialLoad, setIsInitialLoad] = useState(true); // Add flag
 
   const [location, setLocation] = useState({
     address: "",
@@ -36,9 +35,9 @@ const UpdateGenerator = () => {
   const [updateGenerator, { isLoading: isUpdating }] =
     useUpdateGeneratorMutation();
 
-  // Populate form with existing data
+  // Populate form with existing data once fetched
   useEffect(() => {
-    if (generatorData?.generator && isInitialLoad) {
+    if (generatorData?.generator) {
       const gen = generatorData.generator;
       setBrand(gen.brand || "");
       setModel(gen.model || "");
@@ -56,10 +55,8 @@ const UpdateGenerator = () => {
           longitude: gen.location?.coordinates?.longitude || 0,
         },
       });
-
-      setIsInitialLoad(false); // Prevent future updates from this effect
     }
-  }, [generatorData, isInitialLoad]);
+  }, [generatorData]);
 
   const handleLocationSelect = useCallback(
     (data: {
@@ -75,7 +72,7 @@ const UpdateGenerator = () => {
         coordinates: data.coordinates || { latitude: 0, longitude: 0 },
       });
     },
-    []
+    [],
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,9 +106,8 @@ const UpdateGenerator = () => {
       await updateGenerator({ id, data: updatedData }).unwrap();
       toast.success("Generator updated successfully");
 
-      // Use setTimeout to ensure state updates before navigation
       setTimeout(() => {
-        navigate("/admin/manage-generators", { replace: true }); // or wherever you want to redirect
+        navigate("/admin/manage-generators", { replace: true });
       }, 100);
     } catch (err: unknown) {
       const serverError = err as ServerError;
@@ -124,14 +120,14 @@ const UpdateGenerator = () => {
   };
 
   const handleCancel = () => {
-    navigate(-1); // Go back to previous page
+    navigate(-1);
   };
 
   // Generate year options from 1980 to current year
   const currentYear = new Date().getFullYear();
   const years = Array.from(
     { length: currentYear - 1979 },
-    (_, i) => currentYear - i
+    (_, i) => currentYear - i,
   );
 
   if (isFetching) {
@@ -151,7 +147,7 @@ const UpdateGenerator = () => {
               <p className="text-red-600 text-lg mb-4">Generator not found</p>
               <button
                 onClick={() => navigate("/admin/manage-generators")}
-                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 cursor-pointer"
               >
                 Back to Generators
               </button>
@@ -208,7 +204,7 @@ const UpdateGenerator = () => {
 
             {/* Serial Number */}
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700 text-slate-600">
+              <label className="text-sm font-medium text-slate-600">
                 Serial Number <span className="text-red-500">*</span>
               </label>
               <input
@@ -243,7 +239,7 @@ const UpdateGenerator = () => {
                 <select
                   value={yearOfManufacture}
                   onChange={(e) => setYearOfManufacture(e.target.value)}
-                  className="w-full px-3 py-2 text-slate-600 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full px-3 py-2 text-slate-600 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary cursor-pointer"
                   required
                 >
                   <option value="">Select year</option>
@@ -264,7 +260,7 @@ const UpdateGenerator = () => {
               <select
                 value={fuelType}
                 onChange={(e) => setFuelType(e.target.value)}
-                className="w-full px-3 py-2 text-slate-600 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 text-slate-600 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary cursor-pointer"
                 required
               >
                 <option value="">Select fuel type</option>
@@ -289,7 +285,7 @@ const UpdateGenerator = () => {
               <button
                 type="submit"
                 disabled={isUpdating}
-                className="px-6 py-2.5 bg-primary text-white font-medium rounded-lg shadow hover:bg-primary/90 transition disabled:opacity-50"
+                className="px-6 py-2.5 bg-primary text-white font-medium rounded-lg shadow hover:bg-primary/90 transition disabled:opacity-50 cursor-pointer"
               >
                 {isUpdating ? "Updating..." : "Update Generator"}
               </button>
@@ -297,7 +293,7 @@ const UpdateGenerator = () => {
                 type="button"
                 onClick={handleCancel}
                 disabled={isUpdating}
-                className="px-6 py-2.5 bg-gray-500 text-white font-medium rounded-lg shadow hover:bg-gray-600 transition disabled:opacity-50"
+                className="px-6 py-2.5 bg-gray-500 text-white font-medium rounded-lg shadow hover:bg-gray-600 transition disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
