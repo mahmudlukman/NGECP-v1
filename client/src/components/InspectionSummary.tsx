@@ -12,7 +12,7 @@ const InspectionSummary = ({
   model,
 }: InspectionSummaryProps) => {
   return (
-    <div className="flex flex-wrap items-center gap-x-8 gap-y-3 bg-slate-900 text-slate-100 rounded-2xl px-6 py-4 mb-6 shadow-sm">
+    <div className="flex flex-wrap items-center gap-x-8 gap-y-3 bg-emerald-600 text-white rounded-2xl px-6 py-4 mb-6 shadow-sm">
       <div className="flex items-center gap-2 text-slate-300 shrink-0">
         <ClipboardCheck size={16} />
         <span className="text-xs font-medium uppercase tracking-wide">
