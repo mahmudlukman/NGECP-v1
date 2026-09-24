@@ -8,7 +8,15 @@ import {
 import { initialReportFormData, type ServerError } from "../../@types";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import Loading from "../../components/Loading";
-import { ArrowLeft, ClipboardList, ListChecks } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ClipboardList,
+  ListChecks,
+  Activity,
+  Gauge,
+  CheckCircle2,
+} from "lucide-react";
 import InspectionSummary from "../../components/InspectionSummary";
 import ComplianceOverviewCard from "../../components/Cards/ComplianceOverviewCard";
 import EmissionsTestCard from "../../components/Cards/EmmissionsTestCard";
@@ -19,9 +27,13 @@ import SafetyComplianceCard from "../../components/Cards/SafetyComplianceCard";
 import TagListCard from "../../components/Cards/TagListCard";
 import FormFooter from "../../components/FormFooter";
 
+type TabType = "overview" | "tests" | "actions";
+
 const WriteReport = () => {
   const { inspectionId } = useParams();
   const navigate = useNavigate();
+
+  const [activeTab, setActiveTab] = useState<TabType>("overview");
 
   const { data: inspectionData, isLoading: isLoadingInspection } =
     useGetReportByInspectionIdQuery(inspectionId || "");
@@ -60,34 +72,78 @@ const WriteReport = () => {
 
   return (
     <DashboardLayout activeMenu="Inspections">
-      <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
-        <div className="no-scrollbar flex-1 h-[90vh] overflow-y-scroll flex flex-col justify-between pr-2">
+      <div className="my-5 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 w-full">
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            type="button"
+            onClick={() => navigate("/admin/inspections")}
+            className="p-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer"
+          >
+            <ArrowLeft size={20} />
+          </button>
           <div>
-            <div className="flex items-center gap-4 mb-6">
-              <button
-                type="button"
-                onClick={() => navigate("/admin/inspections")}
-                className="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition-colors cursor-pointer"
-              >
-                <ArrowLeft size={20} />
-              </button>
-              <h1 className="text-2xl text-slate-600 font-semibold">
-                Write{" "}
-                <span className="text-slate-800 font-bold">
-                  Inspection Report
-                </span>
-              </h1>
-            </div>
+            <h1 className="text-2xl text-slate-700 font-semibold">
+              Write{" "}
+              <span className="text-primary font-bold">Inspection Report</span>
+            </h1>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Complete the multi-step inspection record below
+            </p>
+          </div>
+        </div>
 
-            {inspectionData?.inspection && (
-              <InspectionSummary
-                generatorId={inspectionData.inspection.generator?.generatorId}
-                brand={inspectionData.inspection.generator?.brand}
-                model={inspectionData.inspection.generator?.model}
-              />
-            )}
+        {inspectionData?.inspection && (
+          <InspectionSummary
+            generatorId={inspectionData.inspection.generator?.generatorId}
+            brand={inspectionData.inspection.generator?.brand}
+            model={inspectionData.inspection.generator?.model}
+          />
+        )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Wizard Navigation Tabs */}
+        <div className="flex border-b border-slate-200 mb-6 gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveTab("overview")}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors cursor-pointer ${
+              activeTab === "overview"
+                ? "border-primary text-primary"
+                : "border-transparent text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            <Gauge size={16} />
+            1. Overview & Compliance
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("tests")}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors cursor-pointer ${
+              activeTab === "tests"
+                ? "border-primary text-primary"
+                : "border-transparent text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            <Activity size={16} />
+            2. Tests & Diagnostics
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("actions")}
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors cursor-pointer ${
+              activeTab === "actions"
+                ? "border-primary text-primary"
+                : "border-transparent text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            <CheckCircle2 size={16} />
+            3. Actions & Schedule
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* TAB 1: OVERVIEW */}
+          {activeTab === "overview" && (
+            <div className="space-y-6 animate-fadeIn">
               <ComplianceOverviewCard
                 overallCompliance={formData.overallCompliance}
                 complianceScore={formData.complianceScore}
@@ -99,6 +155,22 @@ const WriteReport = () => {
                 }
               />
 
+              <div className="flex justify-end pt-4">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("tests")}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors cursor-pointer"
+                >
+                  Next: Tests & Diagnostics
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: TESTS & DIAGNOSTICS */}
+          {activeTab === "tests" && (
+            <div className="space-y-6 animate-fadeIn">
               <EmissionsTestCard
                 value={formData.emissionsTest}
                 onChange={(emissionsTest) =>
@@ -134,6 +206,29 @@ const WriteReport = () => {
                 }
               />
 
+              <div className="flex justify-between pt-4">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("overview")}
+                  className="px-6 py-2.5 rounded-lg border border-slate-300 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("actions")}
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors cursor-pointer"
+                >
+                  Next: Actions & Schedule
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: ACTIONS & SCHEDULE */}
+          {activeTab === "actions" && (
+            <div className="space-y-6 animate-fadeIn">
               <TagListCard
                 icon={ClipboardList}
                 title="Recommendations"
@@ -197,15 +292,24 @@ const WriteReport = () => {
                 />
               </div>
 
-              <FormFooter
-                onCancel={() => navigate("/admin/inspections")}
-                isSubmitting={isCreating}
-                submitLabel="Create report"
-                submittingLabel="Creating report..."
-              />
-            </form>
-          </div>
-        </div>
+              <div className="flex justify-between pt-4">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("tests")}
+                  className="px-6 py-2.5 rounded-lg border border-slate-300 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Back
+                </button>
+                <FormFooter
+                  onCancel={() => navigate("/admin/inspections")}
+                  isSubmitting={isCreating}
+                  submitLabel="Create report"
+                  submittingLabel="Creating report..."
+                />
+              </div>
+            </div>
+          )}
+        </form>
       </div>
     </DashboardLayout>
   );

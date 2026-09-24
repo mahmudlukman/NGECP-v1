@@ -1,5 +1,4 @@
 import React from "react";
-
 import {
   PieChart,
   Pie,
@@ -8,7 +7,6 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-
 import CustomLegend from "./CustomLegend";
 import CustomTooltip from "./CustomTooltip";
 
@@ -49,8 +47,8 @@ const CustomPieChart: React.FC<CustomPieChartProps> = ({
       : "";
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
-      <ResponsiveContainer width="100%" height={380}>
+    <div className="w-full h-[320px]">
+      <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={data}
@@ -58,8 +56,8 @@ const CustomPieChart: React.FC<CustomPieChartProps> = ({
             nameKey="name"
             cx="50%"
             cy="45%"
-            outerRadius={120}
-            innerRadius={90}
+            outerRadius={105}
+            innerRadius={75}
             paddingAngle={3}
             cornerRadius={2}
             stroke="none"
