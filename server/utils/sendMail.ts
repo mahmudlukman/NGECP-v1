@@ -23,7 +23,7 @@ const sendMail = async (options: EmailOptions): Promise<void> => {
 
   // Send with Resend
   await resend.emails.send({
-    from: "NGECP <onboarding@happinessani.com>",
+    from: "NGECP <onboarding@resend.dev>",
     to: email,
     subject,
     html,

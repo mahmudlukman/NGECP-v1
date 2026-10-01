@@ -1,131 +1,183 @@
-import React from "react";
-import {
-  ArrowRight,
-  ShieldCheck,
-  CheckCircle,
-  Award,
-  Sparkles,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { ArrowRight, ShieldCheck, CheckCircle, Award } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+/**
+ * Fonts: add to index.html <head> (falls back to Georgia / system sans if missing):
+ * <link rel="preconnect" href="https://fonts.googleapis.com" />
+ * <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+ * <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet" />
+ */
+
+const SCORE = 98.4;
+const RADIUS = 54;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+const stats = [
+  { label: "Registered units", value: "12,480" },
+  { label: "Active field inspectors", value: "340" },
+  { label: "Emission tests passed", value: "94.2%" },
+];
+
+const features = ["Real-time audits", "Verified reports", "Automated alerts"];
 
 const MainBanner: React.FC = () => {
   const navigate = useNavigate();
+  const [drawn, setDrawn] = useState(false);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setDrawn(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const offset = drawn ? CIRCUMFERENCE * (1 - SCORE / 100) : CIRCUMFERENCE;
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-emerald-50/60 via-slate-50 to-slate-50 pt-12 pb-20 lg:pt-20 lg:pb-28">
-      {/* Decorative Subtle Background Blurs */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-emerald-100/40 blur-3xl rounded-full pointer-events-none -z-10" />
+    <section className="relative overflow-hidden font-[Figtree,ui-sans-serif,system-ui,sans-serif] text-[#0B1F1A]">
+      {/* Fine dot texture, fades toward the right */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 opacity-[0.35] [background-image:radial-gradient(#0B1F1A_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_right,black,transparent_70%)]"
+      />
+      {/* Soft warm glow anchoring the panel */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-32 top-1/3 -z-10 h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(closest-side,rgba(22,120,90,0.10),transparent)]"
+      />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Left Column: Hero Text & Actions */}
-          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100/80 border border-emerald-200 text-emerald-800 text-xs font-semibold tracking-wide">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Next-Gen Emission & Compliance Management</span>
+      <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
+        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-12">
+          {/* Left: message and actions */}
+          <div className="lg:col-span-7">
+            <div className="mb-6 flex items-center gap-3">
+              <span className="h-px w-10 bg-[#16785A]" />
+              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#16785A]">
+                Official Compliance Platform
+              </span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-800 tracking-tight leading-[1.15]">
-              Automated Tracking for{" "}
-              <span className="text-emerald-600">Cleaner Power</span> &
-              Compliance
+            <h1 className="max-w-2xl font-[Newsreader,Georgia,serif] text-4xl font-normal leading-[1.08] tracking-tight sm:text-5xl lg:text-[4.25rem]">
+              Automated tracking for cleaner power and compliance
             </h1>
 
-            <p className="text-slate-600 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
-              Empowering organizations, inspectors, and equipment owners to
-              track generator health, automate field audits, and reduce harmful
-              emissions across nationwide networks.
+            <p className="mt-7 max-w-xl text-base leading-relaxed text-[#0B1F1A]/70 sm:text-lg">
+              Track generator health, automate field audits, and reduce harmful
+              emissions across nationwide networks, for organizations,
+              inspectors, and equipment owners.
             </p>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
+            <div className="mt-10 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
               <button
                 type="button"
                 onClick={() => navigate("/dashboard")}
-                className="w-full sm:w-auto px-7 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm rounded-xl transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2 group"
+                className="group inline-flex items-center gap-2.5 rounded-full bg-[#0B1F1A] px-7 py-3.5 text-sm font-semibold text-[#F3F1EA] shadow-[0_10px_30px_-12px_rgba(11,31,26,0.55)] transition-all hover:-translate-y-0.5 hover:bg-[#12332b] hover:shadow-[0_16px_36px_-12px_rgba(11,31,26,0.6)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#16785A]"
               >
-                <span>Launch Portal</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                Launch portal
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
               </button>
 
               <button
                 type="button"
                 onClick={() => navigate("/about")}
-                className="w-full sm:w-auto px-7 py-3.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:text-slate-900 font-semibold text-sm rounded-xl transition-all shadow-2xs flex items-center justify-center"
+                className="border-b border-[#0B1F1A]/30 pb-0.5 text-sm font-medium text-[#0B1F1A]/85 transition-colors hover:border-[#0B1F1A] hover:text-[#0B1F1A] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#16785A]"
               >
-                Learn More
+                Learn more
               </button>
             </div>
 
-            {/* Quick Feature Badges */}
-            <div className="pt-6 border-t border-slate-200/60 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs font-medium text-slate-500">
-              <div className="flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4 text-emerald-600" />
-                <span>Real-time Audits</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4 text-emerald-600" />
-                <span>Verified Reports</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4 text-emerald-600" />
-                <span>Automated Alerts</span>
-              </div>
-            </div>
+            <ul className="mt-14 flex flex-wrap gap-x-8 gap-y-3 border-t border-[#0B1F1A]/10 pt-6 text-sm text-[#0B1F1A]/60">
+              {features.map((f) => (
+                <li key={f} className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 text-[#16785A]" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Right Column: Interactive Card Showcase */}
-          <div className="lg:col-span-5 relative">
-            <div className="relative mx-auto max-w-md lg:max-w-none bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
-              <div className="flex items-center justify-between pb-6 border-b border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 font-bold">
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-800 text-sm">
-                      System Compliance
-                    </h3>
-                    <p className="text-xs text-slate-500">Active Monitoring</p>
-                  </div>
-                </div>
-                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  98.4%
+          {/* Right: compliance panel */}
+          <div className="lg:col-span-5">
+            <div className="relative mx-auto max-w-md rounded-3xl border border-[#0B1F1A]/10 bg-white p-8 shadow-[0_30px_60px_-20px_rgba(11,31,26,0.18)] sm:p-10 lg:max-w-none">
+              {/* Corner accent */}
+              <span
+                aria-hidden="true"
+                className="absolute -top-px -left-px h-14 w-14 rounded-tl-3xl border-t-2 border-l-2 border-[#16785A]/40"
+              />
+
+              <div className="flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#16785A]/25 text-[#16785A]">
+                  <ShieldCheck className="h-5 w-5" />
                 </span>
-              </div>
-
-              <div className="space-y-4 py-6">
-                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-600">
-                    Registered Units
-                  </span>
-                  <span className="text-sm font-bold text-slate-800">
-                    12,480
-                  </span>
-                </div>
-                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-600">
-                    Active Field Inspectors
-                  </span>
-                  <span className="text-sm font-bold text-slate-800">340</span>
-                </div>
-                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                  <span className="text-xs font-medium text-slate-600">
-                    Emission Tests Passed
-                  </span>
-                  <span className="text-sm font-bold text-emerald-600">
-                    94.2%
-                  </span>
+                <div>
+                  <h2 className="text-sm font-semibold">System compliance</h2>
+                  <p className="flex items-center gap-1.5 text-xs text-[#0B1F1A]/55">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#16785A]/60 motion-reduce:hidden" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#16785A]" />
+                    </span>
+                    Active monitoring
+                  </p>
                 </div>
               </div>
 
-              <div className="p-4 bg-emerald-600 text-white rounded-xl flex items-center gap-3">
-                <Award className="w-6 h-6 text-emerald-200 flex-shrink-0" />
-                <p className="text-xs font-medium leading-tight">
-                  Certified compliant with federal atmospheric and acoustic
-                  guidelines.
-                </p>
+              {/* Gauge */}
+              <div className="relative mx-auto my-9 h-44 w-44">
+                <svg
+                  viewBox="0 0 128 128"
+                  className="h-full w-full -rotate-90"
+                  role="img"
+                  aria-label={`Compliance score ${SCORE} percent`}
+                >
+                  <circle
+                    cx="64"
+                    cy="64"
+                    r={RADIUS}
+                    fill="none"
+                    stroke="rgba(11,31,26,0.1)"
+                    strokeWidth="4"
+                  />
+                  <circle
+                    cx="64"
+                    cy="64"
+                    r={RADIUS}
+                    fill="none"
+                    stroke="#16785A"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray={CIRCUMFERENCE}
+                    strokeDashoffset={offset}
+                    className="transition-[stroke-dashoffset] duration-[1600ms] ease-out motion-reduce:transition-none"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="font-[Newsreader,Georgia,serif] text-4xl tabular-nums">
+                    {SCORE}%
+                  </span>
+                  <span className="mt-1 text-xs text-[#0B1F1A]/55">
+                    compliant
+                  </span>
+                </div>
               </div>
+
+              <dl className="divide-y divide-[#0B1F1A]/10 border-y border-[#0B1F1A]/10">
+                {stats.map((s) => (
+                  <div
+                    key={s.label}
+                    className="flex items-baseline justify-between py-4"
+                  >
+                    <dt className="text-sm text-[#0B1F1A]/65">{s.label}</dt>
+                    <dd className="font-[Newsreader,Georgia,serif] text-xl tabular-nums">
+                      {s.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+
+              <p className="mt-6 flex items-start gap-3 text-xs leading-relaxed text-[#0B1F1A]/60">
+                <Award className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#16785A]" />
+                Certified compliant with federal atmospheric and acoustic
+                guidelines.
+              </p>
             </div>
           </div>
         </div>

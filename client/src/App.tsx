@@ -28,6 +28,10 @@ import MyReports from "./pages/user/MyReports";
 import InspectionReceipt from "./pages/InspectionReceipt";
 import UpdateMyGenerator from "./pages/user/UpdateMyGenerator";
 import MyInspections from "./pages/user/MyInspection";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsConditions from "./pages/Terms&Conditions";
+import DataProtection from "./pages/DataProtection";
+import ReportsAnalysis from "./pages/Reports&Analysis";
 
 const router = createBrowserRouter([
   {
@@ -36,6 +40,10 @@ const router = createBrowserRouter([
       { path: "/", element: <Home /> },
       { path: "/about", element: <About /> },
       { path: "/contact", element: <Contact /> },
+      { path: "/privacy-policy", element: <PrivacyPolicy /> },
+      { path: "/terms-conditions", element: <TermsConditions /> },
+      { path: "/data-protection", element: <DataProtection /> },
+      { path: "/reports-analysis", element: <ReportsAnalysis /> },
       { path: "/reset-password", element: <ResetPassword /> },
       { path: "/activation/:activation_token", element: <Activation /> },
       {

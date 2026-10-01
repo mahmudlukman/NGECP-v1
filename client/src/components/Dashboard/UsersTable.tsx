@@ -4,12 +4,19 @@ import {
 } from "../../redux/features/user/userApi";
 import { toast } from "react-hot-toast";
 import { useState, useMemo } from "react";
-import type { RootState, ServerError, User } from "../../@types";
+import type { ServerError, User } from "../../@types";
 import DeleteAlert from "../DeleteAlert";
 import { Trash2, Search, User as UserIcon, Building2 } from "lucide-react";
 import { getInitials } from "../../utils/helper";
 import Pagination from "../Pagination";
 import { useSelector } from "react-redux";
+import type { RootState } from "../../redux/store";
+
+const YouBadge = () => (
+  <span className="rounded-full bg-[#16785A]/10 px-2 py-0.5 text-[10px] font-medium text-[#16785A]">
+    You
+  </span>
+);
 
 const UsersTable = ({ usersData }: { usersData: User[] }) => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -72,6 +79,16 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
     newRole?: string,
     isActive?: boolean,
   ) => {
+    // Prevent the logged-in admin from changing their own role/status
+    if (userId === user?._id) {
+      toast.error(
+        newRole
+          ? "You cannot change your own role."
+          : "You cannot suspend your own account.",
+      );
+      return;
+    }
+
     try {
       const updateData: { id: string; role?: string; isActive?: boolean } = {
         id: userId,
@@ -91,10 +108,23 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
     }
   };
 
-  const handleDeleteClick = (userId: string) => setDeleteUserId(userId);
+  const handleDeleteClick = (userId: string) => {
+    if (userId === user?._id) {
+      toast.error("You cannot delete your own account.");
+      return;
+    }
+    setDeleteUserId(userId);
+  };
 
   const handleConfirmDelete = async () => {
     if (!deleteUserId) return;
+
+    if (deleteUserId === user?._id) {
+      toast.error("You cannot delete your own account.");
+      setDeleteUserId(null);
+      return;
+    }
+
     try {
       await deleteUser(deleteUserId).unwrap();
       toast.success("User deleted successfully");
@@ -116,51 +146,51 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
   const getRoleBadgeClass = (role?: string) => {
     switch (role) {
       case "admin":
-        return "bg-slate-900 text-slate-100 border-slate-800";
+        return "bg-[#0B1F1A] text-[#F3F1EA] border-[#0B1F1A]";
       case "editor":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200/80 font-medium";
+        return "bg-[#16785A]/10 text-[#16785A] border-[#16785A]/25 font-medium";
       default:
-        return "bg-slate-100 text-slate-700 border-slate-200 font-medium";
+        return "bg-[#0B1F1A]/[0.04] text-[#0B1F1A]/70 border-[#0B1F1A]/10 font-medium";
     }
   };
 
   // Styling helper for status
   const getStatusBadgeClass = (isActive?: boolean) => {
     return isActive
-      ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 font-semibold"
+      ? "bg-[#16785A]/10 text-[#16785A] border-[#16785A]/25 font-semibold"
       : "bg-rose-50 text-rose-700 border-rose-200/80 font-semibold";
   };
 
   return (
-    <div className="w-full max-w-6xl rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+    <div className="w-full max-w-6xl rounded-2xl border border-[#0B1F1A]/10 bg-white p-5 font-[Figtree,ui-sans-serif,system-ui,sans-serif] shadow-xs">
       {/* Filter Tabs and Search Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-1 rounded-xl bg-[#0B1F1A]/[0.04] p-1">
           <button
             onClick={() => handleTabChange("all")}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
               activeTab === "all"
-                ? "bg-white text-slate-900 shadow-xs"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white text-[#0B1F1A] shadow-xs"
+                : "text-[#0B1F1A]/55 hover:text-[#0B1F1A]"
             }`}
           >
             All Users
           </button>
           <button
             onClick={() => handleTabChange("individual")}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+            className={`flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
               activeTab === "individual"
-                ? "bg-white text-slate-900 shadow-xs"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white text-[#0B1F1A] shadow-xs"
+                : "text-[#0B1F1A]/55 hover:text-[#0B1F1A]"
             }`}
           >
             <UserIcon size={13} />
             Individual
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[10px] ${
+              className={`rounded-md px-1.5 py-0.5 text-[10px] ${
                 activeTab === "individual"
-                  ? "bg-slate-100 text-slate-800"
-                  : "bg-slate-200/60 text-slate-600"
+                  ? "bg-[#0B1F1A]/[0.06] text-[#0B1F1A]/70"
+                  : "bg-[#0B1F1A]/[0.06] text-[#0B1F1A]/50"
               }`}
             >
               {users.filter((u) => u.accountType === "individual").length}
@@ -168,19 +198,19 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
           </button>
           <button
             onClick={() => handleTabChange("company")}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+            className={`flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-all ${
               activeTab === "company"
-                ? "bg-white text-slate-900 shadow-xs"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white text-[#0B1F1A] shadow-xs"
+                : "text-[#0B1F1A]/55 hover:text-[#0B1F1A]"
             }`}
           >
             <Building2 size={13} />
             Company
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[10px] ${
+              className={`rounded-md px-1.5 py-0.5 text-[10px] ${
                 activeTab === "company"
-                  ? "bg-slate-100 text-slate-800"
-                  : "bg-slate-200/60 text-slate-600"
+                  ? "bg-[#0B1F1A]/[0.06] text-[#0B1F1A]/70"
+                  : "bg-[#0B1F1A]/[0.06] text-[#0B1F1A]/50"
               }`}
             >
               {users.filter((u) => u.accountType === "company").length}
@@ -191,35 +221,36 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
         {/* Search */}
         <form
           onSubmit={(e) => e.preventDefault()}
-          className="flex items-center w-64 text-xs gap-2 bg-slate-50 border border-slate-200/80 px-3 py-2 rounded-xl focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500/20 transition-all"
+          className="flex w-64 items-center gap-2 rounded-xl border border-[#0B1F1A]/10 bg-[#F7F6F1] px-3 py-2 text-xs transition-all focus-within:border-[#16785A] focus-within:ring-1 focus-within:ring-[#16785A]/20"
         >
-          <Search size={15} className="text-slate-400 shrink-0" />
+          <Search size={15} className="shrink-0 text-[#0B1F1A]/35" />
           <input
             type="text"
             placeholder="Search by name or email..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="w-full bg-transparent outline-none placeholder-slate-400 text-slate-800"
+            className="w-full bg-transparent text-[#0B1F1A] outline-none placeholder-[#0B1F1A]/35"
           />
         </form>
       </div>
 
       {/* Table Section */}
-      <div className="overflow-x-auto w-full rounded-xl border border-slate-100">
+      <div className="w-full overflow-x-auto rounded-xl border border-[#0B1F1A]/10">
         {/* Desktop View */}
-        <table className="hidden md:table w-full text-left text-xs">
-          <thead className="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-100">
+        <table className="hidden w-full text-left text-xs md:table">
+          <thead className="border-b border-[#0B1F1A]/10 bg-[#F7F6F1] font-semibold uppercase tracking-wider text-[#0B1F1A]/45">
             <tr>
-              <th className="py-3 px-4">User</th>
-              <th className="py-3 px-4">Account Type</th>
-              <th className="py-3 px-4">Email</th>
-              <th className="py-3 px-4">Role</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4 text-right">Actions</th>
+              <th className="px-4 py-3">User</th>
+              <th className="px-4 py-3">Account Type</th>
+              <th className="px-4 py-3">Email</th>
+              <th className="px-4 py-3">Role</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-slate-700">
+          <tbody className="divide-y divide-[#0B1F1A]/10 text-[#0B1F1A]/80">
             {currentUsers.map((u) => {
+              const isSelf = u._id === user?._id;
               const initials = getInitials(
                 u.name,
                 u.accountType,
@@ -233,22 +264,23 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
               return (
                 <tr
                   key={u._id}
-                  className="hover:bg-slate-50/70 transition-colors"
+                  className="transition-colors hover:bg-[#0B1F1A]/[0.02]"
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-emerald-100/70 text-emerald-800 font-bold flex items-center justify-center shrink-0">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#16785A]/10 font-bold text-[#16785A]">
                         {initials}
                       </div>
-                      <span className="font-semibold text-slate-900">
+                      <span className="font-semibold text-[#0B1F1A]">
                         {displayName}
                       </span>
+                      {isSelf && <YouBadge />}
                     </div>
                   </td>
-                  <td className="px-4 py-3 capitalize text-slate-500">
+                  <td className="px-4 py-3 capitalize text-[#0B1F1A]/55">
                     {u.accountType || "Individual"}
                   </td>
-                  <td className="px-4 py-3 text-slate-600">
+                  <td className="px-4 py-3 text-[#0B1F1A]/65">
                     {u.email || "N/A"}
                   </td>
                   <td className="px-4 py-3">
@@ -257,8 +289,9 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
                       onChange={(e) =>
                         handleUserStatusChange(u._id, e.target.value)
                       }
-                      disabled={!isAdmin || isUpdating}
-                      className={`px-2 py-1 text-[11px] rounded-lg border focus:outline-none cursor-pointer transition-colors ${getRoleBadgeClass(
+                      disabled={!isAdmin || isUpdating || isSelf}
+                      title={isSelf ? "You cannot change your own role" : ""}
+                      className={`cursor-pointer rounded-lg border px-2 py-1 text-[11px] transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 ${getRoleBadgeClass(
                         u.role,
                       )}`}
                     >
@@ -279,8 +312,11 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
                           e.target.value === "active",
                         )
                       }
-                      disabled={!isAdmin || isUpdating}
-                      className={`px-2 py-1 text-[11px] rounded-lg border focus:outline-none cursor-pointer transition-colors ${getStatusBadgeClass(
+                      disabled={!isAdmin || isUpdating || isSelf}
+                      title={
+                        isSelf ? "You cannot suspend your own account" : ""
+                      }
+                      className={`cursor-pointer rounded-lg border px-2 py-1 text-[11px] transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 ${getStatusBadgeClass(
                         u.isActive,
                       )}`}
                     >
@@ -291,9 +327,13 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => handleDeleteClick(u._id)}
-                      disabled={!isAdmin || isDeleting}
-                      title="Delete User"
-                      className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors disabled:opacity-50"
+                      disabled={!isAdmin || isDeleting || isSelf}
+                      title={
+                        isSelf
+                          ? "You cannot delete your own account"
+                          : "Delete User"
+                      }
+                      className="rounded-lg p-1.5 text-[#0B1F1A]/35 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-[#0B1F1A]/35"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -305,8 +345,9 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
         </table>
 
         {/* Mobile View Cards */}
-        <div className="space-y-3 md:hidden p-1">
+        <div className="space-y-3 p-1 md:hidden">
           {currentUsers.map((u) => {
+            const isSelf = u._id === user?._id;
             const initials = getInitials(u.name, u.accountType, u.companyName);
             const displayName =
               u.accountType === "company"
@@ -316,39 +357,45 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
             return (
               <div
                 key={u._id}
-                className="border border-slate-200/80 rounded-xl p-4 bg-white space-y-3"
+                className="space-y-3 rounded-xl border border-[#0B1F1A]/10 bg-white p-4"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-emerald-100/70 text-emerald-800 font-bold text-xs flex items-center justify-center shrink-0">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#16785A]/10 text-xs font-bold text-[#16785A]">
                       {initials}
                     </div>
                     <div>
-                      <p className="font-semibold text-slate-900 text-sm">
+                      <p className="flex items-center gap-2 text-sm font-semibold text-[#0B1F1A]">
                         {displayName}
+                        {isSelf && <YouBadge />}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-[#0B1F1A]/55">
                         {u.email || "N/A"}
                       </p>
                     </div>
                   </div>
                   <button
                     onClick={() => handleDeleteClick(u._id)}
-                    disabled={!isAdmin || isDeleting}
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                    disabled={!isAdmin || isDeleting || isSelf}
+                    title={
+                      isSelf
+                        ? "You cannot delete your own account"
+                        : "Delete User"
+                    }
+                    className="rounded-lg p-1.5 text-[#0B1F1A]/35 transition hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-[#0B1F1A]/35"
                   >
                     <Trash2 size={16} />
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100 gap-2">
+                <div className="flex items-center justify-between gap-2 border-t border-[#0B1F1A]/10 pt-2">
                   <select
                     value={u.role || "user"}
                     onChange={(e) =>
                       handleUserStatusChange(u._id, e.target.value)
                     }
-                    disabled={!isAdmin || isUpdating}
-                    className={`px-2 py-1 text-xs rounded-lg border ${getRoleBadgeClass(
+                    disabled={!isAdmin || isUpdating || isSelf}
+                    className={`rounded-lg border px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60 ${getRoleBadgeClass(
                       u.role,
                     )}`}
                   >
@@ -368,8 +415,8 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
                         e.target.value === "active",
                       )
                     }
-                    disabled={!isAdmin || isUpdating}
-                    className={`px-2 py-1 text-xs rounded-lg border ${getStatusBadgeClass(
+                    disabled={!isAdmin || isUpdating || isSelf}
+                    className={`rounded-lg border px-2 py-1 text-xs disabled:cursor-not-allowed disabled:opacity-60 ${getStatusBadgeClass(
                       u.isActive,
                     )}`}
                   >
@@ -385,25 +432,25 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
 
       {/* Empty State */}
       {totalUsers === 0 && (
-        <div className="text-center py-12 text-slate-400">
+        <div className="py-12 text-center text-[#0B1F1A]/35">
           <p className="text-sm font-medium">No matching users found.</p>
         </div>
       )}
 
       {/* Pagination Footer */}
       {totalUsers > 0 && (
-        <div className="mt-5 flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-100 text-xs text-slate-500">
+        <div className="mt-5 flex flex-col items-center justify-between gap-4 border-t border-[#0B1F1A]/10 pt-4 text-xs text-[#0B1F1A]/55 sm:flex-row">
           <p>
             Showing{" "}
-            <span className="font-semibold text-slate-800">
+            <span className="font-semibold text-[#0B1F1A]">
               {indexOfFirstUser + 1}
             </span>{" "}
             to{" "}
-            <span className="font-semibold text-slate-800">
+            <span className="font-semibold text-[#0B1F1A]">
               {Math.min(indexOfLastUser, totalUsers)}
             </span>{" "}
             of{" "}
-            <span className="font-semibold text-slate-800">{totalUsers}</span>{" "}
+            <span className="font-semibold text-[#0B1F1A]">{totalUsers}</span>{" "}
             users
           </p>
 
@@ -416,7 +463,7 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
                   setPageSize(Number(e.target.value));
                   setPage(1);
                 }}
-                className="border border-slate-200 rounded-lg px-2 py-1 bg-white text-slate-800 outline-none"
+                className="rounded-lg border border-[#0B1F1A]/15 bg-white px-2 py-1 text-[#0B1F1A] outline-none"
               >
                 {[5, 10, 20, 50].map((size) => (
                   <option key={size} value={size}>
@@ -439,17 +486,17 @@ const UsersTable = ({ usersData }: { usersData: User[] }) => {
       {deleteUserId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-slate-900/30 backdrop-blur-xs transition-opacity"
+            className="absolute inset-0 bg-[#0B1F1A]/70 backdrop-blur-xs transition-opacity"
             onClick={handleCancelDelete}
           />
-          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full z-10 border border-slate-100">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-base font-semibold text-slate-900">
+          <div className="z-10 w-full max-w-sm rounded-2xl border border-[#0B1F1A]/10 bg-white p-6 shadow-[0_40px_80px_-20px_rgba(11,31,26,0.45)]">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-[Newsreader,Georgia,serif] text-base font-normal text-[#0B1F1A]">
                 Confirm Deletion
               </h3>
               <button
                 onClick={handleCancelDelete}
-                className="text-slate-400 hover:text-slate-600 text-sm font-bold"
+                className="text-sm font-bold text-[#0B1F1A]/35 hover:text-[#0B1F1A]/70"
               >
                 ✕
               </button>

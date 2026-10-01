@@ -12,14 +12,14 @@ import { isAuthenticated } from "../middleware/auth";
 const authRouter = express.Router();
 
 authRouter.post("/register", createUser);
-authRouter.post("/activate-user", activateUser);
+authRouter.post("/user/activate", activateUser);
 authRouter.post("/login", loginUser);
 authRouter.get("/logout", isAuthenticated, logoutUser);
-authRouter.post("/forgot-password", forgotPassword);
+authRouter.post("/password/forgot", forgotPassword);
 authRouter.post(
-  "/reset-password",
+  "/password/reset",
   resetPassword
 );
-authRouter.post("/refresh-token", refreshAccessToken);
+authRouter.post("/token/refresh", refreshAccessToken);
 
 export default authRouter;

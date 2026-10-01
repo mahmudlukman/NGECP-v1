@@ -1,63 +1,58 @@
 import express from "express";
-import { authorizeRoles, isAuthenticated } from "../middleware/auth";
+import {
+  authorizeRoles,
+  isAuthenticated,
+  requireActiveAccount,
+} from "../middleware/auth";
 import {
   assignInspector,
   cancelInspection,
   deleteInspection,
-  getAllInspections,
-  getInspectionById,
-  getInspectionFee,
-  getMyInspections,
+  allInspections,
+  inspectionById,
+  inspectionFee,
+  myInspections,
   scheduleInspection,
   updateInspectionFee,
   updateInspectionStatus,
 } from "../controllers/inspection.controller";
+import { UserRole } from "../models/User";
+
 const inspectionRouter = express.Router();
 
-inspectionRouter.post(
-  "/schedule-inspection",
-  isAuthenticated,
-  scheduleInspection
-);
-inspectionRouter.get("/my-inspections", isAuthenticated, getMyInspections);
-inspectionRouter.get("/inspection/:id", isAuthenticated, getInspectionById);
-inspectionRouter.get("/inspection-fee", isAuthenticated, getInspectionFee);
+inspectionRouter.use(isAuthenticated, requireActiveAccount);
+
+inspectionRouter.post("/inspection/schedule", scheduleInspection);
+inspectionRouter.get("/inspections/me", myInspections);
+inspectionRouter.get("/inspection/fee", inspectionFee);
+inspectionRouter.get("/inspection/:id", inspectionById);
 inspectionRouter.put(
-  "/update-inspection-fee",
-  isAuthenticated,
-  authorizeRoles("admin"),
-  updateInspectionFee
+  "/inspection/update/fee",
+  authorizeRoles(UserRole.ADMIN),
+  updateInspectionFee,
 );
 inspectionRouter.get(
-  "/all-inspections",
-  isAuthenticated,
-  // authorizeRoles("admin", "editor"),
-  getAllInspections
+  "/inspections",
+  authorizeRoles(UserRole.ADMIN, UserRole.EDITOR),
+  allInspections,
 );
 inspectionRouter.put(
-  "/assign-inspector/:id",
-  isAuthenticated,
-  authorizeRoles("admin"),
-  assignInspector
+  "/inspector/assign/:id",
+  authorizeRoles(UserRole.ADMIN),
+  assignInspector,
 );
 inspectionRouter.put(
-  "/update-inspection-status/:id",
-  isAuthenticated,
-  authorizeRoles("admin", "editor"),
-  updateInspectionStatus
+  "/inspection/update/status/:id",
+  authorizeRoles(UserRole.ADMIN, UserRole.EDITOR),
+  updateInspectionStatus,
 );
 
-inspectionRouter.put(
-  "/cancel-inspection/:id",
-  isAuthenticated,
-  cancelInspection
-);
+inspectionRouter.put("/inspection/cancel/:id", cancelInspection);
 
 inspectionRouter.delete(
-  "/delete-inspection/:id",
-  isAuthenticated,
-  authorizeRoles("admin"),
-  deleteInspection
+  "/inspection/delete/:id",
+  authorizeRoles(UserRole.ADMIN),
+  deleteInspection,
 );
 
 export default inspectionRouter;

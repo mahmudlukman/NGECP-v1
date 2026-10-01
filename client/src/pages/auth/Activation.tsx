@@ -53,16 +53,21 @@ const Activation = () => {
   }, [onSubmit]);
 
   return (
-    <div className="w-full min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md p-8 bg-white border border-slate-200 rounded-2xl shadow-xs text-center transition-all">
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#F7F6F1] p-4 font-[Figtree,ui-sans-serif,system-ui,sans-serif] text-[#0B1F1A]">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 opacity-[0.35] [background-image:radial-gradient(#0B1F1A_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
+      />
+
+      <div className="relative w-full max-w-md rounded-2xl border border-[#0B1F1A]/10 bg-white p-8 text-center shadow-[0_30px_60px_-25px_rgba(11,31,26,0.25)] transition-all">
         {/* Loading State */}
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-6">
-            <Loading />
-            <h3 className="text-xl font-bold text-slate-900 mt-6">
+            <Loading fullScreen={false} />
+            <h3 className="mt-6 font-[Newsreader,Georgia,serif] text-xl font-normal text-[#0B1F1A]">
               Activating your account
             </h3>
-            <p className="text-sm text-slate-500 mt-2">
+            <p className="mt-2 text-sm text-[#0B1F1A]/55">
               Please wait while we verify your activation link...
             </p>
           </div>
@@ -71,20 +76,20 @@ const Activation = () => {
         {/* Error State */}
         {isError && (
           <div className="flex flex-col items-center justify-center py-4">
-            <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mb-4">
-              <XCircle className="w-6 h-6" />
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-600">
+              <XCircle className="h-6 w-6" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900">
+            <h3 className="font-[Newsreader,Georgia,serif] text-xl font-normal text-[#0B1F1A]">
               Activation Failed
             </h3>
-            <p className="text-xs sm:text-sm text-slate-500 mt-2 leading-relaxed">
+            <p className="mt-2 text-xs leading-relaxed text-[#0B1F1A]/55 sm:text-sm">
               {errorMessage ||
                 "The link may be invalid or expired. Please try requesting a new link or contact support."}
             </p>
             <button
               type="button"
               onClick={() => navigate("/")}
-              className="mt-6 w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm rounded-lg transition-colors focus:outline-none"
+              className="mt-6 w-full rounded-lg bg-[#0B1F1A] px-4 py-2.5 text-sm font-medium text-[#F3F1EA] transition-colors hover:bg-[#12332b] focus:outline-none"
             >
               Back to Home
             </button>
@@ -94,23 +99,23 @@ const Activation = () => {
         {/* Success State */}
         {isSuccess && (
           <div className="flex flex-col items-center justify-center py-4">
-            <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mb-4">
-              <CheckCircle2 className="w-6 h-6" />
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-[#16785A]/25 text-[#16785A]">
+              <CheckCircle2 className="h-6 w-6" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900">
+            <h3 className="font-[Newsreader,Georgia,serif] text-xl font-normal text-[#0B1F1A]">
               Account Activated!
             </h3>
-            <p className="text-xs sm:text-sm text-slate-500 mt-2">
+            <p className="mt-2 text-xs text-[#0B1F1A]/55 sm:text-sm">
               Your email has been verified. You will be automatically redirected
               to log in shortly.
             </p>
             <button
               type="button"
               onClick={() => navigate("/")}
-              className="mt-6 w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm rounded-lg transition-all flex items-center justify-center gap-2 focus:outline-none"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg bg-[#0B1F1A] px-4 py-2.5 text-sm font-medium text-[#F3F1EA] transition-all hover:bg-[#12332b] focus:outline-none"
             >
               <span>Go to Login</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         )}
@@ -118,8 +123,8 @@ const Activation = () => {
         {/* Initial Pending State */}
         {!isLoading && !isError && !isSuccess && (
           <div className="flex flex-col items-center justify-center py-6">
-            <ShieldCheck className="w-8 h-8 text-slate-400 animate-pulse mb-3" />
-            <p className="text-sm font-medium text-slate-600">
+            <ShieldCheck className="mb-3 h-8 w-8 animate-pulse text-[#0B1F1A]/35" />
+            <p className="text-sm font-medium text-[#0B1F1A]/60">
               Initializing verification...
             </p>
           </div>

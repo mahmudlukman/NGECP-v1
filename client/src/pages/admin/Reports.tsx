@@ -6,7 +6,7 @@ import {
   useApproveInspectionReportMutation,
   useDeleteInspectionReportMutation,
 } from "../../redux/features/report/reportApi";
-import type { ServerError, RootState } from "../../@types";
+import type { ServerError } from "../../@types";
 import Tooltip from "../../components/Tooltip";
 import DeleteAlert from "../../components/DeleteAlert";
 import Pagination from "../../components/Pagination";
@@ -15,6 +15,7 @@ import { Eye, Trash2, Search, CheckCircle, Edit } from "lucide-react";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import { format } from "date-fns";
 import { useSelector } from "react-redux";
+import type { RootState } from "../../redux/store";
 
 interface IReport {
   _id: string;
@@ -50,6 +51,14 @@ interface IReport {
   createdAt: string;
   updatedAt: string;
 }
+
+// Compliance score badge: mint/amber/rose three-tier scale,
+// matching ComplianceOverviewCard's scoreColor thresholds.
+const scoreBadgeClass = (score: number) => {
+  if (score >= 80) return "bg-[#16785A]/10 text-[#16785A]";
+  if (score >= 60) return "bg-amber-100 text-amber-700";
+  return "bg-rose-100 text-rose-700";
+};
 
 const Reports = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -144,39 +153,40 @@ const Reports = () => {
 
   if (isLoading) {
     return (
-      <DashboardLayout activeMenu="Reports">
-        <Loading />
+      <DashboardLayout>
+        <Loading fullScreen={false} />
       </DashboardLayout>
     );
   }
 
   if (isError) {
     return (
-      <DashboardLayout activeMenu="Reports">
-        <div className="flex justify-center items-center h-[80vh]">
-          <p className="text-red-500">Failed to load reports.</p>
+      <DashboardLayout>
+        <div className="flex h-[80vh] items-center justify-center">
+          <p className="text-rose-600">Failed to load reports.</p>
         </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout activeMenu="Reports">
-      <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
+    <DashboardLayout>
+      <div className="my-5 w-full rounded-2xl border border-[#0B1F1A]/10 bg-white p-6 font-[Figtree,ui-sans-serif,system-ui,sans-serif] shadow-[0_20px_40px_-30px_rgba(11,31,26,0.25)]">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl text-slate-600 font-semibold">
-            Inspection <span className="text-slate-800 font-bold">Reports</span>
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="font-[Newsreader,Georgia,serif] text-2xl font-normal text-[#0B1F1A]/70">
+            Inspection{" "}
+            <span className="font-medium text-[#0B1F1A]">Reports</span>
           </h1>
         </div>
 
         {/* Filters + Search */}
-        <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="flex gap-4">
             <select
               value={filterCompliance}
               onChange={(e) => setFilterCompliance(e.target.value)}
-              className="border border-gray-300 text-sm rounded-lg px-4 py-2 text-gray-700 bg-gray-50 outline-none cursor-pointer"
+              className="cursor-pointer rounded-lg border border-[#0B1F1A]/15 bg-[#F7F6F1] px-4 py-2 text-sm text-[#0B1F1A]/75 outline-none"
             >
               <option value="all">All Compliance</option>
               <option value="compliant">Compliant</option>
@@ -186,7 +196,7 @@ const Reports = () => {
             <select
               value={filterApproved}
               onChange={(e) => setFilterApproved(e.target.value)}
-              className="border border-gray-300 text-sm rounded-lg px-4 py-2 text-gray-700 bg-gray-50 outline-none cursor-pointer"
+              className="cursor-pointer rounded-lg border border-[#0B1F1A]/15 bg-[#F7F6F1] px-4 py-2 text-sm text-[#0B1F1A]/75 outline-none"
             >
               <option value="all">All Status</option>
               <option value="approved">Approved</option>
@@ -196,97 +206,99 @@ const Reports = () => {
 
           <form
             onSubmit={(e) => e.preventDefault()}
-            className="flex items-center w-64 text-sm gap-2 bg-slate-100 px-4 py-2 rounded-full"
+            className="flex w-64 items-center gap-2 rounded-full border border-[#0B1F1A]/10 bg-[#F7F6F1] px-4 py-2 text-sm focus-within:ring-2 focus-within:ring-[#16785A]/20"
           >
-            <Search size={16} className="text-slate-600" />
+            <Search size={16} className="text-[#0B1F1A]/40" />
             <input
               type="text"
               placeholder="Search reports..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-transparent outline-none placeholder-slate-600"
+              className="w-full bg-transparent text-[#0B1F1A] outline-none placeholder-[#0B1F1A]/40"
             />
           </form>
         </div>
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left ring-1 ring-slate-200 rounded overflow-hidden text-sm">
-            <thead className="bg-slate-50 text-gray-700 uppercase tracking-wider">
+          <table className="w-full overflow-hidden rounded text-left text-sm ring-1 ring-[#0B1F1A]/10">
+            <thead className="bg-[#F7F6F1] uppercase tracking-wider text-[#0B1F1A]/50">
               <tr>
                 <th className="px-4 py-3">Generator</th>
-                <th className="px-4 py-3 hidden md:table-cell">Inspector</th>
-                <th className="px-4 py-3 hidden md:table-cell">Owner</th>
+                <th className="hidden px-4 py-3 md:table-cell">Inspector</th>
+                <th className="hidden px-4 py-3 md:table-cell">Owner</th>
                 <th className="px-4 py-3 text-center">Score</th>
                 <th className="px-4 py-3 text-center">Compliance</th>
                 <th className="px-4 py-3 text-center">Status</th>
-                <th className="px-4 py-3 hidden lg:table-cell">Date</th>
+                <th className="hidden px-4 py-3 lg:table-cell">Date</th>
                 <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
-            <tbody className="text-slate-700">
+            <tbody className="text-[#0B1F1A]/80">
               {filteredReports.map((report: IReport) => (
                 <tr
                   key={report._id}
-                  className="border-t border-gray-200 hover:bg-gray-50 transition"
+                  className="border-t border-[#0B1F1A]/10 transition hover:bg-[#0B1F1A]/[0.02]"
                 >
                   <td className="px-4 py-3 align-top">
-                    <div className="text-xs space-y-1">
+                    <div className="space-y-1 text-xs">
                       <p>
-                        <span className="font-semibold">ID:</span>{" "}
+                        <span className="font-semibold text-[#0B1F1A]">
+                          ID:
+                        </span>{" "}
                         {report.generator?.generatorId || "N/A"}
                       </p>
                       <p>
-                        <span className="font-semibold">Brand:</span>{" "}
+                        <span className="font-semibold text-[#0B1F1A]">
+                          Brand:
+                        </span>{" "}
                         {report.generator?.brand || "N/A"}
                       </p>
                       <p>
-                        <span className="font-semibold">Model:</span>{" "}
+                        <span className="font-semibold text-[#0B1F1A]">
+                          Model:
+                        </span>{" "}
                         {report.generator?.model || "N/A"}
                       </p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 hidden md:table-cell align-top">
-                    <div className="text-xs space-y-1">
-                      <p className="font-medium">
+                  <td className="hidden px-4 py-3 align-top md:table-cell">
+                    <div className="space-y-1 text-xs">
+                      <p className="font-medium text-[#0B1F1A]">
                         {report.inspector?.name || "N/A"}
                       </p>
-                      <p className="text-slate-500">
+                      <p className="text-[#0B1F1A]/50">
                         {report.inspector?.email || "N/A"}
                       </p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 hidden md:table-cell align-top">
-                    <div className="text-xs space-y-1">
-                      <p className="font-medium">
+                  <td className="hidden px-4 py-3 align-top md:table-cell">
+                    <div className="space-y-1 text-xs">
+                      <p className="font-medium text-[#0B1F1A]">
                         {report.inspection?.owner?.companyName ||
                           report.inspection?.owner?.name ||
                           "N/A"}
                       </p>
-                      <p className="text-slate-500">
+                      <p className="text-[#0B1F1A]/50">
                         {report.inspection?.owner?.accountType || "N/A"}
                       </p>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center align-top">
                     <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                        report.complianceScore >= 80
-                          ? "bg-green-100 text-green-700"
-                          : report.complianceScore >= 60
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-red-100 text-red-700"
-                      }`}
+                      className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${scoreBadgeClass(
+                        report.complianceScore,
+                      )}`}
                     >
                       {report.complianceScore}%
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center align-top">
                     <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                      className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
                         report.overallCompliance
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
+                          ? "bg-[#16785A]/10 text-[#16785A]"
+                          : "bg-rose-100 text-rose-700"
                       }`}
                     >
                       {report.overallCompliance ? "Compliant" : "Non-Compliant"}
@@ -295,11 +307,11 @@ const Reports = () => {
                   <td className="px-4 py-3 text-center align-top">
                     {report.isApproved ? (
                       <div className="space-y-1">
-                        <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                        <span className="inline-block rounded-full bg-[#0B1F1A]/[0.06] px-3 py-1 text-xs font-semibold text-[#0B1F1A]/70">
                           Approved
                         </span>
                         {report.approvalDate && (
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-[#0B1F1A]/45">
                             {format(
                               new Date(report.approvalDate),
                               "dd MMM yyyy",
@@ -308,29 +320,33 @@ const Reports = () => {
                         )}
                       </div>
                     ) : (
-                      <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
+                      <span className="inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
                         Pending
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 hidden lg:table-cell align-top">
-                    <div className="text-xs space-y-1">
+                  <td className="hidden px-4 py-3 align-top lg:table-cell">
+                    <div className="space-y-1 text-xs">
                       <p>
-                        <span className="font-semibold">Created:</span>{" "}
+                        <span className="font-semibold text-[#0B1F1A]">
+                          Created:
+                        </span>{" "}
                         {format(new Date(report.createdAt), "dd MMM yyyy")}
                       </p>
                       <p>
-                        <span className="font-semibold">Updated:</span>{" "}
+                        <span className="font-semibold text-[#0B1F1A]">
+                          Updated:
+                        </span>{" "}
                         {format(new Date(report.updatedAt), "dd MMM yyyy")}
                       </p>
                     </div>
                   </td>
                   <td className="px-4 py-3 align-top">
-                    <div className="flex gap-2 flex-wrap">
+                    <div className="flex flex-wrap gap-2">
                       <Tooltip text="View Report" position="bottom">
                         <button
                           onClick={() => handleViewReport(report._id)}
-                          className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition cursor-pointer"
+                          className="cursor-pointer rounded-full p-2 text-[#0B1F1A]/60 transition hover:bg-[#0B1F1A]/[0.06]"
                         >
                           <Eye size={18} />
                         </button>
@@ -340,7 +356,7 @@ const Reports = () => {
                         <Tooltip text="Edit Report" position="bottom">
                           <button
                             onClick={() => handleEditReport(report._id)}
-                            className="p-2 rounded-full hover:bg-yellow-200 text-yellow-600 transition cursor-pointer"
+                            className="cursor-pointer rounded-full p-2 text-amber-600 transition hover:bg-amber-100"
                           >
                             <Edit size={18} />
                           </button>
@@ -352,7 +368,7 @@ const Reports = () => {
                           <button
                             onClick={() => handleApprove(report._id)}
                             disabled={isApproving}
-                            className="p-2 rounded-full hover:bg-green-200 text-green-600 transition disabled:opacity-50 cursor-pointer"
+                            className="cursor-pointer rounded-full p-2 text-[#16785A] transition hover:bg-[#16785A]/10 disabled:opacity-50"
                           >
                             <CheckCircle size={18} />
                           </button>
@@ -363,7 +379,7 @@ const Reports = () => {
                         <Tooltip text="Delete Report" position="bottom">
                           <button
                             onClick={() => handleDeleteClick(report._id)}
-                            className="p-2 rounded-full hover:bg-red-200 text-red-600 transition cursor-pointer"
+                            className="cursor-pointer rounded-full p-2 text-rose-500 transition hover:bg-rose-100"
                           >
                             <Trash2 size={18} />
                           </button>
@@ -379,28 +395,28 @@ const Reports = () => {
 
         {/* No Results */}
         {filteredReports.length === 0 && (
-          <div className="text-center py-8 text-slate-500">
+          <div className="py-8 text-center text-[#0B1F1A]/45">
             No reports found matching your criteria.
           </div>
         )}
 
         {/* Pagination Controls Info & Size Selector */}
-        <div className="flex justify-between items-center my-5 flex-wrap gap-4">
+        <div className="my-5 flex flex-wrap items-center justify-between gap-4">
           {reportsData?.pagination && (
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#0B1F1A]/55">
               Showing{" "}
-              <span className="font-medium text-slate-700">
+              <span className="font-medium text-[#0B1F1A]">
                 {(reportsData.pagination.currentPage - 1) * pageSize + 1}
               </span>{" "}
               –{" "}
-              <span className="font-medium text-slate-700">
+              <span className="font-medium text-[#0B1F1A]">
                 {Math.min(
                   reportsData.pagination.currentPage * pageSize,
                   reportsData.pagination.totalItems,
                 )}
               </span>{" "}
               of{" "}
-              <span className="font-medium text-slate-700">
+              <span className="font-medium text-[#0B1F1A]">
                 {reportsData.pagination.totalItems}
               </span>{" "}
               reports
@@ -409,7 +425,7 @@ const Reports = () => {
           <div className="flex items-center gap-2">
             <label
               htmlFor="pageSize"
-              className="text-sm text-gray-600 whitespace-nowrap"
+              className="whitespace-nowrap text-sm text-[#0B1F1A]/55"
             >
               Show:
             </label>
@@ -420,7 +436,7 @@ const Reports = () => {
                 setPageSize(Number(e.target.value));
                 setPage(1);
               }}
-              className="border rounded px-2 py-1 text-sm bg-gray-50 outline-none cursor-pointer"
+              className="cursor-pointer rounded border border-[#0B1F1A]/15 bg-[#F7F6F1] px-2 py-1 text-sm text-[#0B1F1A]/75 outline-none"
             >
               {[5, 10, 20, 50].map((size) => (
                 <option key={size} value={size}>
@@ -444,17 +460,17 @@ const Reports = () => {
         {deleteReportId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div
-              className="absolute inset-0 cursor-pointer bg-black/20"
+              className="absolute inset-0 cursor-pointer bg-[#0B1F1A]/70 backdrop-blur-xs"
               onClick={handleCancelDelete}
-            ></div>
-            <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full mx-4 z-10">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
+            />
+            <div className="z-10 mx-4 w-full max-w-sm rounded-2xl border border-[#0B1F1A]/10 bg-white p-6 shadow-[0_40px_80px_-20px_rgba(11,31,26,0.45)]">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="font-[Newsreader,Georgia,serif] text-lg font-normal text-[#0B1F1A]">
                   Confirm Deletion
                 </h3>
                 <button
                   onClick={handleCancelDelete}
-                  className="text-gray-400 hover:text-gray-600 cursor-pointer"
+                  className="cursor-pointer text-[#0B1F1A]/35 hover:text-[#0B1F1A]/70"
                 >
                   ✕
                 </button>

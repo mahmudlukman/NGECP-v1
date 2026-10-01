@@ -14,19 +14,19 @@ const FormFooter = ({
   submittingLabel = "Creating report...",
 }: FormFooterProps) => {
   return (
-    <div className="flex justify-end gap-3 pt-6 border-t border-slate-200">
+    <div className="flex justify-end gap-3 border-t border-[#0B1F1A]/10 pt-6 font-[Figtree,ui-sans-serif,system-ui,sans-serif]">
       <button
         type="button"
         onClick={onCancel}
         disabled={isSubmitting}
-        className="px-6 py-2.5 rounded-lg border border-slate-300 text-slate-600 text-sm font-medium hover:bg-slate-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        className="cursor-pointer rounded-lg border border-[#0B1F1A]/15 px-6 py-2.5 text-sm font-medium text-[#0B1F1A]/70 transition-colors hover:bg-[#0B1F1A]/[0.04] disabled:cursor-not-allowed disabled:opacity-50"
       >
         Cancel
       </button>
       <button
         type="submit"
         disabled={isSubmitting}
-        className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#0B1F1A] px-6 py-2.5 text-sm font-medium text-[#F3F1EA] shadow-[0_10px_25px_-14px_rgba(11,31,26,0.6)] transition-colors hover:bg-[#12332b] disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Save size={16} />
         {isSubmitting ? submittingLabel : submitLabel}

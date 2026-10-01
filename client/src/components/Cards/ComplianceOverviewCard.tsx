@@ -9,7 +9,7 @@ interface ComplianceOverviewCardProps {
 }
 
 const scoreColor = (score: number) => {
-  if (score >= 80) return "bg-emerald-500";
+  if (score >= 80) return "bg-[#16785A]";
   if (score >= 50) return "bg-amber-500";
   return "bg-rose-500";
 };
@@ -40,10 +40,10 @@ const ComplianceOverviewCard = ({
   };
 
   return (
-    <section className="bg-white border border-slate-200 rounded-2xl p-6">
+    <section className="rounded-2xl border border-[#0B1F1A]/10 bg-white p-6 font-[Figtree,ui-sans-serif,system-ui,sans-serif]">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 text-slate-400 text-xs font-medium mb-2">
+          <div className="mb-2 flex items-center gap-2 text-xs font-medium text-[#0B1F1A]/45">
             <Gauge size={14} />
             Overall result
           </div>
@@ -55,9 +55,9 @@ const ComplianceOverviewCard = ({
           />
         </div>
 
-        <div className="flex-1 min-w-[220px]">
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-slate-600">
+        <div className="min-w-[220px] flex-1">
+          <div className="mb-2 flex items-center justify-between">
+            <label className="text-sm font-medium text-[#0B1F1A]/70">
               Compliance score
             </label>
             <div className="flex items-center gap-1">
@@ -68,13 +68,13 @@ const ComplianceOverviewCard = ({
                 value={complianceScore}
                 onChange={handleInputChange}
                 onBlur={handleBlur}
-                className="w-16 text-right border border-slate-300 rounded-lg px-2 py-1 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+                className="w-16 rounded-lg border border-[#0B1F1A]/15 px-2 py-1 text-right text-sm text-[#0B1F1A] outline-none focus:border-[#16785A] focus:ring-2 focus:ring-[#16785A]/20"
                 required
               />
-              <span className="text-sm text-slate-400">/ 100</span>
+              <span className="text-sm text-[#0B1F1A]/40">/ 100</span>
             </div>
           </div>
-          <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-[#0B1F1A]/[0.06]">
             <div
               className={`h-full rounded-full transition-all duration-300 ${scoreColor(
                 clamped,

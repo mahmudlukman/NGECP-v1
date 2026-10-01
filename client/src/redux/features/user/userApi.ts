@@ -4,7 +4,7 @@ export const userApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAllUsers: builder.query({
       query: ({ page = 1, pageSize = 10 }) => ({
-        url: `get-users?page=${page}&pageSize=${pageSize}`,
+        url: `users?page=${page}&pageSize=${pageSize}`,
         method: "GET",
         credentials: "include" as const,
       }),
@@ -12,7 +12,7 @@ export const userApi = apiSlice.injectEndpoints({
     }),
     getUser: builder.query({
       query: (id) => ({
-        url: `get-user${id}`,
+        url: `user${id}`,
         method: "GET",
         credentials: "include" as const,
       }),
@@ -20,7 +20,7 @@ export const userApi = apiSlice.injectEndpoints({
     }),
     deleteUser: builder.mutation({
       query: (id) => ({
-        url: `delete-user/${id}`,
+        url: `delete/user/${id}`,
         method: "DELETE",
         credentials: "include" as const,
       }),
@@ -28,7 +28,7 @@ export const userApi = apiSlice.injectEndpoints({
     }),
     updateUserStatus: builder.mutation({
       query: ({ data }) => ({
-        url: "update-user-status",
+        url: "update/user/status",
         method: "PUT",
         body: data,
         credentials: "include" as const,

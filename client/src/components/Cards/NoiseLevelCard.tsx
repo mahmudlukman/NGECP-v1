@@ -9,7 +9,9 @@ interface NoiseLevelCardProps {
 }
 
 const inputClass =
-  "w-full border border-slate-300 text-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary";
+  "w-full border border-[#0B1F1A]/15 text-[#0B1F1A] rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#16785A]/20 focus:border-[#16785A]";
+
+const labelClass = "block text-sm font-medium text-[#0B1F1A]/70 mb-2";
 
 const NoiseLevelCard = ({ value, onChange }: NoiseLevelCardProps) => {
   const update = (patch: Partial<NoiseLevelData>) =>
@@ -33,11 +35,9 @@ const NoiseLevelCard = ({ value, onChange }: NoiseLevelCardProps) => {
       }
     >
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-2">
-              Decibel reading (dB)
-            </label>
+            <label className={labelClass}>Decibel reading (dB)</label>
             <input
               type="number"
               min={0}
@@ -49,9 +49,7 @@ const NoiseLevelCard = ({ value, onChange }: NoiseLevelCardProps) => {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-600 mb-2">
-            Notes
-          </label>
+          <label className={labelClass}>Notes</label>
           <textarea
             value={value.notes || ""}
             onChange={(e) => update({ notes: e.target.value })}

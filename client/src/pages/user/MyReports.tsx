@@ -1,16 +1,10 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  useGetMyReportsQuery,
-} from "../../redux/features/report/reportApi";
+import { useGetMyReportsQuery } from "../../redux/features/report/reportApi";
 import Tooltip from "../../components/Tooltip";
 import Pagination from "../../components/Pagination";
 import Loading from "../../components/Loading";
-import {
-  Eye,
-  Search,
-  Edit,
-} from "lucide-react";
+import { Eye, Search, Edit } from "lucide-react";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import { format } from "date-fns";
 
@@ -49,6 +43,14 @@ interface IReport {
   updatedAt: string;
 }
 
+// Compliance score badge: mint/amber/rose three-tier scale,
+// matching ComplianceOverviewCard and the admin Reports page.
+const scoreBadgeClass = (score: number) => {
+  if (score >= 80) return "bg-[#16785A]/10 text-[#16785A]";
+  if (score >= 60) return "bg-amber-100 text-amber-700";
+  return "bg-rose-100 text-rose-700";
+};
+
 const MyReports = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -64,7 +66,6 @@ const MyReports = () => {
     isError,
   } = useGetMyReportsQuery({ page, pageSize });
 
-
   const handleViewReport = (reportId: string) => {
     navigate(`/user/report-details/${reportId}`);
   };
@@ -72,15 +73,9 @@ const MyReports = () => {
   const filteredReports = useMemo(() => {
     const reports = reportsData?.reports || [];
     return reports.filter((r: IReport) => {
-      if (
-        filterCompliance === "compliant" &&
-        !r.overallCompliance
-      )
+      if (filterCompliance === "compliant" && !r.overallCompliance)
         return false;
-      if (
-        filterCompliance === "non_compliant" &&
-        r.overallCompliance
-      )
+      if (filterCompliance === "non_compliant" && r.overallCompliance)
         return false;
 
       if (filterApproved === "approved" && !r.isApproved) return false;
@@ -110,39 +105,40 @@ const MyReports = () => {
 
   if (isLoading) {
     return (
-      <DashboardLayout activeMenu="Reports">
-        <Loading />
+      <DashboardLayout>
+        <Loading fullScreen={false} />
       </DashboardLayout>
     );
   }
 
   if (isError) {
     return (
-      <DashboardLayout activeMenu="Reports">
-        <div className="flex justify-center items-center h-[80vh]">
-          <p className="text-red-500">Failed to load reports.</p>
+      <DashboardLayout>
+        <div className="flex h-[80vh] items-center justify-center">
+          <p className="text-rose-600">Failed to load reports.</p>
         </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout activeMenu="Reports">
-      <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
+    <DashboardLayout>
+      <div className="my-5 w-full rounded-2xl border border-[#0B1F1A]/10 bg-white p-6 font-[Figtree,ui-sans-serif,system-ui,sans-serif] shadow-[0_20px_40px_-30px_rgba(11,31,26,0.25)]">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl text-slate-600 font-semibold">
-            Inspection <span className="text-slate-800 font-bold">Reports</span>
+        <div className="mb-6 flex items-center justify-between">
+          <h1 className="font-[Newsreader,Georgia,serif] text-2xl font-normal text-[#0B1F1A]/70">
+            Inspection{" "}
+            <span className="font-medium text-[#0B1F1A]">Reports</span>
           </h1>
         </div>
 
         {/* Filters + Search */}
-        <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div className="flex gap-4">
             <select
               value={filterCompliance}
               onChange={(e) => setFilterCompliance(e.target.value)}
-              className="border border-gray-300 text-sm rounded-lg px-4 py-2 text-gray-700 bg-gray-50"
+              className="rounded-lg border border-[#0B1F1A]/15 bg-[#F7F6F1] px-4 py-2 text-sm text-[#0B1F1A]/75"
             >
               <option value="all">All Compliance</option>
               <option value="compliant">Compliant</option>
@@ -152,7 +148,7 @@ const MyReports = () => {
             <select
               value={filterApproved}
               onChange={(e) => setFilterApproved(e.target.value)}
-              className="border border-gray-300 text-sm rounded-lg px-4 py-2 text-gray-700 bg-gray-50"
+              className="rounded-lg border border-[#0B1F1A]/15 bg-[#F7F6F1] px-4 py-2 text-sm text-[#0B1F1A]/75"
             >
               <option value="all">All Status</option>
               <option value="approved">Approved</option>
@@ -162,84 +158,86 @@ const MyReports = () => {
 
           <form
             onSubmit={(e) => e.preventDefault()}
-            className="flex items-center w-64 text-sm gap-2 bg-slate-100 px-4 py-2 rounded-full"
+            className="flex w-64 items-center gap-2 rounded-full border border-[#0B1F1A]/10 bg-[#F7F6F1] px-4 py-2 text-sm focus-within:ring-2 focus-within:ring-[#16785A]/20"
           >
-            <Search size={16} className="text-slate-600" />
+            <Search size={16} className="text-[#0B1F1A]/40" />
             <input
               type="text"
               placeholder="Search reports..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-transparent outline-none placeholder-slate-600"
+              className="w-full bg-transparent text-[#0B1F1A] outline-none placeholder-[#0B1F1A]/40"
             />
           </form>
         </div>
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left ring ring-slate-200 rounded overflow-hidden text-sm">
-            <thead className="bg-slate-50 text-gray-700 uppercase tracking-wider">
+          <table className="w-full overflow-hidden rounded text-left text-sm ring-1 ring-[#0B1F1A]/10">
+            <thead className="bg-[#F7F6F1] uppercase tracking-wider text-[#0B1F1A]/50">
               <tr>
                 <th className="px-4 py-3">Generator</th>
-                <th className="px-4 py-3 hidden md:table-cell">Inspector</th>
+                <th className="hidden px-4 py-3 md:table-cell">Inspector</th>
                 <th className="px-4 py-3 text-center">Score</th>
                 <th className="px-4 py-3 text-center">Compliance</th>
                 <th className="px-4 py-3 text-center">Status</th>
-                <th className="px-4 py-3 hidden lg:table-cell">Date</th>
+                <th className="hidden px-4 py-3 lg:table-cell">Date</th>
                 <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
-            <tbody className="text-slate-700">
+            <tbody className="text-[#0B1F1A]/80">
               {filteredReports.map((report: IReport) => (
                 <tr
                   key={report._id}
-                  className="border-t border-gray-200 hover:bg-gray-50 transition"
+                  className="border-t border-[#0B1F1A]/10 transition hover:bg-[#0B1F1A]/[0.02]"
                 >
                   <td className="px-4 py-3 align-top">
-                    <div className="text-xs space-y-1">
+                    <div className="space-y-1 text-xs">
                       <p>
-                        <span className="font-semibold">ID:</span>{" "}
+                        <span className="font-semibold text-[#0B1F1A]">
+                          ID:
+                        </span>{" "}
                         {report.generator?.generatorId || "N/A"}
                       </p>
                       <p>
-                        <span className="font-semibold">Brand:</span>{" "}
+                        <span className="font-semibold text-[#0B1F1A]">
+                          Brand:
+                        </span>{" "}
                         {report.generator?.brand || "N/A"}
                       </p>
                       <p>
-                        <span className="font-semibold">Model:</span>{" "}
+                        <span className="font-semibold text-[#0B1F1A]">
+                          Model:
+                        </span>{" "}
                         {report.generator?.model || "N/A"}
                       </p>
                     </div>
                   </td>
-                  <td className="px-4 py-3 hidden md:table-cell align-top">
-                    <div className="text-xs space-y-1">
-                      <p className="font-medium">
+                  <td className="hidden px-4 py-3 align-top md:table-cell">
+                    <div className="space-y-1 text-xs">
+                      <p className="font-medium text-[#0B1F1A]">
                         {report.inspector?.name || "N/A"}
                       </p>
-                      <p className="text-slate-500">
+                      <p className="text-[#0B1F1A]/50">
                         {report.inspector?.email || "N/A"}
                       </p>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-center align-top">
                     <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                        report.complianceScore >= 80
-                          ? "bg-green-100 text-green-700"
-                          : report.complianceScore >= 60
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
+                      className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${scoreBadgeClass(
+                        report.complianceScore,
+                      )}`}
                     >
                       {report.complianceScore}%
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center align-top">
                     <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                      className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
                         report.overallCompliance
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
+                          ? "bg-[#16785A]/10 text-[#16785A]"
+                          : "bg-rose-100 text-rose-700"
                       }`}
                     >
                       {report.overallCompliance ? "Compliant" : "Non-Compliant"}
@@ -248,39 +246,46 @@ const MyReports = () => {
                   <td className="px-4 py-3 text-center align-top">
                     {report.isApproved ? (
                       <div className="space-y-1">
-                        <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                        <span className="inline-block rounded-full bg-[#0B1F1A]/[0.06] px-3 py-1 text-xs font-semibold text-[#0B1F1A]/70">
                           Approved
                         </span>
                         {report.approvalDate && (
-                          <p className="text-xs text-slate-500">
-                            {format(new Date(report.approvalDate), "dd MMM yyyy")}
+                          <p className="text-xs text-[#0B1F1A]/45">
+                            {format(
+                              new Date(report.approvalDate),
+                              "dd MMM yyyy",
+                            )}
                           </p>
                         )}
                       </div>
                     ) : (
-                      <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
+                      <span className="inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
                         Pending
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 hidden lg:table-cell align-top">
-                    <div className="text-xs space-y-1">
+                  <td className="hidden px-4 py-3 align-top lg:table-cell">
+                    <div className="space-y-1 text-xs">
                       <p>
-                        <span className="font-semibold">Created:</span>{" "}
+                        <span className="font-semibold text-[#0B1F1A]">
+                          Created:
+                        </span>{" "}
                         {format(new Date(report.createdAt), "dd MMM yyyy")}
                       </p>
                       <p>
-                        <span className="font-semibold">Updated:</span>{" "}
+                        <span className="font-semibold text-[#0B1F1A]">
+                          Updated:
+                        </span>{" "}
                         {format(new Date(report.updatedAt), "dd MMM yyyy")}
                       </p>
                     </div>
                   </td>
                   <td className="px-4 py-3 align-top">
-                    <div className="flex gap-2 flex-wrap">
+                    <div className="flex flex-wrap gap-2">
                       <Tooltip text="View Report" position="bottom">
                         <button
                           onClick={() => handleViewReport(report._id)}
-                          className="p-2 rounded-full hover:bg-blue-200 text-blue-600 transition"
+                          className="rounded-full p-2 text-[#0B1F1A]/60 transition hover:bg-[#0B1F1A]/[0.06]"
                         >
                           <Eye size={18} />
                         </button>
@@ -290,7 +295,7 @@ const MyReports = () => {
                         <Tooltip text="Edit Report" position="bottom">
                           <button
                             // onClick={() => handleEditReport(report._id)}
-                            className="p-2 rounded-full hover:bg-yellow-200 text-yellow-600 transition"
+                            className="rounded-full p-2 text-amber-600 transition hover:bg-amber-100"
                           >
                             <Edit size={18} />
                           </button>
@@ -306,28 +311,28 @@ const MyReports = () => {
 
         {/* No Results */}
         {filteredReports.length === 0 && (
-          <div className="text-center py-8 text-slate-500">
+          <div className="py-8 text-center text-[#0B1F1A]/45">
             No reports found matching your criteria.
           </div>
         )}
 
         {/* Pagination Controls */}
-        <div className="flex justify-between items-center my-5">
+        <div className="my-5 flex items-center justify-between">
           {reportsData?.pagination && (
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#0B1F1A]/55">
               Showing{" "}
-              <span className="font-medium text-slate-700">
+              <span className="font-medium text-[#0B1F1A]">
                 {(reportsData.pagination.currentPage - 1) * pageSize + 1}
               </span>{" "}
               –{" "}
-              <span className="font-medium text-slate-700">
+              <span className="font-medium text-[#0B1F1A]">
                 {Math.min(
                   reportsData.pagination.currentPage * pageSize,
-                  reportsData.pagination.totalItems
+                  reportsData.pagination.totalItems,
                 )}
               </span>{" "}
               of{" "}
-              <span className="font-medium text-slate-700">
+              <span className="font-medium text-[#0B1F1A]">
                 {reportsData.pagination.totalItems}
               </span>{" "}
               reports
@@ -336,7 +341,7 @@ const MyReports = () => {
           <div className="flex items-center gap-2">
             <label
               htmlFor="pageSize"
-              className="text-sm text-gray-600 whitespace-nowrap"
+              className="whitespace-nowrap text-sm text-[#0B1F1A]/55"
             >
               Show:
             </label>
@@ -347,7 +352,7 @@ const MyReports = () => {
                 setPageSize(Number(e.target.value));
                 setPage(1);
               }}
-              className="border rounded px-2 py-1 text-sm"
+              className="rounded border border-[#0B1F1A]/15 bg-white px-2 py-1 text-sm text-[#0B1F1A]"
             >
               {[5, 10, 20, 50].map((size) => (
                 <option key={size} value={size}>

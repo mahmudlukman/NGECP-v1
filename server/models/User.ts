@@ -11,7 +11,7 @@ export enum UserRole {
 
 export enum AccountType {
   INDIVIDUAL = "individual",
-  COMPANY = "company",
+  ORGANIZATION = "organization",
 }
 
 export interface IUser extends Document {
@@ -24,16 +24,18 @@ export interface IUser extends Document {
   name?: string;
   phoneNumber?: string;
 
-  // Company fields
-  companyName?: string;
-  companyRegNumber?: string;
-  companyAddress?: string;
+  // organization fields
+  organizationName?: string;
+  organizationRegNumber?: string;
+  organizationAddress?: string;
   contactPersonName?: string;
   contactPersonPhone?: string;
 
   isActive: boolean;
+  suspendedByAdmin?: boolean;
   createdAt: Date;
   updatedAt: Date;
+  passwordChangedAt?: Date;
   resetPasswordToken?: string;
   resetPasswordTime?: Date;
   getJwtToken(): string;
@@ -41,18 +43,19 @@ export interface IUser extends Document {
   comparePassword(enteredPassword: string): Promise<boolean>;
 }
 
-const UserSchema: Schema = new Schema(
+const UserSchema: Schema<IUser> = new Schema(
   {
     email: {
       type: String,
-      required: true,
+      required: [true, "Please enter your email!"],
       unique: true,
       lowercase: true,
       trim: true,
+      match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please enter a valid email"],
     },
     password: {
       type: String,
-      required: true,
+      required: [true, "Please enter your password"],
       select: false,
     },
     role: {
@@ -78,19 +81,19 @@ const UserSchema: Schema = new Schema(
       required: true,
     },
 
-    // Company fields
-    companyName: {
+    // organization fields
+    organizationName: {
       type: String,
       required: function (this: IUser) {
-        return this.accountType === AccountType.COMPANY;
+        return this.accountType === AccountType.ORGANIZATION;
       },
     },
-    companyRegNumber: {
+    organizationRegNumber: {
       type: String,
       unique: true,
       sparse: true,
     },
-    companyAddress: String,
+    organizationAddress: String,
     contactPersonName: String,
     contactPersonPhone: String,
 
@@ -98,19 +101,32 @@ const UserSchema: Schema = new Schema(
       type: Boolean,
       default: true,
     },
+    suspendedByAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    passwordChangedAt: Date,
+    resetPasswordToken: String,
+    resetPasswordTime: Date,
   },
   {
     minimize: false,
     timestamps: true,
-  }
+  },
 );
 
 // Hash password
 UserSchema.pre<IUser>("save", async function (next) {
-  if (!this.isModified("password")) {
-    next();
+  if (!this.isModified("password") || this.$locals.skipHash) {
+    return next();
   }
+
   this.password = await bcrypt.hash(this.password, 10);
+
+  if (!this.isNew) {
+    this.passwordChangedAt = new Date();
+  }
+
   next();
 });
 
@@ -130,7 +146,7 @@ UserSchema.methods.getRefreshToken = function (): string {
 
 // Compare password
 UserSchema.methods.comparePassword = async function (
-  enteredPassword: string
+  enteredPassword: string,
 ): Promise<boolean> {
   return await bcrypt.compare(enteredPassword, this.password);
 };

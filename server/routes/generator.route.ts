@@ -1,37 +1,39 @@
 import express from "express";
-import { authorizeRoles, isAuthenticated } from "../middleware/auth";
+import {
+  authorizeRoles,
+  isAuthenticated,
+  requireActiveAccount,
+} from "../middleware/auth";
 import {
   deleteGenerator,
-  getAllGenerators,
-  getGeneratorById,
-  getMyGenerators,
+  allGenerators,
+  generatorById,
+  myGenerators,
   registerGenerator,
   updateGenerator,
   updateGeneratorStatus,
 } from "../controllers/generator.controller";
+import { UserRole } from "../models/User";
+
 const generatorRouter = express.Router();
 
-generatorRouter.post("/register-generator", isAuthenticated, registerGenerator);
-generatorRouter.get("/generator/:id", isAuthenticated, getGeneratorById);
-generatorRouter.get("/my-generators", isAuthenticated, getMyGenerators);
+generatorRouter.use(isAuthenticated, requireActiveAccount);
+
+generatorRouter.post("/generator/register", registerGenerator);
+generatorRouter.get("/generator/:id", generatorById);
+generatorRouter.get("/generators/me", myGenerators);
 generatorRouter.get(
-  "/all-generators",
-  isAuthenticated,
-  authorizeRoles("admin", "editor"),
-  getAllGenerators
+  "/generators",
+  authorizeRoles(UserRole.ADMIN, UserRole.EDITOR),
+  allGenerators,
 );
-generatorRouter.put("/update-generator/:id", isAuthenticated, updateGenerator);
+generatorRouter.put("/generator/update/:id", updateGenerator);
 generatorRouter.put(
-  "/update-generator-status/:id",
-  isAuthenticated,
-  authorizeRoles("admin", "editor"),
-  updateGeneratorStatus
+  "/generator/update/status/:id",
+  authorizeRoles(UserRole.ADMIN, UserRole.EDITOR),
+  updateGeneratorStatus,
 );
 
-generatorRouter.delete(
-  "/delete-generator/:id",
-  isAuthenticated,
-  deleteGenerator
-);
+generatorRouter.delete("/generator/delete/:id", deleteGenerator);
 
 export default generatorRouter;

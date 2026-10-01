@@ -35,22 +35,22 @@ const Input: FC<InputProps> = ({
     : type;
 
   return (
-    <div className="w-full">
+    <div className="w-full font-[Figtree,ui-sans-serif,system-ui,sans-serif]">
       {/* Field Label */}
       <label
         htmlFor={inputId}
-        className="block text-xs font-semibold text-slate-700 mb-1.5"
+        className="mb-1.5 block text-xs font-semibold text-[#0B1F1A]/75"
       >
         {label}
       </label>
 
       {/* Input Container Wrapper */}
       <div
-        className={`flex items-center border rounded-lg px-3 py-2 bg-white transition-all focus-within:ring-2 ${
+        className={`flex items-center rounded-lg border bg-white px-3 py-2 transition-all focus-within:ring-2 ${
           error
             ? "border-rose-400 focus-within:ring-rose-500/20"
-            : "border-slate-200 focus-within:border-emerald-500 focus-within:ring-emerald-500/20"
-        } ${disabled ? "bg-slate-50 opacity-60 cursor-not-allowed" : ""}`}
+            : "border-[#0B1F1A]/15 focus-within:border-[#16785A] focus-within:ring-[#16785A]/20"
+        } ${disabled ? "cursor-not-allowed bg-[#0B1F1A]/[0.03] opacity-60" : ""}`}
       >
         <input
           id={inputId}
@@ -61,7 +61,7 @@ const Input: FC<InputProps> = ({
           placeholder={placeholder}
           disabled={disabled}
           autoComplete={autoComplete}
-          className="w-full bg-transparent outline-none text-sm text-slate-900 placeholder:text-slate-400 disabled:cursor-not-allowed"
+          className="w-full bg-transparent text-sm text-[#0B1F1A] outline-none placeholder:text-[#0B1F1A]/35 disabled:cursor-not-allowed"
         />
 
         {/* Password Visibility Toggle */}
@@ -71,12 +71,12 @@ const Input: FC<InputProps> = ({
             onClick={() => setShowPassword((prev) => !prev)}
             disabled={disabled}
             aria-label={showPassword ? "Hide password" : "Show password"}
-            className="ml-2 text-slate-400 hover:text-slate-700 transition-colors focus:outline-none disabled:pointer-events-none"
+            className="ml-2 text-[#0B1F1A]/35 transition-colors hover:text-[#0B1F1A]/75 focus:outline-none disabled:pointer-events-none"
           >
             {showPassword ? (
-              <EyeOff className="w-4 h-4 shrink-0" />
+              <EyeOff className="h-4 w-4 shrink-0" />
             ) : (
-              <Eye className="w-4 h-4 shrink-0" />
+              <Eye className="h-4 w-4 shrink-0" />
             )}
           </button>
         )}

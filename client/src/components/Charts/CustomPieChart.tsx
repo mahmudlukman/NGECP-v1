@@ -25,11 +25,11 @@ interface CustomPieChartProps {
 }
 
 const DEFAULT_COLORS = [
-  "#059669", // Emerald-600
-  "#10B981", // Emerald-500
-  "#34D399", // Emerald-400
-  "#A7F3D0", // Emerald-200
-  "#64748B", // Slate-500
+  "#0B1F1A", // Ink
+  "#16785A", // Mint (brand accent)
+  "#7FD1AE", // Light mint
+  "#0B1F1A80", // Ink, 50% (rendered as translucent ink)
+  "#9CA3AF", // Neutral grey, for an "other" catch-all slice
 ];
 
 const CustomPieChart: React.FC<CustomPieChartProps> = ({
@@ -47,7 +47,7 @@ const CustomPieChart: React.FC<CustomPieChartProps> = ({
       : "";
 
   return (
-    <div className="w-full h-[320px]">
+    <div className="h-[320px] w-full font-[Figtree,ui-sans-serif,system-ui,sans-serif]">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -83,7 +83,7 @@ const CustomPieChart: React.FC<CustomPieChartProps> = ({
                 y="45%"
                 dy={-10}
                 textAnchor="middle"
-                className="fill-slate-500 text-xs font-semibold uppercase tracking-wider"
+                className="fill-[#0B1F1A]/50 text-xs font-semibold uppercase tracking-wider"
               >
                 {label}
               </text>
@@ -91,9 +91,10 @@ const CustomPieChart: React.FC<CustomPieChartProps> = ({
               <text
                 x="50%"
                 y="45%"
-                dy={18}
+                dy={20}
                 textAnchor="middle"
-                className="fill-slate-900 text-2xl font-extrabold tracking-tight"
+                className="fill-[#0B1F1A] text-2xl font-normal tracking-tight"
+                style={{ fontFamily: "Newsreader, Georgia, serif" }}
               >
                 {formattedTotal}
               </text>

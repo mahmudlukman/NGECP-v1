@@ -28,14 +28,15 @@ interface Generator {
   };
 }
 
-// Status color mapping based on legend
+// Status color mapping — ink/mint brand palette, with amber and rose
+// kept for "in progress" and "non-compliant" states respectively.
 const statusColors: Record<string, string> = {
-  active: "#875CF5", // Purple
-  inactive: "#FA2C37", // Red
-  underinspection: "#06B6D4", // Cyan
-  compliant: "#4fbf8b", // Green
-  noncompliant: "#c40477ff", // Pink
-  unknown: "#6B7280", // Gray (fallback)
+  active: "#16785A", // Mint (brand accent)
+  inactive: "#9CA3AF", // Neutral grey
+  underinspection: "#F59E0B", // Amber
+  compliant: "#7FD1AE", // Light mint
+  noncompliant: "#E11D48", // Rose
+  unknown: "#64748B", // Slate (fallback)
 };
 
 // Normalize status for consistency
@@ -152,12 +153,12 @@ const GeneratorsMapView = () => {
 
   if (isLoading) {
     return (
-      <DashboardLayout activeMenu="Manage Generators">
-        <div className="my-5 bg-white p-6 rounded-2xl shadow-md">
-          <div className="flex items-center justify-center h-96">
+      <DashboardLayout>
+        <div className="my-5 rounded-2xl bg-white p-6 shadow-md">
+          <div className="flex h-96 items-center justify-center">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading generators map...</p>
+              <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[#16785A]" />
+              <p className="text-[#0B1F1A]/55">Loading generators map...</p>
             </div>
           </div>
         </div>
@@ -167,9 +168,9 @@ const GeneratorsMapView = () => {
 
   if (error) {
     return (
-      <DashboardLayout activeMenu="Manage Generators">
-        <div className="flex justify-center items-center h-[80vh]">
-          <p className="text-red-500">Failed to load generators.</p>
+      <DashboardLayout>
+        <div className="flex h-[80vh] items-center justify-center">
+          <p className="text-rose-600">Failed to load generators.</p>
         </div>
       </DashboardLayout>
     );
@@ -184,17 +185,17 @@ const GeneratorsMapView = () => {
   );
 
   return (
-    <DashboardLayout activeMenu="Generators Map View">
-      <div className="my-5">
+    <DashboardLayout>
+      <div className="my-5 font-[Figtree,ui-sans-serif,system-ui,sans-serif]">
         {/* Header */}
-        <div className="bg-white p-6 rounded-t-2xl shadow-md border-b">
+        <div className="rounded-t-2xl border-b border-[#0B1F1A]/10 bg-white p-6 shadow-md">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl text-slate-600 font-semibold">
+              <h1 className="font-[Newsreader,Georgia,serif] text-2xl font-normal text-[#0B1F1A]/70">
                 Generators{" "}
-                <span className="text-slate-800 font-bold">Map View</span>
+                <span className="font-medium text-[#0B1F1A]">Map View</span>
               </h1>
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="mt-1 text-sm text-[#0B1F1A]/50">
                 Showing {validGenerators.length} of {generators.length}{" "}
                 generators with valid locations
               </p>
@@ -202,13 +203,13 @@ const GeneratorsMapView = () => {
             <div className="flex gap-2">
               <button
                 onClick={() => navigate("/admin/manage-generators")}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 hover:scale-103 active:scale-95 transition"
+                className="rounded-lg bg-[#0B1F1A]/[0.04] px-4 py-2 text-[#0B1F1A]/75 transition hover:scale-[1.03] hover:bg-[#0B1F1A]/[0.08] active:scale-95"
               >
                 List View
               </button>
               <button
                 onClick={() => navigate("/admin/register-generator")}
-                className="px-4 py-2 text-white rounded-lg bg-primary hover:scale-103 active:scale-95 transition"
+                className="rounded-lg bg-[#0B1F1A] px-4 py-2 text-[#F3F1EA] transition hover:scale-[1.03] hover:bg-[#12332b] active:scale-95"
               >
                 + Add Generator
               </button>
@@ -216,41 +217,56 @@ const GeneratorsMapView = () => {
           </div>
 
           {/* Legend */}
-          <div className="flex gap-4 mt-4 text-sm">
+          <div className="mt-4 flex flex-wrap gap-4 text-sm text-[#0B1F1A]/70">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-[#875CF5]"></div>
+              <div
+                className="h-4 w-4 rounded-full"
+                style={{ backgroundColor: statusColors.active }}
+              />
               <span>Active</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-[#FA2C37]"></div>
+              <div
+                className="h-4 w-4 rounded-full"
+                style={{ backgroundColor: statusColors.inactive }}
+              />
               <span>Inactive</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-[#06B6D4]"></div>
+              <div
+                className="h-4 w-4 rounded-full"
+                style={{ backgroundColor: statusColors.underinspection }}
+              />
               <span>Under Inspection</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-[#4fbf8b]"></div>
+              <div
+                className="h-4 w-4 rounded-full"
+                style={{ backgroundColor: statusColors.compliant }}
+              />
               <span>Compliant</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-[#c40477ff]"></div>
+              <div
+                className="h-4 w-4 rounded-full"
+                style={{ backgroundColor: statusColors.noncompliant }}
+              />
               <span>Non-Compliant</span>
             </div>
           </div>
         </div>
 
         {/* Map Container */}
-        <div className="bg-white rounded-b-2xl shadow-md overflow-hidden">
+        <div className="overflow-hidden rounded-b-2xl bg-white shadow-md">
           {validGenerators.length === 0 ? (
-            <div className="flex items-center justify-center h-96">
+            <div className="flex h-96 items-center justify-center">
               <div className="text-center">
-                <p className="text-gray-600 text-lg mb-4">
+                <p className="mb-4 text-lg text-[#0B1F1A]/60">
                   No generators with valid locations found
                 </p>
                 <button
                   onClick={() => navigate("/admin/register-generator")}
-                  className="px-6 py-2 text-white rounded-lg bg-primary hover:scale-103 active:scale-95 transition"
+                  className="rounded-lg bg-[#0B1F1A] px-6 py-2 text-[#F3F1EA] transition hover:scale-[1.03] active:scale-95"
                 >
                   Register Your First Generator
                 </button>
@@ -309,74 +325,64 @@ const GeneratorsMapView = () => {
             }}
             title={`${selectedGenerator.brand} ${selectedGenerator.model}`}
           >
-            <div className="p-6 w-[90vw] md:w-[400px]">
+            <div className="w-[90vw] p-6 md:w-[400px]">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="mb-1 block text-sm font-medium text-[#0B1F1A]/70">
                     Capacity
                   </label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-[#0B1F1A]/60">
                     {selectedGenerator.capacity} KVA
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="mb-1 block text-sm font-medium text-[#0B1F1A]/70">
                     Serial Number
                   </label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-[#0B1F1A]/60">
                     {selectedGenerator.serialNumber}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="mb-1 block text-sm font-medium text-[#0B1F1A]/70">
                     Fuel Type
                   </label>
-                  <p className="text-sm text-gray-600 capitalize">
+                  <p className="text-sm capitalize text-[#0B1F1A]/60">
                     {selectedGenerator.fuelType}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="mb-1 block text-sm font-medium text-[#0B1F1A]/70">
                     Year of Manufacture
                   </label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-[#0B1F1A]/60">
                     {selectedGenerator.yearOfManufacture}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="mb-1 block text-sm font-medium text-[#0B1F1A]/70">
                     Status
                   </label>
                   <p
-                    className={`text-sm capitalize px-2 py-0.5 rounded inline-block ${
-                      normalizeStatus(selectedGenerator.status) === "active"
-                        ? "bg-[#875CF5] text-white"
-                        : normalizeStatus(selectedGenerator.status) ===
-                            "inactive"
-                          ? "bg-[#FA2C37] text-white"
-                          : normalizeStatus(selectedGenerator.status) ===
-                              "underinspection"
-                            ? "bg-[#06B6D4] text-white"
-                            : normalizeStatus(selectedGenerator.status) ===
-                                "compliant"
-                              ? "bg-[#4fbf8b] text-white"
-                              : normalizeStatus(selectedGenerator.status) ===
-                                  "noncompliant"
-                                ? "bg-[#c40477ff] text-white"
-                                : "bg-[#6B7280] text-white"
-                    }`}
+                    className="inline-block rounded px-2 py-0.5 text-sm capitalize text-white"
+                    style={{
+                      backgroundColor:
+                        statusColors[
+                          normalizeStatus(selectedGenerator.status)
+                        ] || statusColors.unknown,
+                    }}
                   >
                     {selectedGenerator.status?.replace("_", " ") || "Unknown"}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="mb-1 block text-sm font-medium text-[#0B1F1A]/70">
                     Location
                   </label>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-[#0B1F1A]/60">
                     {selectedGenerator.location.address}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-[#0B1F1A]/60">
                     {selectedGenerator.location.lga},{" "}
                     {selectedGenerator.location.state}
                   </p>
@@ -384,7 +390,7 @@ const GeneratorsMapView = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleViewDetails(selectedGenerator._id)}
-                    className="flex-1 bg-primary text-white py-2 rounded-lg hover:opacity-90 transition"
+                    className="flex-1 rounded-lg bg-[#0B1F1A] py-2 text-[#F3F1EA] transition hover:bg-[#12332b]"
                   >
                     View Details
                   </button>

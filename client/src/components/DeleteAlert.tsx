@@ -17,28 +17,28 @@ const DeleteAlert: React.FC<DeleteAlertProps> = ({
   isDeleting = false,
 }) => {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 font-[Figtree,ui-sans-serif,system-ui,sans-serif]">
       {/* Alert Header / Visual Warning */}
-      <div className="flex items-start gap-3.5 p-4 rounded-xl bg-rose-50 border border-rose-100 text-rose-900">
-        <div className="p-2 rounded-lg bg-rose-100 text-rose-600 flex-shrink-0">
-          <AlertTriangle className="w-5 h-5" />
+      <div className="flex items-start gap-3.5 rounded-xl border border-rose-100 bg-rose-50 p-4 text-rose-900">
+        <div className="flex-shrink-0 rounded-lg bg-rose-100 p-2 text-rose-600">
+          <AlertTriangle className="h-5 w-5" />
         </div>
         <div className="space-y-1">
           <h4 className="text-sm font-bold text-rose-950">{title}</h4>
-          <p className="text-xs sm:text-sm text-rose-700/90 leading-relaxed">
+          <p className="text-xs leading-relaxed text-rose-700/90 sm:text-sm">
             {content}
           </p>
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center justify-end gap-3 mt-2">
+      <div className="mt-2 flex items-center justify-end gap-3">
         {onCancel && (
           <button
             type="button"
             disabled={isDeleting}
             onClick={onCancel}
-            className="px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-slate-300 disabled:opacity-50"
+            className="rounded-lg border border-[#0B1F1A]/15 bg-white px-4 py-2 text-xs font-medium text-[#0B1F1A]/70 transition-colors hover:bg-[#0B1F1A]/[0.04] focus:outline-none focus:ring-2 focus:ring-[#0B1F1A]/15 disabled:opacity-50 sm:text-sm"
           >
             Cancel
           </button>
@@ -48,16 +48,16 @@ const DeleteAlert: React.FC<DeleteAlertProps> = ({
           type="button"
           disabled={isDeleting}
           onClick={onDelete}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] border border-rose-600 rounded-lg shadow-sm shadow-rose-600/20 transition-all focus:outline-none focus:ring-2 focus:ring-rose-500 disabled:opacity-60 disabled:pointer-events-none"
+          className="inline-flex items-center justify-center gap-2 rounded-lg border border-rose-600 bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-sm shadow-rose-600/20 transition-all hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60 sm:text-sm"
         >
           {isDeleting ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               <span>Deleting...</span>
             </>
           ) : (
             <>
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="h-4 w-4" />
               <span>Delete Permanently</span>
             </>
           )}

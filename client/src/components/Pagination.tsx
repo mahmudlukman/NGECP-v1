@@ -71,17 +71,17 @@ const Pagination: FC<PaginationProps> = ({
   return (
     <nav
       aria-label="Pagination Navigation"
-      className="flex items-center justify-center gap-1.5 mt-8 text-xs sm:text-sm select-none"
+      className="mt-8 flex select-none items-center justify-center gap-1.5 font-[Figtree,ui-sans-serif,system-ui,sans-serif] text-xs sm:text-sm"
     >
       {/* Previous Button */}
       <button
         type="button"
         onClick={() => handlePageClick(currentPage - 1)}
         disabled={currentPage === 1}
-        className="inline-flex items-center gap-1 h-9 px-3 rounded-lg border border-slate-200 bg-white font-medium text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900 active:scale-95 disabled:opacity-40 disabled:pointer-events-none transition-all"
+        className="inline-flex h-9 items-center gap-1 rounded-lg border border-[#0B1F1A]/10 bg-white px-3 font-medium text-[#0B1F1A]/70 shadow-xs transition-all hover:bg-[#0B1F1A]/[0.04] hover:text-[#0B1F1A] active:scale-95 disabled:pointer-events-none disabled:opacity-40"
         aria-label="Go to previous page"
       >
-        <ChevronLeft className="w-4 h-4" />
+        <ChevronLeft className="h-4 w-4" />
         <span className="hidden sm:inline">Prev</span>
       </button>
 
@@ -92,9 +92,9 @@ const Pagination: FC<PaginationProps> = ({
             return (
               <span
                 key={`dots-${index}`}
-                className="flex items-center justify-center h-9 w-8 text-slate-400"
+                className="flex h-9 w-8 items-center justify-center text-[#0B1F1A]/35"
               >
-                <MoreHorizontal className="w-4 h-4" />
+                <MoreHorizontal className="h-4 w-4" />
               </span>
             );
           }
@@ -109,10 +109,10 @@ const Pagination: FC<PaginationProps> = ({
               onClick={() => handlePageClick(pageNum)}
               aria-current={isActive ? "page" : undefined}
               aria-label={`Page ${pageNum}`}
-              className={`h-9 min-w-[36px] px-2.5 rounded-lg font-semibold transition-all ${
+              className={`h-9 min-w-[36px] rounded-lg px-2.5 font-semibold transition-all ${
                 isActive
-                  ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20"
-                  : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 hover:text-slate-900"
+                  ? "bg-[#0B1F1A] text-white shadow-[0_8px_18px_-8px_rgba(11,31,26,0.5)]"
+                  : "border border-[#0B1F1A]/10 bg-white text-[#0B1F1A]/70 hover:bg-[#0B1F1A]/[0.04] hover:text-[#0B1F1A]"
               }`}
             >
               {pageNum}
@@ -126,11 +126,11 @@ const Pagination: FC<PaginationProps> = ({
         type="button"
         onClick={() => handlePageClick(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="inline-flex items-center gap-1 h-9 px-3 rounded-lg border border-slate-200 bg-white font-medium text-slate-700 shadow-xs hover:bg-slate-50 hover:text-slate-900 active:scale-95 disabled:opacity-40 disabled:pointer-events-none transition-all"
+        className="inline-flex h-9 items-center gap-1 rounded-lg border border-[#0B1F1A]/10 bg-white px-3 font-medium text-[#0B1F1A]/70 shadow-xs transition-all hover:bg-[#0B1F1A]/[0.04] hover:text-[#0B1F1A] active:scale-95 disabled:pointer-events-none disabled:opacity-40"
         aria-label="Go to next page"
       >
         <span className="hidden sm:inline">Next</span>
-        <ChevronRight className="w-4 h-4" />
+        <ChevronRight className="h-4 w-4" />
       </button>
     </nav>
   );

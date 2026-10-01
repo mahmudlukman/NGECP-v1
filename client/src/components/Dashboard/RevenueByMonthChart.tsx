@@ -17,9 +17,9 @@ const RevenueByMonthChart = ({ data = [] }: Props) => {
   }, [data]);
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80 col-span-1">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold text-slate-900">
+    <div className="col-span-1 rounded-2xl border border-[#0B1F1A]/10 bg-white p-5 font-[Figtree,ui-sans-serif,system-ui,sans-serif] shadow-xs">
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="font-[Newsreader,Georgia,serif] text-base font-normal text-[#0B1F1A]">
           Revenue by Month
         </h3>
       </div>
@@ -27,7 +27,7 @@ const RevenueByMonthChart = ({ data = [] }: Props) => {
       {chartData.length > 0 ? (
         <CustomBarChart data={chartData} />
       ) : (
-        <div className="h-64 flex items-center justify-center text-xs text-slate-400">
+        <div className="flex h-64 items-center justify-center text-xs text-[#0B1F1A]/40">
           No monthly revenue data available.
         </div>
       )}

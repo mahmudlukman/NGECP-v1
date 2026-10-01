@@ -4,7 +4,7 @@ export const reportApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     createInspectionReport: builder.mutation({
       query: (data) => ({
-        url: "create-report",
+        url: "report/create",
         method: "POST",
         body: data,
         credentials: "include" as const,
@@ -13,7 +13,7 @@ export const reportApi = apiSlice.injectEndpoints({
     }),
     getAllReports: builder.query({
       query: ({ page = 1, pageSize = 10 }) => ({
-        url: `get-all-reports?page=${page}&pageSize=${pageSize}`,
+        url: `reports?page=${page}&pageSize=${pageSize}`,
         method: "GET",
         credentials: "include" as const,
       }),
@@ -29,7 +29,7 @@ export const reportApi = apiSlice.injectEndpoints({
     }),
     getReportByInspectionId: builder.query({
       query: (inspectionId) => ({
-        url: `inspection/${inspectionId}`,
+        url: `report/${inspectionId}`,
         method: "GET",
         credentials: "include" as const,
       }),
@@ -37,7 +37,7 @@ export const reportApi = apiSlice.injectEndpoints({
     }),
     getMyReports: builder.query({
       query: () => ({
-        url: "my-reports",
+        url: "reports/me",
         method: "GET",
         credentials: "include" as const,
       }),
@@ -45,7 +45,7 @@ export const reportApi = apiSlice.injectEndpoints({
     }),
     updateInspectionReport: builder.mutation({
       query: ({ id, data }) => ({
-        url: `update-inspection-report/${id}`,
+        url: `report/inspection/update/${id}`,
         method: "PUT",
         body: data,
         credentials: "include" as const,
@@ -54,7 +54,7 @@ export const reportApi = apiSlice.injectEndpoints({
     }),
     approveInspectionReport: builder.mutation({
       query: ({ id, data }) => ({
-        url: `approve-report/${id}`,
+        url: `report/approve/${id}`,
         method: "PUT",
         body: data,
         credentials: "include" as const,
@@ -63,7 +63,7 @@ export const reportApi = apiSlice.injectEndpoints({
     }),
     deleteInspectionReport: builder.mutation({
       query: (id) => ({
-        url: `delete-report/${id}`,
+        url: `report/delete/${id}`,
         method: "DELETE",
         credentials: "include" as const,
       }),

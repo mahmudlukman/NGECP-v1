@@ -57,15 +57,17 @@ const PaymentSuccess = () => {
   }, [error, navigate]);
 
   return (
-    <PaymentContent
-      isMounted={isMounted}
-      isLoading={isLoading}
-      status={status}
-      tx_ref={tx_ref}
-      transaction_id={transaction_id}
-      data={data}
-      error={error}
-    />
+    <div className="flex min-h-screen w-full items-center justify-center bg-[#F7F6F1] p-4 font-[Figtree,ui-sans-serif,system-ui,sans-serif]">
+      <PaymentContent
+        isMounted={isMounted}
+        isLoading={isLoading}
+        status={status}
+        tx_ref={tx_ref}
+        transaction_id={transaction_id}
+        data={data}
+        error={error}
+      />
+    </div>
   );
 };
 
@@ -99,12 +101,14 @@ const PaymentContent: FC<PaymentContentProps> = ({
   // Initial mount/param validation
   if (!isMounted || !status || !tx_ref || !transaction_id) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] py-8">
+      <div className="flex min-h-[400px] flex-col items-center justify-center py-8">
         <div className="animate-pulse">
-          <div className="w-[300px] h-[300px] bg-gray-200 rounded mb-4"></div>
-          <div className="h-6 bg-gray-200 rounded w-48 mx-auto"></div>
+          <div className="mb-4 h-[300px] w-[300px] rounded bg-[#0B1F1A]/[0.06]" />
+          <div className="mx-auto h-6 w-48 rounded bg-[#0B1F1A]/[0.06]" />
         </div>
-        <p className="text-gray-600">Initializing payment verification...</p>
+        <p className="text-[#0B1F1A]/55">
+          Initializing payment verification...
+        </p>
       </div>
     );
   }
@@ -112,10 +116,12 @@ const PaymentContent: FC<PaymentContentProps> = ({
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] py-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-        <h3 className="text-lg text-gray-700 mb-2">Verifying Payment...</h3>
-        <p className="text-gray-500">
+      <div className="flex min-h-[400px] flex-col items-center justify-center py-8">
+        <div className="mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-[#16785A]" />
+        <h3 className="mb-2 font-[Newsreader,Georgia,serif] text-lg font-normal text-[#0B1F1A]">
+          Verifying Payment...
+        </h3>
+        <p className="text-[#0B1F1A]/55">
           Please wait while we confirm your payment
         </p>
       </div>
@@ -125,12 +131,14 @@ const PaymentContent: FC<PaymentContentProps> = ({
   // Error state
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] py-8">
-        <div className="text-red-500 text-4xl mb-4">❌</div>
-        <h3 className="text-lg text-red-600 mb-2">
+      <div className="flex min-h-[400px] flex-col items-center justify-center py-8 text-center">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-rose-50 text-2xl text-rose-600">
+          ❌
+        </div>
+        <h3 className="mb-2 font-[Newsreader,Georgia,serif] text-lg font-normal text-rose-600">
           Payment Verification Failed
         </h3>
-        <p className="text-gray-500">
+        <p className="text-[#0B1F1A]/55">
           {error?.data?.message || error?.message || "An error occurred"}
         </p>
       </div>
@@ -140,17 +148,22 @@ const PaymentContent: FC<PaymentContentProps> = ({
   // Success state
   if (data && data.success) {
     return (
-      <div className="flex flex-col items-center justify-center py-8">
+      <div className="flex flex-col items-center justify-center py-8 text-center">
         <Lottie options={defaultOptions} width={300} height={300} />
-        <h5 className="text-xl text-gray-700 mb-2">
+        <h5 className="mb-2 font-[Newsreader,Georgia,serif] text-xl font-normal text-[#0B1F1A]">
           Your order is successful 🎉
         </h5>
         {data.orderId && (
-          <p className="text-gray-500 mb-2">Order ID: {data.orderId}</p>
+          <p className="mb-2 text-[#0B1F1A]/55">Order ID: {data.orderId}</p>
         )}
         {data.inspection && (
-          <div className="text-gray-600 text-sm">
-            <p>Total Amount: ₦{data.inspection.amount}</p>
+          <div className="text-sm text-[#0B1F1A]/65">
+            <p>
+              Total Amount:{" "}
+              <span className="font-semibold text-[#16785A]">
+                ₦{data.inspection.amount}
+              </span>
+            </p>
             <p>Status: {data.inspection.status}</p>
             {data.inspection.paidAt && (
               <p>
@@ -159,7 +172,9 @@ const PaymentContent: FC<PaymentContentProps> = ({
             )}
           </div>
         )}
-        <p className="text-gray-500 mt-4">Redirecting to your generators...</p>
+        <p className="mt-4 text-[#0B1F1A]/50">
+          Redirecting to your generators...
+        </p>
       </div>
     );
   }

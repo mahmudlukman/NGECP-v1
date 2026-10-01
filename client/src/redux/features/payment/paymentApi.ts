@@ -54,7 +54,7 @@ export const paymentApi = apiSlice.injectEndpoints({
       InitializePaymentRequest
     >({
       query: (body) => ({
-        url: "initialize-payment",
+        url: "payment/initialize",
         method: "POST",
         body,
         credentials: "include",
@@ -64,7 +64,7 @@ export const paymentApi = apiSlice.injectEndpoints({
 
     verifyPayment: builder.query<VerifyPaymentResponse, VerifyPaymentRequest>({
       query: ({ status, tx_ref, transaction_id }) => ({
-        url: "verify-payment",
+        url: "payment/verify",
         method: "GET",
         params: {
           status,
@@ -78,19 +78,19 @@ export const paymentApi = apiSlice.injectEndpoints({
       ],
     }),
 
-    getPaymentStatus: builder.query<PaymentStatusResponse, { paymentId: string }>(
-      {
-        query: ({ paymentId }) => ({
-          url: `payment-status/${paymentId}`,
-          method: "GET",
-          credentials: "include",
-        }),
-        providesTags: (_result, _error, { paymentId }) => [
-          { type: "Payment", id: paymentId },
-        ],
-      }
-    ),
-
+    getPaymentStatus: builder.query<
+      PaymentStatusResponse,
+      { inspectionId: string }
+    >({
+      query: ({ inspectionId }) => ({
+        url: `payment/status/${inspectionId}`,
+        method: "GET",
+        credentials: "include",
+      }),
+      providesTags: (_result, _error, { inspectionId }) => [
+        { type: "Payment", id: inspectionId },
+      ],
+    }),
   }),
 });
 

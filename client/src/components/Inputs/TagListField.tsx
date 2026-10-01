@@ -34,23 +34,23 @@ const TagListField = ({
   };
 
   return (
-    <div>
-      <label className="block text-sm font-medium text-slate-600 mb-2">
+    <div className="font-[Figtree,ui-sans-serif,system-ui,sans-serif]">
+      <label className="mb-2 block text-sm font-medium text-[#0B1F1A]/70">
         {label}
       </label>
-      <div className="flex gap-2 mb-3">
+      <div className="mb-3 flex gap-2">
         <input
           type="text"
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="flex-1 border border-slate-300 text-slate-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+          className="flex-1 rounded-lg border border-[#0B1F1A]/15 px-3 py-2 text-sm text-[#0B1F1A] placeholder:text-[#0B1F1A]/35 focus:border-[#16785A] focus:outline-none focus:ring-2 focus:ring-[#16785A]/20"
         />
         <button
           type="button"
           onClick={submit}
-          className="flex items-center gap-1.5 px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-slate-900 transition-colors"
+          className="flex items-center gap-1.5 rounded-lg bg-[#0B1F1A] px-4 py-2 text-sm font-medium text-[#F3F1EA] transition-colors hover:bg-[#12332b]"
         >
           <Plus size={16} />
           Add
@@ -62,14 +62,14 @@ const TagListField = ({
           {items.map((item, index) => (
             <span
               key={`${item}-${index}`}
-              className="inline-flex items-center gap-2 bg-slate-100 text-slate-700 text-sm pl-3 pr-2 py-1.5 rounded-full"
+              className="inline-flex items-center gap-2 rounded-full bg-[#16785A]/[0.08] py-1.5 pl-3 pr-2 text-sm text-[#0B1F1A]/80"
             >
               {item}
               <button
                 type="button"
                 onClick={() => onRemove(index)}
                 aria-label={`Remove ${item}`}
-                className="text-slate-400 hover:text-rose-600 transition-colors"
+                className="text-[#0B1F1A]/35 transition-colors hover:text-rose-600"
               >
                 <X size={14} />
               </button>
@@ -77,7 +77,7 @@ const TagListField = ({
           ))}
         </div>
       ) : (
-        <p className="text-xs text-slate-400 italic">{emptyText}</p>
+        <p className="text-xs italic text-[#0B1F1A]/40">{emptyText}</p>
       )}
     </div>
   );

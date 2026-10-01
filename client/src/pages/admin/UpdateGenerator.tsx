@@ -130,24 +130,28 @@ const UpdateGenerator = () => {
     (_, i) => currentYear - i,
   );
 
+  const inputClass =
+    "w-full px-3 py-2 border border-[#0B1F1A]/15 rounded-lg outline-none focus:ring-2 focus:ring-[#16785A]/20 focus:border-[#16785A] bg-[#F7F6F1] text-[#0B1F1A]";
+  const labelClass = "text-sm font-medium text-[#0B1F1A]/70";
+
   if (isFetching) {
     return (
-      <DashboardLayout activeMenu="Manage Generators">
-        <Loading />
+      <DashboardLayout>
+        <Loading fullScreen={false} />
       </DashboardLayout>
     );
   }
 
   if (!generatorData?.generator) {
     return (
-      <DashboardLayout activeMenu="Manage Generators">
-        <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
-          <div className="flex items-center justify-center h-96">
+      <DashboardLayout>
+        <div className="my-5 w-full rounded-2xl border border-[#0B1F1A]/10 bg-white p-6 font-[Figtree,ui-sans-serif,system-ui,sans-serif] shadow-[0_20px_40px_-30px_rgba(11,31,26,0.25)]">
+          <div className="flex h-96 items-center justify-center">
             <div className="text-center">
-              <p className="text-red-600 text-lg mb-4">Generator not found</p>
+              <p className="mb-4 text-lg text-rose-600">Generator not found</p>
               <button
                 onClick={() => navigate("/admin/manage-generators")}
-                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 cursor-pointer"
+                className="cursor-pointer rounded-lg bg-[#0B1F1A] px-6 py-2 text-[#F3F1EA] hover:bg-[#12332b]"
               >
                 Back to Generators
               </button>
@@ -159,44 +163,45 @@ const UpdateGenerator = () => {
   }
 
   return (
-    <DashboardLayout activeMenu="Manage Generators">
-      <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
-        <div className="no-scrollbar flex-1 h-[95vh] overflow-y-scroll flex flex-col justify-between">
-          <div className="flex items-center justify-between max-w-3xl mb-4">
-            <h1 className="text-2xl text-slate-600 font-semibold">
-              Update <span className="text-slate-800 font-bold">Generator</span>
+    <DashboardLayout>
+      <div className="my-5 w-full rounded-2xl border border-[#0B1F1A]/10 bg-white p-6 font-[Figtree,ui-sans-serif,system-ui,sans-serif] shadow-[0_20px_40px_-30px_rgba(11,31,26,0.25)]">
+        <div className="no-scrollbar flex h-[95vh] flex-1 flex-col justify-between overflow-y-scroll">
+          <div className="mb-4 flex max-w-3xl items-center justify-between">
+            <h1 className="font-[Newsreader,Georgia,serif] text-2xl font-normal text-[#0B1F1A]/70">
+              Update{" "}
+              <span className="font-medium text-[#0B1F1A]">Generator</span>
             </h1>
           </div>
 
           <form
             onSubmit={handleSubmit}
-            className="md:p-10 p-4 space-y-5 max-w-3xl"
+            className="max-w-3xl space-y-5 p-4 md:p-10"
           >
             {/* Brand & Model */}
             <div className="flex flex-wrap gap-5">
-              <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-slate-600">
-                  Brand <span className="text-red-500">*</span>
+              <div className="flex flex-1 flex-col gap-1">
+                <label className={labelClass}>
+                  Brand <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={brand}
                   onChange={(e) => setBrand(e.target.value)}
                   placeholder="e.g. Perkins"
-                  className="w-full px-3 py-2 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary text-slate-600"
+                  className={inputClass}
                   required
                 />
               </div>
-              <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-slate-600">
-                  Model <span className="text-red-500">*</span>
+              <div className="flex flex-1 flex-col gap-1">
+                <label className={labelClass}>
+                  Model <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
                   placeholder="e.g. 404D-22G"
-                  className="w-full px-3 py-2 text-slate-600 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                  className={inputClass}
                   required
                 />
               </div>
@@ -204,42 +209,42 @@ const UpdateGenerator = () => {
 
             {/* Serial Number */}
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-slate-600">
-                Serial Number <span className="text-red-500">*</span>
+              <label className={labelClass}>
+                Serial Number <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
                 value={serialNumber}
                 onChange={(e) => setSerialNumber(e.target.value)}
                 placeholder="Unique serial number"
-                className="w-full px-3 py-2 text-slate-600 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                className={inputClass}
                 required
               />
             </div>
 
             {/* Capacity & Year */}
             <div className="flex flex-wrap gap-5">
-              <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-slate-600">
-                  Capacity (KVA) <span className="text-red-500">*</span>
+              <div className="flex flex-1 flex-col gap-1">
+                <label className={labelClass}>
+                  Capacity (KVA) <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="number"
                   value={capacity}
                   onChange={(e) => setCapacity(e.target.value)}
                   placeholder="e.g. 150"
-                  className="w-full px-3 py-2 text-slate-600 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                  className={inputClass}
                   required
                 />
               </div>
-              <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-slate-600">
-                  Year of Manufacture <span className="text-red-500">*</span>
+              <div className="flex flex-1 flex-col gap-1">
+                <label className={labelClass}>
+                  Year of Manufacture <span className="text-rose-500">*</span>
                 </label>
                 <select
                   value={yearOfManufacture}
                   onChange={(e) => setYearOfManufacture(e.target.value)}
-                  className="w-full px-3 py-2 text-slate-600 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+                  className={`${inputClass} cursor-pointer`}
                   required
                 >
                   <option value="">Select year</option>
@@ -254,13 +259,13 @@ const UpdateGenerator = () => {
 
             {/* Fuel Type */}
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-slate-600">
-                Fuel Type <span className="text-red-500">*</span>
+              <label className={labelClass}>
+                Fuel Type <span className="text-rose-500">*</span>
               </label>
               <select
                 value={fuelType}
                 onChange={(e) => setFuelType(e.target.value)}
-                className="w-full px-3 py-2 text-slate-600 border border-gray-400 rounded-lg outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+                className={`${inputClass} cursor-pointer`}
                 required
               >
                 <option value="">Select fuel type</option>
@@ -272,7 +277,7 @@ const UpdateGenerator = () => {
             </div>
 
             {/* Location Section */}
-            <h3 className="font-semibold text-slate-600 mt-6">
+            <h3 className="mt-6 font-[Newsreader,Georgia,serif] text-lg font-normal text-[#0B1F1A]">
               Generator Location
             </h3>
             <GeneratorLocationSelector
@@ -285,7 +290,7 @@ const UpdateGenerator = () => {
               <button
                 type="submit"
                 disabled={isUpdating}
-                className="px-6 py-2.5 bg-primary text-white font-medium rounded-lg shadow hover:bg-primary/90 transition disabled:opacity-50 cursor-pointer"
+                className="cursor-pointer rounded-lg bg-[#0B1F1A] px-6 py-2.5 font-medium text-[#F3F1EA] shadow-sm transition hover:bg-[#12332b] disabled:opacity-50"
               >
                 {isUpdating ? "Updating..." : "Update Generator"}
               </button>
@@ -293,7 +298,7 @@ const UpdateGenerator = () => {
                 type="button"
                 onClick={handleCancel}
                 disabled={isUpdating}
-                className="px-6 py-2.5 bg-gray-500 text-white font-medium rounded-lg shadow hover:bg-gray-600 transition disabled:opacity-50 cursor-pointer"
+                className="cursor-pointer rounded-lg border border-[#0B1F1A]/15 px-6 py-2.5 font-medium text-[#0B1F1A]/70 transition hover:bg-[#0B1F1A]/[0.04] disabled:opacity-50"
               >
                 Cancel
               </button>

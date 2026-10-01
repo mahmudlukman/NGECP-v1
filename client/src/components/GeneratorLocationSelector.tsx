@@ -237,15 +237,15 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
   };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 font-[Figtree,ui-sans-serif,system-ui,sans-serif]">
       {/* Location Input Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-200/80">
+      <div className="grid grid-cols-1 gap-4 rounded-2xl border border-[#0B1F1A]/10 bg-[#F7F6F1] p-4 md:grid-cols-3">
         <div>
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+          <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#0B1F1A]/70">
             State <span className="text-rose-500">*</span>
           </label>
           <select
-            className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all"
+            className="w-full rounded-xl border border-[#0B1F1A]/15 bg-white p-2.5 text-sm text-[#0B1F1A] outline-none transition-all focus:border-[#16785A] focus:ring-2 focus:ring-[#16785A]/20"
             value={selectedState}
             onChange={(e) => {
               setSelectedState(e.target.value);
@@ -262,11 +262,11 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+          <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#0B1F1A]/70">
             LGA <span className="text-rose-500">*</span>
           </label>
           <select
-            className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all disabled:bg-slate-100 disabled:text-slate-400"
+            className="w-full rounded-xl border border-[#0B1F1A]/15 bg-white p-2.5 text-sm text-[#0B1F1A] outline-none transition-all focus:border-[#16785A] focus:ring-2 focus:ring-[#16785A]/20 disabled:bg-[#0B1F1A]/[0.04] disabled:text-[#0B1F1A]/35"
             value={selectedLGA}
             onChange={(e) => setSelectedLGA(e.target.value)}
             disabled={!selectedState}
@@ -282,7 +282,7 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+          <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-[#0B1F1A]/70">
             Street Address <span className="text-rose-500">*</span>
           </label>
           <input
@@ -290,7 +290,7 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
             placeholder="e.g., Plot 12, Commercial Layout"
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            className="w-full bg-white border border-slate-200 text-slate-800 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-400"
+            className="w-full rounded-xl border border-[#0B1F1A]/15 bg-white p-2.5 text-sm text-[#0B1F1A] outline-none transition-all placeholder:text-[#0B1F1A]/35 focus:border-[#16785A] focus:ring-2 focus:ring-[#16785A]/20"
           />
         </div>
       </div>
@@ -301,12 +301,12 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
           type="button"
           onClick={handleGetCoordinates}
           disabled={!selectedState || !selectedLGA || isSearching}
-          className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm shadow-sm transition-all disabled:opacity-50 disabled:pointer-events-none"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#0B1F1A] px-4 py-2.5 text-xs font-semibold text-[#F3F1EA] shadow-sm transition-all hover:bg-[#12332b] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 sm:text-sm"
         >
           {isSearching ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <Search className="w-4 h-4" />
+            <Search className="h-4 w-4" />
           )}
           <span>Search Map Location</span>
         </button>
@@ -315,29 +315,31 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
           type="button"
           onClick={handleGetCurrentLocation}
           disabled={isLocatingUser}
-          className="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm shadow-sm transition-all disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-xl border border-[#16785A]/20 bg-[#16785A]/[0.08] px-4 py-2.5 text-xs font-semibold text-[#16785A] shadow-sm transition-all hover:bg-[#16785A]/[0.14] active:scale-[0.98] disabled:opacity-50 sm:text-sm"
         >
           {isLocatingUser ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <Navigation className="w-4 h-4 text-emerald-400" />
+            <Navigation className="h-4 w-4" />
           )}
           <span>Use Current GPS Location</span>
         </button>
       </div>
 
       {/* Helper Callout Box */}
-      <div className="flex items-start gap-3 p-3.5 bg-sky-50/70 border border-sky-100 rounded-xl text-sky-900 text-xs sm:text-sm">
-        <Info className="w-4 h-4 text-sky-600 mt-0.5 flex-shrink-0" />
+      <div className="flex items-start gap-3 rounded-xl border border-[#16785A]/20 bg-[#16785A]/[0.06] p-3.5 text-xs text-[#0B1F1A]/75 sm:text-sm">
+        <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#16785A]" />
         <p className="leading-relaxed">
-          <span className="font-bold">Tips for positioning:</span> Drag the red
-          pin or tap directly on the map to fine-tune the exact generator
-          placement coordinates.
+          <span className="font-bold text-[#0B1F1A]">
+            Tips for positioning:
+          </span>{" "}
+          Drag the red pin or tap directly on the map to fine-tune the exact
+          generator placement coordinates.
         </p>
       </div>
 
       {/* Map Display Container */}
-      <div className="relative w-full h-80 sm:h-96 rounded-2xl overflow-hidden shadow-md border border-slate-200 z-0">
+      <div className="relative z-0 h-80 w-full overflow-hidden rounded-2xl border border-[#0B1F1A]/10 shadow-md sm:h-96">
         <MapContainer
           center={coordinates}
           zoom={zoom}
@@ -357,8 +359,8 @@ const GeneratorLocationSelector: React.FC<GeneratorLocationSelectorProps> = ({
 
         {/* Live Coordinate Badge Overlay */}
         {locationFound && (
-          <div className="absolute bottom-3 left-3 z-[400] bg-slate-900/90 backdrop-blur-md text-white px-3.5 py-2 rounded-xl text-xs font-mono flex items-center gap-2 border border-slate-700/60 shadow-lg">
-            <CheckCircle className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+          <div className="absolute bottom-3 left-3 z-[400] flex items-center gap-2 rounded-xl border border-white/10 bg-[#0B1F1A]/90 px-3.5 py-2 font-mono text-xs text-[#F3F1EA] shadow-lg backdrop-blur-md">
+            <CheckCircle className="h-3.5 w-3.5 flex-shrink-0 text-[#7FD1AE]" />
             <span>
               Lat: {coordinates[0].toFixed(5)}, Lng: {coordinates[1].toFixed(5)}
             </span>

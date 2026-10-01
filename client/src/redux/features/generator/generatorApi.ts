@@ -4,7 +4,7 @@ export const generatorApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     registerGenerator: builder.mutation({
       query: (data) => ({
-        url: "register-generator",
+        url: "generator/register",
         method: "POST",
         body: data,
         credentials: "include" as const,
@@ -13,14 +13,14 @@ export const generatorApi = apiSlice.injectEndpoints({
     }),
     getAllGenerators: builder.query({
       query: ({ page = 1, pageSize = 10 }) => ({
-        url: `all-generators?page=${page}&pageSize=${pageSize}`,
+        url: `generators?page=${page}&pageSize=${pageSize}`,
         method: "GET",
         credentials: "include" as const,
       }),
       providesTags: [{ type: "Generator", id: "LIST" }],
     }),
     getGeneratorById: builder.query({
-      query: ({id}) => ({
+      query: ({ id }) => ({
         url: `generator/${id}`,
         method: "GET",
         credentials: "include" as const,
@@ -29,7 +29,7 @@ export const generatorApi = apiSlice.injectEndpoints({
     }),
     getMyGenerators: builder.query({
       query: () => ({
-        url: "my-generators",
+        url: "generators/me",
         method: "GET",
         credentials: "include" as const,
       }),
@@ -37,7 +37,7 @@ export const generatorApi = apiSlice.injectEndpoints({
     }),
     updateGenerator: builder.mutation({
       query: ({ id, data }) => ({
-        url: `update-generator/${id}`,
+        url: `generator/update/${id}`,
         method: "PUT",
         body: data,
         credentials: "include" as const,
@@ -46,7 +46,7 @@ export const generatorApi = apiSlice.injectEndpoints({
     }),
     updateGeneratorStatus: builder.mutation({
       query: ({ id, data }) => ({
-        url: `update-generator-status/${id}`,
+        url: `generator/update/status/${id}`,
         method: "PUT",
         body: data,
         credentials: "include" as const,
@@ -55,7 +55,7 @@ export const generatorApi = apiSlice.injectEndpoints({
     }),
     deleteGenerator: builder.mutation({
       query: (id) => ({
-        url: `delete-generator/${id}`,
+        url: `generator/delete/${id}`,
         method: "DELETE",
         credentials: "include" as const,
       }),

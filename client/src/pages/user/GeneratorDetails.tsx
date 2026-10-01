@@ -11,78 +11,92 @@ const GeneratorDetails: React.FC = () => {
   // Fetch generator details from RTK Query API
   const { data, isLoading, isError } = useGetGeneratorByIdQuery(
     { id: id! },
-    { skip: !id }
+    { skip: !id },
   );
-
-  console.log("🧩 Generator ID from URL:", data);
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-gray-500 text-sm">Loading generator details...</p>
-      </div>
+      <DashboardLayout>
+        <div className="flex h-64 items-center justify-center">
+          <p className="text-sm text-[#0B1F1A]/50">
+            Loading generator details...
+          </p>
+        </div>
+      </DashboardLayout>
     );
   }
 
   if (isError || !data?.generator) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-red-500 text-sm">Generator not found.</p>
-      </div>
+      <DashboardLayout>
+        <div className="flex h-64 items-center justify-center">
+          <p className="text-sm text-rose-600">Generator not found.</p>
+        </div>
+      </DashboardLayout>
     );
   }
 
   const generator = data.generator;
 
   return (
-    <DashboardLayout activeMenu="My Generators">
-      <div className="max-w-5xl mx-auto p-6">
-        <div className="bg-white shadow-md rounded-2xl border border-gray-200 overflow-hidden">
+    <DashboardLayout>
+      <div className="mx-auto max-w-5xl p-6 font-[Figtree,ui-sans-serif,system-ui,sans-serif]">
+        <div className="overflow-hidden rounded-2xl border border-[#0B1F1A]/10 bg-white shadow-[0_20px_40px_-30px_rgba(11,31,26,0.25)]">
           {/* Header Section */}
-          <div className="flex flex-col md:flex-row gap-6 p-6">
+          <div className="flex flex-col gap-6 p-6 md:flex-row">
             {/* Image */}
-            <div className="flex-shrink-0 w-full md:w-1/2">
+            <div className="w-full flex-shrink-0 md:w-1/2">
               <img
                 src={generator.image || "/placeholder-generator.jpg"}
                 alt={generator.name}
-                className="w-full h-64 object-cover rounded-lg border border-gray-200"
+                className="h-64 w-full rounded-lg border border-[#0B1F1A]/10 object-cover"
               />
             </div>
 
             {/* Info Section */}
             <div className="flex flex-col justify-between md:w-1/2">
               <div>
-                <h2 className="text-2xl font-semibold text-gray-900">
+                <h2 className="font-[Newsreader,Georgia,serif] text-2xl font-normal text-[#0B1F1A]">
                   {generator.name}
                 </h2>
-                <p className="text-sm text-gray-500 flex items-center gap-2 mt-1">
-                  <Tag className="w-4 h-4" /> {generator.brand}
+                <p className="mt-1 flex items-center gap-2 text-sm text-[#0B1F1A]/50">
+                  <Tag className="h-4 w-4" /> {generator.brand}
                 </p>
 
-                <div className="mt-4 space-y-2 text-sm text-gray-700">
+                <div className="mt-4 space-y-2 text-sm text-[#0B1F1A]/75">
                   <p className="flex items-center gap-2">
-                    <Cpu className="w-4 h-4 text-purple-500" />
-                    <span className="font-medium">Capacity:</span>{" "}
+                    <Cpu className="h-4 w-4 text-[#16785A]" />
+                    <span className="font-medium text-[#0B1F1A]">
+                      Capacity:
+                    </span>{" "}
                     {generator.capacity} kVA
                   </p>
                   <p className="flex items-center gap-2">
-                    <Battery className="w-4 h-4 text-green-500" />
-                    <span className="font-medium">Fuel Type:</span>{" "}
+                    <Battery className="h-4 w-4 text-[#16785A]" />
+                    <span className="font-medium text-[#0B1F1A]">
+                      Fuel Type:
+                    </span>{" "}
                     {generator.fuelType}
                   </p>
                   <p className="flex items-center gap-2">
-                    <Gauge className="w-4 h-4 text-blue-500" />
-                    <span className="font-medium">Condition:</span>{" "}
+                    <Gauge className="h-4 w-4 text-[#16785A]" />
+                    <span className="font-medium text-[#0B1F1A]">
+                      Condition:
+                    </span>{" "}
                     {generator.condition}
                   </p>
                   <p className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-red-500" />
-                    <span className="font-medium">Location:</span>{" "}
+                    <MapPin className="h-4 w-4 text-[#16785A]" />
+                    <span className="font-medium text-[#0B1F1A]">
+                      Location:
+                    </span>{" "}
                     {generator.location}
                   </p>
                   <p className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-gray-600" />
-                    <span className="font-medium">Date Added:</span>{" "}
+                    <Calendar className="h-4 w-4 text-[#16785A]" />
+                    <span className="font-medium text-[#0B1F1A]">
+                      Date Added:
+                    </span>{" "}
                     {format(new Date(generator.createdAt), "PPP")}
                   </p>
                 </div>
@@ -92,12 +106,12 @@ const GeneratorDetails: React.FC = () => {
 
           {/* Description Section */}
           {generator.description && (
-            <div className="border-t border-gray-100 p-6">
-              <h4 className="text-lg font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                <Info className="w-4 h-4 text-indigo-500" />
+            <div className="border-t border-[#0B1F1A]/10 p-6">
+              <h4 className="mb-2 flex items-center gap-2 font-[Newsreader,Georgia,serif] text-lg font-normal text-[#0B1F1A]">
+                <Info className="h-4 w-4 text-[#16785A]" />
                 Description
               </h4>
-              <p className="text-sm text-gray-700 leading-relaxed">
+              <p className="text-sm leading-relaxed text-[#0B1F1A]/75">
                 {generator.description}
               </p>
             </div>

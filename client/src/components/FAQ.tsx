@@ -32,53 +32,85 @@ const FAQSection: React.FC = () => {
   };
 
   return (
-    <section className="py-20 bg-white border-t border-slate-200/80">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <HelpCircle className="w-3.5 h-3.5" /> FAQ
+    <section className="relative overflow-hidden border-t border-[#0B1F1A]/10 bg-white py-20 font-[Figtree,ui-sans-serif,system-ui,sans-serif] text-[#0B1F1A] sm:py-28">
+      {/* Faint dot texture, fading toward the bottom */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 opacity-[0.3] [background-image:radial-gradient(#0B1F1A_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_top,black,transparent_65%)]"
+      />
+
+      <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-14 text-center">
+          <div className="mb-5 flex items-center justify-center gap-3">
+            <span className="h-px w-10 bg-[#16785A]" />
+            <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#16785A]">
+              <HelpCircle className="h-3.5 w-3.5" />
+              FAQ
+            </span>
+            <span className="h-px w-10 bg-[#16785A]" />
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-800 tracking-tight">
-            Frequently Asked Questions
+
+          <h2 className="font-[Newsreader,Georgia,serif] text-3xl font-normal tracking-tight sm:text-4xl">
+            Frequently asked questions
           </h2>
-          <p className="text-slate-600 text-sm">
+
+          <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-[#0B1F1A]/65">
             Find answers to common questions about generator registration, field
             inspections, and emission standards.
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="divide-y divide-[#0B1F1A]/10 rounded-3xl border border-[#0B1F1A]/10 bg-white shadow-[0_20px_50px_-30px_rgba(11,31,26,0.25)]">
           {faqs.map((faq, index) => {
             const isOpen = openIndex === index;
             return (
-              <div
-                key={index}
-                className={`rounded-2xl border transition-all ${
-                  isOpen
-                    ? "border-emerald-300 bg-emerald-50/30"
-                    : "border-slate-200/80 bg-slate-50/50"
-                }`}
-              >
+              <div key={faq.question} className="relative">
+                {/* Left accent bar when open */}
+                <span
+                  aria-hidden="true"
+                  className={`absolute left-0 top-0 h-full w-0.5 bg-[#16785A] transition-opacity ${
+                    isOpen ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+
                 <button
                   type="button"
                   onClick={() => toggleFAQ(index)}
-                  className="w-full px-6 py-4 flex items-center justify-between text-left focus:outline-none"
+                  aria-expanded={isOpen}
+                  className="flex w-full items-center justify-between gap-6 px-6 py-5 text-left transition-colors hover:bg-[#16785A]/[0.03] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#16785A] sm:px-8"
                 >
-                  <span className="text-sm sm:text-base font-bold text-slate-800">
-                    {faq.question}
+                  <span className="flex items-baseline gap-4">
+                    <span
+                      className={`font-[Newsreader,Georgia,serif] text-sm tabular-nums transition-colors ${
+                        isOpen ? "text-[#16785A]" : "text-[#0B1F1A]/35"
+                      }`}
+                    >
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="text-sm font-semibold text-[#0B1F1A] sm:text-base">
+                      {faq.question}
+                    </span>
                   </span>
                   <ChevronDown
-                    className={`w-5 h-5 text-slate-500 transition-transform duration-200 flex-shrink-0 ${
-                      isOpen ? "rotate-180 text-emerald-600" : ""
+                    className={`h-5 w-5 flex-shrink-0 text-[#0B1F1A]/40 transition-transform duration-200 ${
+                      isOpen ? "rotate-180 text-[#16785A]" : ""
                     }`}
                   />
                 </button>
 
-                {isOpen && (
-                  <div className="px-6 pb-5 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
-                    {faq.answer}
+                <div
+                  className={`grid overflow-hidden transition-all duration-300 ease-out motion-reduce:transition-none ${
+                    isOpen
+                      ? "grid-rows-[1fr] opacity-100"
+                      : "grid-rows-[0fr] opacity-0"
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <p className="px-6 pb-6 pl-[3.75rem] text-sm leading-relaxed text-[#0B1F1A]/65 sm:px-8 sm:pl-[4.25rem]">
+                      {faq.answer}
+                    </p>
                   </div>
-                )}
+                </div>
               </div>
             );
           })}

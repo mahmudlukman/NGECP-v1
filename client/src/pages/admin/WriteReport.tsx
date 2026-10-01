@@ -32,6 +32,19 @@ import FormFooter from "../../components/FormFooter";
 
 type TabType = "tests" | "actions" | "overview" | "review";
 
+const tabButtonClass = (isActive: boolean) =>
+  `flex items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors cursor-pointer ${
+    isActive
+      ? "border-[#16785A] text-[#0B1F1A]"
+      : "border-transparent text-[#0B1F1A]/50 hover:text-[#0B1F1A]/80"
+  }`;
+
+const secondaryButtonClass =
+  "px-6 py-2.5 rounded-lg border border-[#0B1F1A]/15 text-[#0B1F1A]/75 text-sm font-medium hover:bg-[#0B1F1A]/[0.04] transition-colors cursor-pointer";
+
+const primaryButtonClass =
+  "flex items-center gap-2 px-6 py-2.5 rounded-lg bg-[#0B1F1A] text-[#F3F1EA] text-sm font-medium hover:bg-[#12332b] transition-colors cursor-pointer";
+
 const WriteReport = () => {
   const { inspectionId } = useParams();
   const navigate = useNavigate();
@@ -67,31 +80,31 @@ const WriteReport = () => {
 
   if (isLoadingInspection) {
     return (
-      <DashboardLayout activeMenu="Inspections">
-        <Loading />
+      <DashboardLayout>
+        <Loading fullScreen={false} />
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout activeMenu="Inspections">
-      <div className="my-5 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-emerald-100 w-full">
-        <div className="flex items-center gap-4 mb-6">
+    <DashboardLayout>
+      <div className="my-5 w-full rounded-2xl border border-[#0B1F1A]/10 bg-white p-6 font-[Figtree,ui-sans-serif,system-ui,sans-serif] shadow-[0_20px_40px_-30px_rgba(11,31,26,0.25)] md:p-8">
+        <div className="mb-6 flex items-center gap-4">
           <button
             type="button"
             onClick={() => navigate("/admin/inspections")}
-            className="p-2 rounded-full hover:bg-emerald-50 text-emerald-700 transition-colors cursor-pointer"
+            className="cursor-pointer rounded-full p-2 text-[#0B1F1A]/55 transition-colors hover:bg-[#0B1F1A]/[0.06]"
           >
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-2xl text-emerald-900 font-semibold">
+            <h1 className="font-[Newsreader,Georgia,serif] text-2xl font-normal text-[#0B1F1A]/70">
               Write{" "}
-              <span className="text-emerald-600 font-bold">
+              <span className="font-medium text-[#0B1F1A]">
                 Inspection Report
               </span>
             </h1>
-            <p className="text-xs text-emerald-600/70 mt-0.5">
+            <p className="mt-0.5 text-xs text-[#0B1F1A]/50">
               Complete the multi-step inspection record below
             </p>
           </div>
@@ -106,15 +119,11 @@ const WriteReport = () => {
         )}
 
         {/* Wizard Navigation Tabs */}
-        <div className="flex border-b border-emerald-100 mb-6 gap-2 overflow-x-auto">
+        <div className="mb-6 flex gap-2 overflow-x-auto border-b border-[#0B1F1A]/10">
           <button
             type="button"
             onClick={() => setActiveTab("tests")}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-              activeTab === "tests"
-                ? "border-emerald-600 text-emerald-700"
-                : "border-transparent text-emerald-600/60 hover:text-emerald-800"
-            }`}
+            className={tabButtonClass(activeTab === "tests")}
           >
             <Activity size={16} />
             1. Tests & Diagnostics
@@ -122,11 +131,7 @@ const WriteReport = () => {
           <button
             type="button"
             onClick={() => setActiveTab("actions")}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-              activeTab === "actions"
-                ? "border-emerald-600 text-emerald-700"
-                : "border-transparent text-emerald-600/60 hover:text-emerald-800"
-            }`}
+            className={tabButtonClass(activeTab === "actions")}
           >
             <CheckCircle2 size={16} />
             2. Actions & Schedule
@@ -134,11 +139,7 @@ const WriteReport = () => {
           <button
             type="button"
             onClick={() => setActiveTab("overview")}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-              activeTab === "overview"
-                ? "border-emerald-600 text-emerald-700"
-                : "border-transparent text-emerald-600/60 hover:text-emerald-800"
-            }`}
+            className={tabButtonClass(activeTab === "overview")}
           >
             <Gauge size={16} />
             3. Overview & Compliance
@@ -146,11 +147,7 @@ const WriteReport = () => {
           <button
             type="button"
             onClick={() => setActiveTab("review")}
-            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap cursor-pointer ${
-              activeTab === "review"
-                ? "border-emerald-600 text-emerald-700"
-                : "border-transparent text-emerald-600/60 hover:text-emerald-800"
-            }`}
+            className={tabButtonClass(activeTab === "review")}
           >
             <FileText size={16} />
             4. Review Report
@@ -160,7 +157,7 @@ const WriteReport = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* TAB 1: TESTS & DIAGNOSTICS */}
           {activeTab === "tests" && (
-            <div className="space-y-6 animate-fadeIn">
+            <div className="animate-fadeIn space-y-6">
               <EmissionsTestCard
                 value={formData.emissionsTest}
                 onChange={(emissionsTest) =>
@@ -200,7 +197,7 @@ const WriteReport = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab("actions")}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors cursor-pointer"
+                  className={primaryButtonClass}
                 >
                   Next: Actions & Schedule
                   <ArrowRight size={16} />
@@ -211,7 +208,7 @@ const WriteReport = () => {
 
           {/* TAB 2: ACTIONS & SCHEDULE */}
           {activeTab === "actions" && (
-            <div className="space-y-6 animate-fadeIn">
+            <div className="animate-fadeIn space-y-6">
               <TagListCard
                 icon={ClipboardList}
                 title="Recommendations"
@@ -258,8 +255,8 @@ const WriteReport = () => {
                 emptyText="No required actions added"
               />
 
-              <div className="bg-white border border-emerald-100 rounded-2xl p-6">
-                <label className="block text-sm font-medium text-emerald-900 mb-2">
+              <div className="rounded-2xl border border-[#0B1F1A]/10 bg-white p-6">
+                <label className="mb-2 block text-sm font-medium text-[#0B1F1A]/70">
                   Next inspection date
                 </label>
                 <input
@@ -271,7 +268,7 @@ const WriteReport = () => {
                       nextInspectionDate: e.target.value,
                     }))
                   }
-                  className="w-full md:w-1/2 border border-emerald-200 text-emerald-900 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-600 cursor-pointer"
+                  className="w-full cursor-pointer rounded-lg border border-[#0B1F1A]/15 px-3 py-2 text-sm text-[#0B1F1A] outline-none focus:border-[#16785A] focus:ring-2 focus:ring-[#16785A]/20 md:w-1/2"
                 />
               </div>
 
@@ -279,14 +276,14 @@ const WriteReport = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab("tests")}
-                  className="px-6 py-2.5 rounded-lg border border-emerald-200 text-emerald-800 text-sm font-medium hover:bg-emerald-50 transition-colors cursor-pointer"
+                  className={secondaryButtonClass}
                 >
                   Back
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab("overview")}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors cursor-pointer"
+                  className={primaryButtonClass}
                 >
                   Next: Overview & Compliance
                   <ArrowRight size={16} />
@@ -297,7 +294,7 @@ const WriteReport = () => {
 
           {/* TAB 3: OVERVIEW & COMPLIANCE */}
           {activeTab === "overview" && (
-            <div className="space-y-6 animate-fadeIn">
+            <div className="animate-fadeIn space-y-6">
               <ComplianceOverviewCard
                 overallCompliance={formData.overallCompliance}
                 complianceScore={formData.complianceScore}
@@ -313,14 +310,14 @@ const WriteReport = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab("actions")}
-                  className="px-6 py-2.5 rounded-lg border border-emerald-200 text-emerald-800 text-sm font-medium hover:bg-emerald-50 transition-colors cursor-pointer"
+                  className={secondaryButtonClass}
                 >
                   Back
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab("review")}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors cursor-pointer"
+                  className={primaryButtonClass}
                 >
                   Next: Review Report
                   <ArrowRight size={16} />
@@ -331,74 +328,74 @@ const WriteReport = () => {
 
           {/* TAB 4: REVIEW REPORT */}
           {activeTab === "review" && (
-            <div className="space-y-6 animate-fadeIn">
-              <div className="bg-emerald-50/50 border border-emerald-200 rounded-2xl p-6 space-y-6 text-emerald-950">
-                <div className="flex items-center justify-between border-b border-emerald-200 pb-4">
+            <div className="animate-fadeIn space-y-6">
+              <div className="space-y-6 rounded-2xl border border-[#0B1F1A]/10 bg-[#F7F6F1] p-6 text-[#0B1F1A]">
+                <div className="flex items-center justify-between border-b border-[#0B1F1A]/10 pb-4">
                   <div>
-                    <h3 className="text-lg font-bold text-emerald-900">
+                    <h3 className="font-[Newsreader,Georgia,serif] text-lg font-normal text-[#0B1F1A]">
                       Pre-Submission Review
                     </h3>
-                    <p className="text-xs text-emerald-700">
+                    <p className="text-xs text-[#0B1F1A]/55">
                       Please confirm all details before officially generating
                       the report.
                     </p>
                   </div>
-                  <span className="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-semibold">
+                  <span className="rounded-full bg-[#16785A]/10 px-3 py-1 text-xs font-semibold text-[#16785A]">
                     Score: {formData.complianceScore}%
                   </span>
                 </div>
 
                 {/* Grid layout of summary info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                  <div className="space-y-3 bg-white p-4 rounded-xl border border-emerald-100 shadow-xs">
-                    <h4 className="font-semibold text-emerald-900 flex items-center gap-2 text-xs uppercase tracking-wide">
-                      <Activity size={14} className="text-emerald-600" /> Tests
-                      & Diagnostics
+                <div className="grid grid-cols-1 gap-6 text-sm md:grid-cols-2">
+                  <div className="space-y-3 rounded-xl border border-[#0B1F1A]/10 bg-white p-4 shadow-xs">
+                    <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#0B1F1A]">
+                      <Activity size={14} className="text-[#16785A]" /> Tests &
+                      Diagnostics
                     </h4>
                     <div className="space-y-1.5 text-xs">
-                      <div className="flex justify-between py-1 border-b border-emerald-50">
-                        <span className="text-emerald-700">
+                      <div className="flex justify-between border-b border-[#0B1F1A]/5 py-1">
+                        <span className="text-[#0B1F1A]/55">
                           Emissions Test:
                         </span>
-                        <span className="font-medium text-emerald-900 capitalize">
+                        <span className="font-medium capitalize text-[#0B1F1A]">
                           {formData.emissionsTest
                             ? JSON.stringify(formData.emissionsTest)
                             : "Not specified"}
                         </span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-emerald-50">
-                        <span className="text-emerald-700">Noise Level:</span>
-                        <span className="font-medium text-emerald-900 capitalize">
+                      <div className="flex justify-between border-b border-[#0B1F1A]/5 py-1">
+                        <span className="text-[#0B1F1A]/55">Noise Level:</span>
+                        <span className="font-medium capitalize text-[#0B1F1A]">
                           {formData.noiseLevel
                             ? JSON.stringify(formData.noiseLevel)
                             : "Not specified"}
                         </span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-emerald-50">
-                        <span className="text-emerald-700">
+                      <div className="flex justify-between border-b border-[#0B1F1A]/5 py-1">
+                        <span className="text-[#0B1F1A]/55">
                           Fuel Efficiency:
                         </span>
-                        <span className="font-medium text-emerald-900 capitalize">
+                        <span className="font-medium capitalize text-[#0B1F1A]">
                           {formData.fuelEfficiency
                             ? JSON.stringify(formData.fuelEfficiency)
                             : "Not specified"}
                         </span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-emerald-50">
-                        <span className="text-emerald-700">
+                      <div className="flex justify-between border-b border-[#0B1F1A]/5 py-1">
+                        <span className="text-[#0B1F1A]/55">
                           Maintenance Status:
                         </span>
-                        <span className="font-medium text-emerald-900 capitalize">
+                        <span className="font-medium capitalize text-[#0B1F1A]">
                           {formData.maintenanceStatus
                             ? JSON.stringify(formData.maintenanceStatus)
                             : "Not specified"}
                         </span>
                       </div>
                       <div className="flex justify-between py-1">
-                        <span className="text-emerald-700">
+                        <span className="text-[#0B1F1A]/55">
                           Safety Compliance:
                         </span>
-                        <span className="font-medium text-emerald-900 capitalize">
+                        <span className="font-medium capitalize text-[#0B1F1A]">
                           {formData.safetyCompliance
                             ? JSON.stringify(formData.safetyCompliance)
                             : "Not specified"}
@@ -407,33 +404,33 @@ const WriteReport = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-3 bg-white p-4 rounded-xl border border-emerald-100 shadow-xs">
-                    <h4 className="font-semibold text-emerald-900 flex items-center gap-2 text-xs uppercase tracking-wide">
-                      <ShieldCheck size={14} className="text-emerald-600" />{" "}
+                  <div className="space-y-3 rounded-xl border border-[#0B1F1A]/10 bg-white p-4 shadow-xs">
+                    <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#0B1F1A]">
+                      <ShieldCheck size={14} className="text-[#16785A]" />{" "}
                       Compliance & Schedule
                     </h4>
                     <div className="space-y-1.5 text-xs">
-                      <div className="flex justify-between py-1 border-b border-emerald-50">
-                        <span className="text-emerald-700">
+                      <div className="flex justify-between border-b border-[#0B1F1A]/5 py-1">
+                        <span className="text-[#0B1F1A]/55">
                           Overall Compliance:
                         </span>
-                        <span className="font-medium text-emerald-900 capitalize">
+                        <span className="font-medium capitalize text-[#0B1F1A]">
                           {formData.overallCompliance || "Not specified"}
                         </span>
                       </div>
-                      <div className="flex justify-between py-1 border-b border-emerald-50">
-                        <span className="text-emerald-700">
+                      <div className="flex justify-between border-b border-[#0B1F1A]/5 py-1">
+                        <span className="text-[#0B1F1A]/55">
                           Compliance Score:
                         </span>
-                        <span className="font-medium text-emerald-900">
+                        <span className="font-medium text-[#0B1F1A]">
                           {formData.complianceScore}%
                         </span>
                       </div>
                       <div className="flex justify-between py-1">
-                        <span className="text-emerald-700 flex items-center gap-1">
+                        <span className="flex items-center gap-1 text-[#0B1F1A]/55">
                           <Calendar size={12} /> Next Inspection Date:
                         </span>
-                        <span className="font-medium text-emerald-900">
+                        <span className="font-medium text-[#0B1F1A]">
                           {formData.nextInspectionDate || "Not scheduled"}
                         </span>
                       </div>
@@ -442,36 +439,36 @@ const WriteReport = () => {
                 </div>
 
                 {/* Recommendations and actions review */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                  <div className="bg-white p-4 rounded-xl border border-emerald-100 shadow-xs space-y-2">
-                    <h4 className="font-semibold text-emerald-900 text-xs uppercase tracking-wide">
+                <div className="grid grid-cols-1 gap-6 text-sm md:grid-cols-2">
+                  <div className="space-y-2 rounded-xl border border-[#0B1F1A]/10 bg-white p-4 shadow-xs">
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-[#0B1F1A]">
                       Recommendations ({formData.recommendations.length})
                     </h4>
                     {formData.recommendations.length > 0 ? (
-                      <ul className="list-disc pl-4 space-y-1 text-xs text-emerald-800">
+                      <ul className="list-disc space-y-1 pl-4 text-xs text-[#0B1F1A]/75">
                         {formData.recommendations.map((rec, i) => (
                           <li key={i}>{rec}</li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-xs text-emerald-600 italic">
+                      <p className="text-xs italic text-[#0B1F1A]/40">
                         No recommendations provided.
                       </p>
                     )}
                   </div>
 
-                  <div className="bg-white p-4 rounded-xl border border-emerald-100 shadow-xs space-y-2">
-                    <h4 className="font-semibold text-emerald-900 text-xs uppercase tracking-wide">
+                  <div className="space-y-2 rounded-xl border border-[#0B1F1A]/10 bg-white p-4 shadow-xs">
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-[#0B1F1A]">
                       Required Actions ({formData.requiredActions.length})
                     </h4>
                     {formData.requiredActions.length > 0 ? (
-                      <ul className="list-disc pl-4 space-y-1 text-xs text-emerald-800">
+                      <ul className="list-disc space-y-1 pl-4 text-xs text-[#0B1F1A]/75">
                         {formData.requiredActions.map((action, i) => (
                           <li key={i}>{action}</li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-xs text-emerald-600 italic">
+                      <p className="text-xs italic text-[#0B1F1A]/40">
                         No required actions provided.
                       </p>
                     )}
@@ -483,7 +480,7 @@ const WriteReport = () => {
                 <button
                   type="button"
                   onClick={() => setActiveTab("overview")}
-                  className="px-6 py-2.5 rounded-lg border border-emerald-200 text-emerald-800 text-sm font-medium hover:bg-emerald-50 transition-colors cursor-pointer"
+                  className={secondaryButtonClass}
                 >
                   Back
                 </button>

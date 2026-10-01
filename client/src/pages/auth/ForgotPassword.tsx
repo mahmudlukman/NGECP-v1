@@ -69,26 +69,26 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setCurrentPage }) => {
   };
 
   return (
-    <div className="w-full max-w-md p-6 sm:p-8 flex flex-col justify-center bg-white rounded-xl">
+    <div className="flex w-full max-w-md flex-col justify-center rounded-xl bg-white p-6 font-[Figtree,ui-sans-serif,system-ui,sans-serif] sm:p-8">
       {/* Back Button Link */}
       <button
         type="button"
         onClick={() => setCurrentPage("login")}
-        className="inline-flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors w-fit mb-4 focus:outline-none"
+        className="mb-4 inline-flex w-fit items-center gap-1 text-xs font-semibold text-[#0B1F1A]/50 transition-colors hover:text-[#0B1F1A] focus:outline-none"
       >
-        <ChevronLeft className="w-4 h-4" />
+        <ChevronLeft className="h-4 w-4" />
         <span>Back to Login</span>
       </button>
 
       {/* Header */}
-      <div className="text-center sm:text-left mb-6">
-        <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mb-3 sm:mx-0 mx-auto">
-          <Mail className="w-5 h-5" />
+      <div className="mb-6 text-center sm:text-left">
+        <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl border border-[#16785A]/25 text-[#16785A] sm:mx-0">
+          <Mail className="h-5 w-5" />
         </div>
-        <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+        <h3 className="font-[Newsreader,Georgia,serif] text-xl font-normal tracking-tight text-[#0B1F1A]">
           Forgot Password?
         </h3>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+        <p className="mt-1 text-xs text-[#0B1F1A]/55 sm:text-sm">
           No worries, enter your email address below and we'll send you a
           password reset link.
         </p>
@@ -107,16 +107,16 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setCurrentPage }) => {
 
         {/* Error Notification Alert */}
         {error && (
-          <div className="flex items-center gap-2 p-3 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-lg animate-fade-in">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="animate-fade-in flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+            <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {/* Success Notification Alert */}
         {success && (
-          <div className="flex items-center gap-2 p-3 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg animate-fade-in">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <div className="animate-fade-in flex items-center gap-2 rounded-lg border border-[#16785A]/25 bg-[#16785A]/[0.06] p-3 text-xs text-[#0B1F1A]">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-[#16785A]" />
             <span>{success}</span>
           </div>
         )}
@@ -125,11 +125,11 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setCurrentPage }) => {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm rounded-lg transition-all shadow-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#0B1F1A] px-4 py-2.5 text-sm font-medium text-[#F3F1EA] shadow-xs transition-all hover:bg-[#12332b] focus:outline-none focus:ring-2 focus:ring-[#16785A]/30 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               <span>Sending Link...</span>
             </>
           ) : (
@@ -138,11 +138,11 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setCurrentPage }) => {
         </button>
 
         {/* Return to Login */}
-        <p className="text-xs text-center text-slate-600 pt-2">
+        <p className="pt-2 text-center text-xs text-[#0B1F1A]/60">
           Remembered your password?{" "}
           <button
             type="button"
-            className="font-semibold text-emerald-600 hover:text-emerald-700 underline focus:outline-none"
+            className="font-semibold text-[#16785A] underline hover:text-[#0f5e44] focus:outline-none"
             onClick={() => setCurrentPage("login")}
           >
             Log In

@@ -24,6 +24,18 @@ import hero_img from "../assets/hero_img.png";
 import about_img from "../assets/about_img.jpg";
 import { ClockFadingIcon, HeadsetIcon, SendIcon } from "lucide-react";
 
+import {
+  LuLayoutDashboard,
+  LuUsers,
+  LuUser,
+  LuBadgePlus,
+  LuLocate,
+  LuUserPen,
+  LuFileText,
+} from "react-icons/lu";
+import { GiPowerGenerator } from "react-icons/gi";
+import type { IconType } from "react-icons";
+
 export const assets = {
   logo,
   search_icon,
@@ -140,111 +152,120 @@ export const footerLinks = [
   },
 ];
 
-import {
-  LuLayoutDashboard,
-  LuLogOut,
-  LuUsers,
-  LuUser,
-  LuBadgePlus,
-  LuLocate,
-  LuUserPen,
-  LuFileText,
-} from "react-icons/lu";
-import { GiPowerGenerator } from "react-icons/gi";
+export type UserRole = "admin" | "editor" | "user";
 
-export const SIDE_MENU_DATA = [
+export interface SideMenuItem {
+  id: string;
+  name: string;
+  icon: IconType;
+  path: string;
+  visible: UserRole[];
+}
+
+export const SIDE_MENU_DATA: SideMenuItem[] = [
+  // Admin
   {
-    id: "01",
-    label: "Dashboard",
+    id: "dashboard",
+    name: "Dashboard",
     icon: LuLayoutDashboard,
     path: "/admin/dashboard",
+    visible: ["admin", "editor"] as UserRole[],
   },
+
   {
-    id: "02",
-    label: "Register Generator",
+    id: "register-generator",
+    name: "Register Generator",
     icon: LuBadgePlus,
     path: "/admin/register-generator",
+    visible: ["admin", "editor"] as UserRole[],
   },
+
   {
-    id: "03",
-    label: "Generators Map View",
+    id: "generators-map-view",
+    name: "Generators Map View",
     icon: LuLocate,
     path: "/admin/generators-map-view",
+    visible: ["admin", "editor"] as UserRole[],
   },
+
   {
-    id: "04",
-    label: "Manage Generators",
+    id: "manage-generators",
+    name: "Manage Generators",
     icon: GiPowerGenerator,
     path: "/admin/manage-generators",
+    visible: ["admin", "editor"] as UserRole[],
   },
+
   {
-    id: "05",
-    label: "Manage Users",
+    id: "manage-users",
+    name: "Manage Users",
     icon: LuUsers,
     path: "/admin/manage-users",
+    visible: ["admin"] as UserRole[],
   },
+
   {
-    id: "06",
-    label: "Inspections",
+    id: "inspections",
+    name: "Inspections",
     icon: LuUserPen,
     path: "/admin/inspections",
+    visible: ["admin", "editor"] as UserRole[],
   },
+
   {
-    id: "07",
-    label: "Reports",
+    id: "reports",
+    name: "Reports",
     icon: LuFileText,
     path: "/admin/reports",
+    visible: ["admin", "editor"] as UserRole[],
   },
-  {
-    id: "08",
-    label: "Logout",
-    icon: LuLogOut,
-    path: "logout",
-  },
-];
 
-export const SIDE_MENU_USER_DATA = [
+  // User
   {
-    id: "01",
-    label: "Generators Map View",
+    id: "my-generators-map-view",
+    name: "Generators Map View",
     icon: LuLocate,
     path: "/user/my-generators-map-view",
+    visible: ["user"] as UserRole[],
   },
+
   {
-    id: "02",
-    label: "Register Generator",
+    id: "user-register-generator",
+    name: "Register Generator",
     icon: LuBadgePlus,
     path: "/user/register-generator",
+    visible: ["user"] as UserRole[],
   },
+
   {
-    id: "03",
-    label: "Manage Generators",
+    id: "generators",
+    name: "Manage Generators",
     icon: GiPowerGenerator,
     path: "/user/generators",
+    visible: ["user"] as UserRole[],
   },
-   {
-    id: "04",
-    label: "Inspections",
+
+  {
+    id: "my-inspections",
+    name: "Inspections",
     icon: LuUserPen,
     path: "/user/my-inspections",
+    visible: ["user"] as UserRole[],
   },
+
   {
-    id: "05",
-    label: "Reports",
+    id: "my-reports",
+    name: "Reports",
     icon: LuFileText,
     path: "/user/my-reports",
+    visible: ["user"] as UserRole[],
   },
+
   {
-    id: "06",
-    label: "My Profile",
+    id: "profile",
+    name: "My Profile",
     icon: LuUser,
     path: "/user/profile",
-  },
-  {
-    id: "07",
-    label: "Logout",
-    icon: LuLogOut,
-    path: "logout",
+    visible: ["user"] as UserRole[],
   },
 ];
-

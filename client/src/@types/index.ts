@@ -1,7 +1,18 @@
-export interface RootState {
-  auth: {
-    user: User | null;
-  };
+export interface AuthState {
+  token: string;
+  user: User | null;
+  isInitialized: boolean;
+}
+
+export interface LoadUserResponse {
+  success: boolean;
+  user: User;
+  accessToken: string;
+}
+
+export interface RefreshTokenResponse {
+  accessToken: string;
+  user: User;
 }
 
 export interface User {
@@ -27,12 +38,14 @@ export interface ServerError {
 export interface RegistrationData {
   email: string;
   password: string;
-  accountType: "individual" | "company";
+  accountType: "individual" | "organization";
   phoneNumber: string;
+
   name?: string;
-  companyName?: string;
-  companyRegNumber?: string;
-  companyAddress?: string;
+
+  organizationName?: string;
+  organizationRegNumber?: string;
+  organizationAddress?: string;
   contactPersonName?: string;
   contactPersonPhone?: string;
 }
@@ -44,9 +57,9 @@ export interface IGenerator {
     | {
         _id: string;
         email: string;
-        accountType: "individual" | "company";
+        accountType: "individual" | "organization";
         name?: string;
-        companyName?: string;
+        organizationName?: string;
       };
   generatorId: string;
   name: string;
@@ -87,9 +100,9 @@ export interface IInspection {
     | {
         _id?: string;
         email?: string;
-        accountType?: "individual" | "company";
+        accountType?: "individual" | "organization";
         name?: string;
-        companyName?: string;
+        organizationName?: string;
       };
   inspector?: {
     _id: string;
@@ -129,7 +142,7 @@ export interface IInspectionReport {
       _id?: string;
       name?: string;
       email?: string;
-      companyName?: string;
+      organizationName?: string;
       accountType?: string;
     };
   };

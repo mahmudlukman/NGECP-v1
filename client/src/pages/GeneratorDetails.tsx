@@ -63,7 +63,7 @@ const GeneratorDetails: React.FC = () => {
 
   if (isLoading || isLoadingInspections || isLoadingReports) {
     return (
-      <DashboardLayout activeMenu="Generators">
+      <DashboardLayout>
         <div className="min-h-[70vh] flex items-center justify-center">
           <Loading />
         </div>
@@ -73,7 +73,7 @@ const GeneratorDetails: React.FC = () => {
 
   if (isError || !generator) {
     return (
-      <DashboardLayout activeMenu="Generators">
+      <DashboardLayout >
         <div className="min-h-[70vh] flex flex-col items-center justify-center text-center p-4">
           <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mb-3">
             <AlertTriangle className="w-6 h-6" />
@@ -149,7 +149,7 @@ const GeneratorDetails: React.FC = () => {
       : "N/A";
 
   return (
-    <DashboardLayout activeMenu="Manage Generators">
+    <DashboardLayout>
       <div className="my-5 bg-white p-6 sm:p-8 rounded-2xl shadow-xs border border-slate-200/80 w-full max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">

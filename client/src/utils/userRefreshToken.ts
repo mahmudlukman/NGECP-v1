@@ -1,37 +1,38 @@
 import { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
+
 import { useRefreshTokenMutation } from "../redux/features/api/apiSlice";
-import type { RootState } from "../@types";
+import type { RootState } from "../redux/store";
 
 export const useTokenRefresh = () => {
   const [refreshToken] = useRefreshTokenMutation();
+
   const { user } = useSelector((state: RootState) => state.auth);
+
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    // Only set up auto-refresh if user is logged in
     if (!user) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
+
       return;
     }
 
-    // Refresh token every 14 minutes (access token expires in 15 minutes)
-    const refreshInterval = 14 * 60 * 1000; // 14 minutes in milliseconds
+    const refreshInterval = 14 * 60 * 1000;
 
     intervalRef.current = setInterval(() => {
-      console.log("Auto-refreshing token...");
-      refreshToken({})
+      refreshToken()
         .unwrap()
-        .then(() => console.log("Token refreshed successfully"))
-        .catch((error) => console.error("Token refresh failed:", error));
+        .catch(() => {});
     }, refreshInterval);
 
-    // Cleanup on unmount
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
   }, [user, refreshToken]);

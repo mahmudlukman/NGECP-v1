@@ -19,17 +19,17 @@ const Tooltip: FC<TooltipProps> = ({ text, children, position = "top" }) => {
   };
 
   const arrowClasses: Record<string, string> = {
-    top: "top-full left-1/2 -translate-x-1/2 border-t-slate-900 border-x-transparent border-b-transparent",
+    top: "top-full left-1/2 -translate-x-1/2 border-t-[#0B1F1A] border-x-transparent border-b-transparent",
     bottom:
-      "bottom-full left-1/2 -translate-x-1/2 border-b-slate-900 border-x-transparent border-t-transparent",
-    left: "left-full top-1/2 -translate-y-1/2 border-l-slate-900 border-y-transparent border-r-transparent",
+      "bottom-full left-1/2 -translate-x-1/2 border-b-[#0B1F1A] border-x-transparent border-t-transparent",
+    left: "left-full top-1/2 -translate-y-1/2 border-l-[#0B1F1A] border-y-transparent border-r-transparent",
     right:
-      "right-full top-1/2 -translate-y-1/2 border-r-slate-900 border-y-transparent border-l-transparent",
+      "right-full top-1/2 -translate-y-1/2 border-r-[#0B1F1A] border-y-transparent border-l-transparent",
   };
 
   return (
     <div
-      className="relative inline-flex items-center"
+      className="relative inline-flex items-center font-[Figtree,ui-sans-serif,system-ui,sans-serif]"
       onMouseEnter={() => setIsVisible(true)}
       onMouseLeave={() => setIsVisible(false)}
       onFocus={() => setIsVisible(true)}
@@ -42,12 +42,12 @@ const Tooltip: FC<TooltipProps> = ({ text, children, position = "top" }) => {
       <div
         id={tooltipId}
         role="tooltip"
-        className={`absolute z-50 whitespace-nowrap px-2.5 py-1.5 text-xs font-medium text-white bg-slate-900/95 backdrop-blur-xs rounded-lg shadow-lg pointer-events-none transition-all duration-150 ease-out ${
+        className={`pointer-events-none absolute z-50 whitespace-nowrap rounded-lg border border-white/10 bg-[#0B1F1A]/95 px-2.5 py-1.5 text-xs font-medium text-[#F3F1EA] shadow-[0_10px_25px_-10px_rgba(11,31,26,0.5)] backdrop-blur-xs transition-all duration-150 ease-out ${
           positionClasses[position]
         } ${
           isVisible
-            ? "opacity-100 scale-100"
-            : "opacity-0 scale-95 pointer-events-none"
+            ? "scale-100 opacity-100"
+            : "pointer-events-none scale-95 opacity-0"
         }`}
       >
         {text}

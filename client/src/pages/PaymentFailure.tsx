@@ -7,7 +7,7 @@ const PaymentFailure: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <DashboardLayout activeMenu="My Generators">
+    <DashboardLayout>
       <div className="flex flex-col items-center justify-center min-h-[500px] py-12 px-4">
         <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-8 text-center shadow-xs">
           {/* Status Icon */}

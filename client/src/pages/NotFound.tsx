@@ -4,32 +4,50 @@ import { Compass, Home, ArrowLeft } from "lucide-react";
 
 const NotFound: React.FC = () => {
   return (
-    <div className="w-full min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md p-8 bg-white border border-slate-200 rounded-2xl shadow-xs text-center flex flex-col items-center">
+    <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#F7F6F1] p-4 font-[Figtree,ui-sans-serif,system-ui,sans-serif] text-[#0B1F1A]">
+      {/* Faint dot texture */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 opacity-[0.35] [background-image:radial-gradient(#0B1F1A_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
+      />
+
+      <div className="relative flex w-full max-w-md flex-col items-center overflow-hidden rounded-3xl border border-[#0B1F1A]/10 bg-white p-10 text-center shadow-[0_30px_60px_-25px_rgba(11,31,26,0.25)]">
+        {/* Oversized serif numeral, watermark */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 select-none font-[Newsreader,Georgia,serif] text-[9rem] leading-none text-[#0B1F1A]/[0.045]"
+        >
+          404
+        </span>
+
         {/* Badge / Icon */}
-        <div className="w-16 h-16 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center mb-4">
-          <Compass className="w-8 h-8 stroke-[1.5]" />
-        </div>
+        <span className="relative mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-[#16785A]/25 text-[#16785A]">
+          <Compass className="h-8 w-8 stroke-[1.5]" />
+        </span>
 
         {/* Status & Title */}
-        <span className="text-xs font-bold tracking-widest text-emerald-600 uppercase mb-1">
-          Error 404
-        </span>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          Page Not Found
+        <div className="relative mb-1 flex items-center gap-3">
+          <span className="h-px w-8 bg-[#16785A]" />
+          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#16785A]">
+            Error 404
+          </span>
+          <span className="h-px w-8 bg-[#16785A]" />
+        </div>
+        <h1 className="relative font-[Newsreader,Georgia,serif] text-3xl font-normal tracking-tight">
+          Page not found
         </h1>
 
-        <p className="text-xs sm:text-sm text-slate-500 mt-2 mb-6 leading-relaxed">
-          Sorry, we couldn’t find the page you’re looking for. It might have
+        <p className="relative mb-8 mt-3 text-sm leading-relaxed text-[#0B1F1A]/60">
+          Sorry, we couldn't find the page you're looking for. It might have
           been moved, renamed, or deleted.
         </p>
 
         {/* Primary Action */}
         <Link
           to="/"
-          className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm rounded-lg transition-all shadow-xs flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          className="group relative flex w-full items-center justify-center gap-2 rounded-full bg-[#0B1F1A] px-4 py-3 text-sm font-semibold text-[#F3F1EA] shadow-[0_10px_25px_-12px_rgba(11,31,26,0.5)] transition-all hover:-translate-y-0.5 hover:bg-[#12332b] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#16785A]/40"
         >
-          <Home className="w-4 h-4" />
+          <Home className="h-4 w-4" />
           <span>Return Home</span>
         </Link>
 
@@ -37,9 +55,9 @@ const NotFound: React.FC = () => {
         <button
           type="button"
           onClick={() => window.history.back()}
-          className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors focus:outline-none"
+          className="relative mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[#0B1F1A]/55 transition-colors hover:text-[#0B1F1A] focus:outline-none"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="h-3.5 w-3.5" />
           <span>Go back to previous page</span>
         </button>
       </div>

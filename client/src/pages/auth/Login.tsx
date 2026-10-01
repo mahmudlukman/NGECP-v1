@@ -70,13 +70,13 @@ const Login: React.FC<LoginProps> = ({ setCurrentPage, closeModal }) => {
   };
 
   return (
-    <div className="w-full max-w-md p-6 sm:p-8 flex flex-col justify-center bg-white rounded-xl">
+    <div className="flex w-full max-w-md flex-col justify-center rounded-xl bg-white p-6 font-[Figtree,ui-sans-serif,system-ui,sans-serif] sm:p-8">
       {/* Header */}
-      <div className="text-center mb-6">
-        <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+      <div className="mb-6 text-center">
+        <h3 className="font-[Newsreader,Georgia,serif] text-xl font-normal tracking-tight text-[#0B1F1A]">
           Welcome Back
         </h3>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+        <p className="mt-1 text-xs text-[#0B1F1A]/55 sm:text-sm">
           Please enter your details to log in
         </p>
       </div>
@@ -100,10 +100,10 @@ const Login: React.FC<LoginProps> = ({ setCurrentPage, closeModal }) => {
             placeholder="••••••••"
             type="password"
           />
-          <div className="flex justify-end mt-1.5">
+          <div className="mt-1.5 flex justify-end">
             <button
               type="button"
-              className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors focus:outline-none"
+              className="text-xs font-semibold text-[#16785A] transition-colors hover:text-[#0f5e44] focus:outline-none"
               onClick={() => setCurrentPage("forgotPassword")}
             >
               Forgot Password?
@@ -113,8 +113,8 @@ const Login: React.FC<LoginProps> = ({ setCurrentPage, closeModal }) => {
 
         {/* Error Alert Box */}
         {error && (
-          <div className="flex items-center gap-2 p-3 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-lg animate-fade-in">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="animate-fade-in flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
+            <AlertCircle className="h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -123,11 +123,11 @@ const Login: React.FC<LoginProps> = ({ setCurrentPage, closeModal }) => {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm rounded-lg transition-all shadow-xs flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#0B1F1A] px-4 py-2.5 text-sm font-medium text-[#F3F1EA] shadow-xs transition-all hover:bg-[#12332b] focus:outline-none focus:ring-2 focus:ring-[#16785A]/30 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               <span>Signing In...</span>
             </>
           ) : (
@@ -136,11 +136,11 @@ const Login: React.FC<LoginProps> = ({ setCurrentPage, closeModal }) => {
         </button>
 
         {/* Footer Toggle */}
-        <p className="text-xs text-center text-slate-600 pt-2">
-          Don’t have an account?{" "}
+        <p className="pt-2 text-center text-xs text-[#0B1F1A]/60">
+          Don't have an account?{" "}
           <button
             type="button"
-            className="font-semibold text-emerald-600 hover:text-emerald-700 underline focus:outline-none"
+            className="font-semibold text-[#16785A] underline hover:text-[#0f5e44] focus:outline-none"
             onClick={() => setCurrentPage("signup")}
           >
             Sign Up

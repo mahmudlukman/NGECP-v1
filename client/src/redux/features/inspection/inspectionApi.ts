@@ -4,7 +4,7 @@ export const inspectionApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     scheduleInspection: builder.mutation({
       query: (data) => ({
-        url: "schedule-inspection",
+        url: "inspection/schedule",
         method: "POST",
         body: data,
         credentials: "include" as const,
@@ -13,7 +13,7 @@ export const inspectionApi = apiSlice.injectEndpoints({
     }),
     getAllInspections: builder.query({
       query: ({ page = 1, pageSize = 10 }) => ({
-        url: `all-inspections?page=${page}&pageSize=${pageSize}`,
+        url: `inspections?page=${page}&pageSize=${pageSize}`,
         method: "GET",
         credentials: "include" as const,
       }),
@@ -29,7 +29,7 @@ export const inspectionApi = apiSlice.injectEndpoints({
     }),
     getMyInspections: builder.query({
       query: () => ({
-        url: "my-inspections",
+        url: "inspections/me",
         method: "GET",
         credentials: "include" as const,
       }),
@@ -37,7 +37,7 @@ export const inspectionApi = apiSlice.injectEndpoints({
     }),
     getInspectionFee: builder.query({
       query: () => ({
-        url: "inspection-fee",
+        url: "inspection/fee",
         method: "GET",
         credentials: "include" as const,
       }),
@@ -45,7 +45,7 @@ export const inspectionApi = apiSlice.injectEndpoints({
     }),
     updateInspectionFee: builder.mutation({
       query: ({ data }) => ({
-        url: "update-inspection-fee",
+        url: "inspection/update/fee",
         method: "PUT",
         body: data,
         credentials: "include" as const,
@@ -54,7 +54,7 @@ export const inspectionApi = apiSlice.injectEndpoints({
     }),
     assignInspector: builder.mutation({
       query: ({ id, data }) => ({
-        url: `assign-inspector/${id}`,
+        url: `inspector/assign/${id}`,
         method: "PUT",
         body: data,
         credentials: "include" as const,
@@ -63,7 +63,7 @@ export const inspectionApi = apiSlice.injectEndpoints({
     }),
     updateInspectionStatus: builder.mutation({
       query: ({ id, data }) => ({
-        url: `update-inspection-status/${id}`,
+        url: `inspection/update/status/${id}`,
         method: "PUT",
         body: data,
         credentials: "include" as const,
@@ -72,7 +72,7 @@ export const inspectionApi = apiSlice.injectEndpoints({
     }),
     cancelInspection: builder.mutation({
       query: (id) => ({
-        url: `cancel-inspection/${id}`,
+        url: `inspection/cancel/${id}`,
         method: "PUT",
         credentials: "include" as const,
       }),
@@ -80,7 +80,7 @@ export const inspectionApi = apiSlice.injectEndpoints({
     }),
     deleteInspection: builder.mutation({
       query: (id) => ({
-        url: `delete-inspection/${id}`,
+        url: `inspection/delete/${id}`,
         method: "DELETE",
         credentials: "include" as const,
       }),

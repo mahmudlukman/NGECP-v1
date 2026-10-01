@@ -8,7 +8,7 @@ const ManageUsers = () => {
 
   if (isLoading) {
     return (
-      <DashboardLayout activeMenu="Manage Users">
+      <DashboardLayout>
         <Loading />
       </DashboardLayout>
     );
@@ -16,7 +16,7 @@ const ManageUsers = () => {
 
   if (isError) {
     return (
-      <DashboardLayout activeMenu="Manage Users">
+      <DashboardLayout>
         <div className="flex justify-center items-center h-[70vh]">
           <p className="text-red-500">Failed to load users.</p>
         </div>
@@ -27,7 +27,7 @@ const ManageUsers = () => {
   const users = usersData?.users || [];
 
   return (
-    <DashboardLayout activeMenu="Manage Users">
+    <DashboardLayout>
       <div className="mt-5 mb-10 w-full">
         <div className="mb-6">
           <h1 className="text-2xl text-slate-600 font-semibold">

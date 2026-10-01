@@ -16,8 +16,10 @@ const GeneratorsOverview = ({
   compliant = 0,
   nonCompliant = 0,
 }: GeneratorOverviewProps) => {
-  // Slate/Emerald cohesive palette mapping:
-  const COLORS = ["#10b981", "#64748b", "#f59e0b", "#059669", "#e11d48"];
+  // Ink/mint brand palette, with amber and rose kept for
+  // "in progress" and "non-compliant" states respectively —
+  // those two carry semantic meaning that shouldn't be brand-colored.
+  const COLORS = ["#16785A", "#9CA3AF", "#F59E0B", "#7FD1AE", "#E11D48"];
 
   const generatorsData = [
     { name: "Active", amount: active },
@@ -31,13 +33,16 @@ const GeneratorsOverview = ({
     active + inactive + underInspection + compliant + nonCompliant;
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-base font-semibold text-slate-900">
+    <div className="rounded-2xl border border-[#0B1F1A]/10 bg-white p-5 font-[Figtree,ui-sans-serif,system-ui,sans-serif] shadow-xs">
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="font-[Newsreader,Georgia,serif] text-base font-normal text-[#0B1F1A]">
           Generators Overview
         </h3>
-        <span className="text-xs text-slate-500 font-medium">
-          Total: <strong className="text-slate-800">{totalCalculated}</strong>
+        <span className="text-xs font-medium text-[#0B1F1A]/55">
+          Total:{" "}
+          <strong className="font-semibold text-[#0B1F1A]">
+            {totalCalculated}
+          </strong>
         </span>
       </div>
 

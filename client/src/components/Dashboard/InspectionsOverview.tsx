@@ -15,8 +15,9 @@ const InspectionOverview = ({
   Cancelled = 0,
   totalInspections,
 }: InspectionOverviewProps) => {
-  // Semantic Status Color Palette:
-  const COLORS = ["#f59e0b", "#e11d48", "#0284c7", "#10b981"];
+  // Semantic status palette: amber = pending, rose = cancelled,
+  // neutral grey = scheduled (informational), mint = completed (brand accent, "done well").
+  const COLORS = ["#F59E0B", "#E11D48", "#9CA3AF", "#16785A"];
 
   const inspectionData = [
     { name: "Pending", amount: Pending },
@@ -29,13 +30,16 @@ const InspectionOverview = ({
     totalInspections ?? Pending + Scheduled + Completed + Cancelled;
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow-xs border border-slate-200/80">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-base font-semibold text-slate-900">
+    <div className="rounded-2xl border border-[#0B1F1A]/10 bg-white p-5 font-[Figtree,ui-sans-serif,system-ui,sans-serif] shadow-xs">
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="font-[Newsreader,Georgia,serif] text-base font-normal text-[#0B1F1A]">
           Inspection Overview
         </h3>
-        <span className="text-xs text-slate-500 font-medium">
-          Total: <strong className="text-slate-800">{totalCalculated}</strong>
+        <span className="text-xs font-medium text-[#0B1F1A]/55">
+          Total:{" "}
+          <strong className="font-semibold text-[#0B1F1A]">
+            {totalCalculated}
+          </strong>
         </span>
       </div>
 

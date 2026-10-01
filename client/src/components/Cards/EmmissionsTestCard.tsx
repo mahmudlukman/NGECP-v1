@@ -9,7 +9,9 @@ interface EmissionsTestCardProps {
 }
 
 const inputClass =
-  "w-full border border-slate-300 text-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary";
+  "w-full border border-[#0B1F1A]/15 text-[#0B1F1A] rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[#16785A]/20 focus:border-[#16785A]";
+
+const labelClass = "block text-sm font-medium text-[#0B1F1A]/70 mb-2";
 
 const EmissionsTestCard = ({ value, onChange }: EmissionsTestCardProps) => {
   const update = (patch: Partial<EmissionsTestData>) =>
@@ -38,11 +40,9 @@ const EmissionsTestCard = ({ value, onChange }: EmissionsTestCardProps) => {
       }
     >
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-2">
-              CO2 level (ppm)
-            </label>
+            <label className={labelClass}>CO2 level (ppm)</label>
             <input
               type="number"
               min={0}
@@ -53,9 +53,7 @@ const EmissionsTestCard = ({ value, onChange }: EmissionsTestCardProps) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-2">
-              NOx level (ppm)
-            </label>
+            <label className={labelClass}>NOx level (ppm)</label>
             <input
               type="number"
               min={0}
@@ -66,9 +64,7 @@ const EmissionsTestCard = ({ value, onChange }: EmissionsTestCardProps) => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-600 mb-2">
-              Particulate level (µg/m³)
-            </label>
+            <label className={labelClass}>Particulate level (µg/m³)</label>
             <input
               type="number"
               min={0}
@@ -80,9 +76,7 @@ const EmissionsTestCard = ({ value, onChange }: EmissionsTestCardProps) => {
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-600 mb-2">
-            Notes
-          </label>
+          <label className={labelClass}>Notes</label>
           <textarea
             value={value.notes || ""}
             onChange={(e) => update({ notes: e.target.value })}

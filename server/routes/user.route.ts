@@ -1,61 +1,55 @@
 import express from "express";
 import {
   deleteUser,
-  getAllUsers,
-  getIndividualUsers,
-  getOrganizationUsers,
-  getUserById,
-  getUserInfo,
+  allUsers,
+  individualUsers,
+  organizationUsers,
+  userById,
+  userInfo,
   updateUserPassword,
   updateUserProfile,
   updateUserStatus,
 } from "../controllers/user.controller";
-import { authorizeRoles, isAuthenticated } from "../middleware/auth";
+import {
+  authorizeRoles,
+  isAuthenticated,
+  requireActiveAccount,
+} from "../middleware/auth";
+import { UserRole } from "../models/User";
 
 const userRouter = express.Router();
 
-userRouter.get("/me", isAuthenticated, getUserInfo);
-userRouter.get("/get-user/:id", getUserById);
+userRouter.use(isAuthenticated, requireActiveAccount);
+
+userRouter.get("/me", userInfo);
+userRouter.get("/user/:id", userById);
 userRouter.get(
-  "/get-users",
-  isAuthenticated,
-  authorizeRoles("admin", "editor"),
-  getAllUsers
-);
-userRouter.get(
-  "/get-organization-users",
-  isAuthenticated,
-  authorizeRoles("admin", "editor"),
-  getOrganizationUsers
+  "/users",
+  authorizeRoles(UserRole.ADMIN, UserRole.EDITOR),
+  allUsers,
 );
 userRouter.get(
-  "/get-individual-users",
-  isAuthenticated,
-  authorizeRoles("admin", "editor"),
-  getIndividualUsers
+  "/organization/users",
+  authorizeRoles(UserRole.ADMIN, UserRole.EDITOR),
+  organizationUsers,
+);
+userRouter.get(
+  "/individual/users",
+  authorizeRoles(UserRole.ADMIN, UserRole.EDITOR),
+  individualUsers,
 );
 userRouter.put(
-  "/update-user-status",
-  isAuthenticated,
-  authorizeRoles("admin"),
-  updateUserStatus
+  "/update/user/status",
+  authorizeRoles(UserRole.ADMIN),
+  updateUserStatus,
 );
-userRouter.put(
-  "/update-user-profile",
-  isAuthenticated,
-  updateUserProfile
-);
-userRouter.put(
-  "/update-user-password",
-  isAuthenticated,
-  updateUserPassword
-);
+userRouter.put("/update/user/profile", updateUserProfile);
+userRouter.put("/update/user/password", updateUserPassword);
 
 userRouter.delete(
-  "/delete-user/:id",
-  isAuthenticated,
-  authorizeRoles("admin"),
-  deleteUser
+  "/delete/user/:id",
+  authorizeRoles(UserRole.ADMIN),
+  deleteUser,
 );
 
 export default userRouter;

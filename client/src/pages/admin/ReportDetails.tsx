@@ -21,6 +21,10 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 
+// Shared pass/fail badge classes, matching PassFailToggle and InspectionOverview.
+const passFailBadge = (passed?: boolean) =>
+  passed ? "bg-[#16785A]/10 text-[#16785A]" : "bg-rose-100 text-rose-700";
+
 const ReportDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -45,17 +49,17 @@ const ReportDetails = () => {
 
   if (isLoading) {
     return (
-      <DashboardLayout activeMenu="Reports">
-        <Loading />
+      <DashboardLayout>
+        <Loading fullScreen={false} />
       </DashboardLayout>
     );
   }
 
   if (isError || !data?.report) {
     return (
-      <DashboardLayout activeMenu="Reports">
-        <div className="flex justify-center items-center h-[80vh]">
-          <p className="text-red-500">Failed to load report details.</p>
+      <DashboardLayout>
+        <div className="flex h-[80vh] items-center justify-center">
+          <p className="text-rose-600">Failed to load report details.</p>
         </div>
       </DashboardLayout>
     );
@@ -64,25 +68,25 @@ const ReportDetails = () => {
   const report = data.report;
 
   return (
-    <DashboardLayout activeMenu="Reports">
-      <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
+    <DashboardLayout>
+      <div className="my-5 w-full rounded-2xl border border-[#0B1F1A]/10 bg-white p-6 font-[Figtree,ui-sans-serif,system-ui,sans-serif] shadow-[0_20px_40px_-30px_rgba(11,31,26,0.25)]">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/admin/reports")}
-              className="p-2 rounded-full hover:bg-gray-200 text-gray-600 transition cursor-pointer"
+              className="cursor-pointer rounded-full p-2 text-[#0B1F1A]/55 transition hover:bg-[#0B1F1A]/[0.06]"
             >
               <ArrowLeft size={20} />
             </button>
-            <h1 className="text-2xl text-slate-600 font-semibold">
+            <h1 className="font-[Newsreader,Georgia,serif] text-2xl font-normal text-[#0B1F1A]/70">
               Inspection{" "}
-              <span className="text-slate-800 font-bold">Report Details</span>
+              <span className="font-medium text-[#0B1F1A]">Report Details</span>
             </h1>
           </div>
           <button
             onClick={() => window.print()}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition text-sm cursor-pointer"
+            className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#0B1F1A] px-4 py-2 text-sm text-[#F3F1EA] transition hover:bg-[#12332b]"
           >
             <Download size={16} />
             Download PDF
@@ -91,16 +95,16 @@ const ReportDetails = () => {
 
         {/* Approval Status Banner */}
         {report.isApproved ? (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-start gap-3">
+          <div className="mb-6 flex items-start gap-3 rounded-lg border border-[#16785A]/25 bg-[#16785A]/[0.06] p-4">
             <CheckCircle
               size={24}
-              className="text-green-600 flex-shrink-0 mt-0.5"
+              className="mt-0.5 flex-shrink-0 text-[#16785A]"
             />
             <div className="flex-1">
-              <h3 className="font-semibold text-green-900 mb-1">
+              <h3 className="mb-1 font-semibold text-[#0B1F1A]">
                 Report Approved
               </h3>
-              <p className="text-sm text-green-700">
+              <p className="text-sm text-[#0B1F1A]/65">
                 Approved by {report.approvedBy?.name || "N/A"} on{" "}
                 {report.approvalDate
                   ? format(new Date(report.approvalDate), "dd MMMM yyyy, HH:mm")
@@ -109,17 +113,17 @@ const ReportDetails = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6 flex items-center justify-between flex-wrap gap-4">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle
                 size={24}
-                className="text-orange-600 flex-shrink-0 mt-0.5"
+                className="mt-0.5 flex-shrink-0 text-amber-600"
               />
               <div>
-                <h3 className="font-semibold text-orange-900 mb-1">
+                <h3 className="mb-1 font-semibold text-amber-900">
                   Pending Approval
                 </h3>
-                <p className="text-sm text-orange-700">
+                <p className="text-sm text-amber-700">
                   This report is awaiting approval from an administrator.
                 </p>
               </div>
@@ -127,7 +131,7 @@ const ReportDetails = () => {
             <button
               onClick={handleApprove}
               disabled={isApproving}
-              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-sm font-medium disabled:opacity-50 cursor-pointer"
+              className="flex cursor-pointer items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-amber-700 disabled:opacity-50"
             >
               <ShieldCheck size={16} />
               {isApproving ? "Approving..." : "Approve Report"}
@@ -136,14 +140,14 @@ const ReportDetails = () => {
         )}
 
         {/* Overall Compliance Score */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="rounded-lg border border-[#0B1F1A]/10 bg-[#F7F6F1] p-4">
             <div className="flex items-center gap-3">
               <div
-                className={`p-3 rounded-full ${
+                className={`rounded-full p-3 ${
                   report.overallCompliance
-                    ? "bg-green-100 text-green-600"
-                    : "bg-red-100 text-red-600"
+                    ? "bg-[#16785A]/10 text-[#16785A]"
+                    : "bg-rose-100 text-rose-600"
                 }`}
               >
                 {report.overallCompliance ? (
@@ -153,12 +157,14 @@ const ReportDetails = () => {
                 )}
               </div>
               <div>
-                <p className="text-sm text-slate-600 font-medium">
+                <p className="text-sm font-medium text-[#0B1F1A]/55">
                   Overall Compliance
                 </p>
                 <p
                   className={`text-lg font-bold ${
-                    report.overallCompliance ? "text-green-700" : "text-red-700"
+                    report.overallCompliance
+                      ? "text-[#16785A]"
+                      : "text-rose-600"
                   }`}
                 >
                   {report.overallCompliance ? "Compliant" : "Non-Compliant"}
@@ -167,32 +173,32 @@ const ReportDetails = () => {
             </div>
           </div>
 
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <div className="rounded-lg border border-[#0B1F1A]/10 bg-[#F7F6F1] p-4">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-blue-100 text-blue-600">
+              <div className="rounded-full bg-[#16785A]/10 p-3 text-[#16785A]">
                 <Award size={24} />
               </div>
               <div>
-                <p className="text-sm text-slate-600 font-medium">
+                <p className="text-sm font-medium text-[#0B1F1A]/55">
                   Compliance Score
                 </p>
-                <p className="text-lg font-bold text-slate-800">
+                <p className="font-[Newsreader,Georgia,serif] text-lg font-normal text-[#0B1F1A]">
                   {report.complianceScore}%
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+          <div className="rounded-lg border border-[#0B1F1A]/10 bg-[#F7F6F1] p-4">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-purple-100 text-purple-600">
+              <div className="rounded-full bg-[#0B1F1A]/[0.06] p-3 text-[#0B1F1A]/70">
                 <Calendar size={24} />
               </div>
               <div>
-                <p className="text-sm text-slate-600 font-medium">
+                <p className="text-sm font-medium text-[#0B1F1A]/55">
                   Report Date
                 </p>
-                <p className="text-lg font-bold text-slate-800">
+                <p className="font-[Newsreader,Georgia,serif] text-lg font-normal text-[#0B1F1A]">
                   {format(
                     new Date(report.reportDate || report.createdAt),
                     "dd MMM yyyy",
@@ -204,44 +210,44 @@ const ReportDetails = () => {
         </div>
 
         {/* Generator & Inspection Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Generator Info */}
-          <div className="border border-gray-200 rounded-lg p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <Building2 size={20} className="text-slate-600" />
-              <h3 className="text-lg font-semibold text-slate-800">
+          <div className="rounded-lg border border-[#0B1F1A]/10 p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <Building2 size={20} className="text-[#0B1F1A]/60" />
+              <h3 className="text-lg font-semibold text-[#0B1F1A]">
                 Generator Information
               </h3>
             </div>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-600">Generator ID:</span>
-                <span className="font-medium text-slate-800">
+                <span className="text-[#0B1F1A]/55">Generator ID:</span>
+                <span className="font-medium text-[#0B1F1A]">
                   {report.generator?.generatorId || "N/A"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Brand:</span>
-                <span className="font-medium text-slate-800">
+                <span className="text-[#0B1F1A]/55">Brand:</span>
+                <span className="font-medium text-[#0B1F1A]">
                   {report.generator?.brand || "N/A"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Model:</span>
-                <span className="font-medium text-slate-800">
+                <span className="text-[#0B1F1A]/55">Model:</span>
+                <span className="font-medium text-[#0B1F1A]">
                   {report.generator?.model || "N/A"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Serial Number:</span>
-                <span className="font-medium text-slate-800">
+                <span className="text-[#0B1F1A]/55">Serial Number:</span>
+                <span className="font-medium text-[#0B1F1A]">
                   {report.generator?.serialNumber || "N/A"}
                 </span>
               </div>
               {report.generator?.location && (
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Location:</span>
-                  <span className="font-medium text-slate-800">
+                  <span className="text-[#0B1F1A]/55">Location:</span>
+                  <span className="font-medium text-[#0B1F1A]">
                     {report.generator.location.address},{" "}
                     {report.generator.location.lga}
                   </span>
@@ -251,40 +257,40 @@ const ReportDetails = () => {
           </div>
 
           {/* Inspector & Owner Info */}
-          <div className="border border-gray-200 rounded-lg p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <User size={20} className="text-slate-600" />
-              <h3 className="text-lg font-semibold text-slate-800">
+          <div className="rounded-lg border border-[#0B1F1A]/10 p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <User size={20} className="text-[#0B1F1A]/60" />
+              <h3 className="text-lg font-semibold text-[#0B1F1A]">
                 Inspection Details
               </h3>
             </div>
             <div className="space-y-3 text-sm">
               <div>
-                <span className="text-slate-600 block mb-1">Inspector:</span>
-                <span className="font-medium text-slate-800">
+                <span className="mb-1 block text-[#0B1F1A]/55">Inspector:</span>
+                <span className="font-medium text-[#0B1F1A]">
                   {report.inspector?.name || "N/A"}
                 </span>
                 <br />
-                <span className="text-slate-500 text-xs">
+                <span className="text-xs text-[#0B1F1A]/45">
                   {report.inspector?.email || "N/A"}
                 </span>
               </div>
               <div>
-                <span className="text-slate-600 block mb-1">Owner:</span>
-                <span className="font-medium text-slate-800">
+                <span className="mb-1 block text-[#0B1F1A]/55">Owner:</span>
+                <span className="font-medium text-[#0B1F1A]">
                   {report.inspection?.owner?.companyName ||
                     report.inspection?.owner?.name ||
                     "N/A"}
                 </span>
                 <br />
-                <span className="text-slate-500 text-xs">
+                <span className="text-xs text-[#0B1F1A]/45">
                   {report.inspection?.owner?.email || "N/A"}
                 </span>
               </div>
               {report.nextInspectionDate && (
-                <div className="flex justify-between pt-2 border-t border-gray-200">
-                  <span className="text-slate-600">Next Inspection:</span>
-                  <span className="font-medium text-slate-800">
+                <div className="flex justify-between border-t border-[#0B1F1A]/10 pt-2">
+                  <span className="text-[#0B1F1A]/55">Next Inspection:</span>
+                  <span className="font-medium text-[#0B1F1A]">
                     {format(new Date(report.nextInspectionDate), "dd MMM yyyy")}
                   </span>
                 </div>
@@ -294,25 +300,25 @@ const ReportDetails = () => {
         </div>
 
         {/* Test Results */}
-        <div className="border border-gray-200 rounded-lg p-5 mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <FileText size={20} className="text-slate-600" />
-            <h3 className="text-lg font-semibold text-slate-800">
+        <div className="mb-6 rounded-lg border border-[#0B1F1A]/10 p-5">
+          <div className="mb-4 flex items-center gap-2">
+            <FileText size={20} className="text-[#0B1F1A]/60" />
+            <h3 className="text-lg font-semibold text-[#0B1F1A]">
               Test Results
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* Emissions Test */}
-            <div className="bg-slate-50 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-semibold text-slate-700">Emissions Test</h4>
+            <div className="rounded-lg bg-[#F7F6F1] p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="font-semibold text-[#0B1F1A]/80">
+                  Emissions Test
+                </h4>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    report.emissionsTest?.passed
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${passFailBadge(
+                    report.emissionsTest?.passed,
+                  )}`}
                 >
                   {report.emissionsTest?.passed ? "Passed" : "Failed"}
                 </span>
@@ -320,32 +326,34 @@ const ReportDetails = () => {
               <div className="space-y-2 text-sm">
                 {report.emissionsTest?.co2Level !== undefined && (
                   <div className="flex justify-between">
-                    <span className="text-slate-600">CO2 Level:</span>
-                    <span className="font-medium text-slate-800">
+                    <span className="text-[#0B1F1A]/55">CO2 Level:</span>
+                    <span className="font-medium text-[#0B1F1A]">
                       {report.emissionsTest.co2Level} ppm
                     </span>
                   </div>
                 )}
                 {report.emissionsTest?.noxLevel !== undefined && (
                   <div className="flex justify-between">
-                    <span className="text-slate-600">NOx Level:</span>
-                    <span className="font-medium text-slate-800">
+                    <span className="text-[#0B1F1A]/55">NOx Level:</span>
+                    <span className="font-medium text-[#0B1F1A]">
                       {report.emissionsTest.noxLevel} ppm
                     </span>
                   </div>
                 )}
                 {report.emissionsTest?.particulateLevel !== undefined && (
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Particulate Level:</span>
-                    <span className="font-medium text-slate-800">
+                    <span className="text-[#0B1F1A]/55">
+                      Particulate Level:
+                    </span>
+                    <span className="font-medium text-[#0B1F1A]">
                       {report.emissionsTest.particulateLevel} µg/m³
                     </span>
                   </div>
                 )}
                 {report.emissionsTest?.notes && (
-                  <div className="pt-2 border-t border-slate-200">
-                    <span className="text-slate-600 block mb-1">Notes:</span>
-                    <p className="text-slate-700">
+                  <div className="border-t border-[#0B1F1A]/10 pt-2">
+                    <span className="mb-1 block text-[#0B1F1A]/55">Notes:</span>
+                    <p className="text-[#0B1F1A]/75">
                       {report.emissionsTest.notes}
                     </p>
                   </div>
@@ -354,17 +362,15 @@ const ReportDetails = () => {
             </div>
 
             {/* Noise Level */}
-            <div className="bg-slate-50 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-semibold text-slate-700">
+            <div className="rounded-lg bg-[#F7F6F1] p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="font-semibold text-[#0B1F1A]/80">
                   Noise Level Test
                 </h4>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    report.noiseLevel?.passed
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${passFailBadge(
+                    report.noiseLevel?.passed,
+                  )}`}
                 >
                   {report.noiseLevel?.passed ? "Passed" : "Failed"}
                 </span>
@@ -372,33 +378,33 @@ const ReportDetails = () => {
               <div className="space-y-2 text-sm">
                 {report.noiseLevel?.decibelReading !== undefined && (
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Decibel Reading:</span>
-                    <span className="font-medium text-slate-800">
+                    <span className="text-[#0B1F1A]/55">Decibel Reading:</span>
+                    <span className="font-medium text-[#0B1F1A]">
                       {report.noiseLevel.decibelReading} dB
                     </span>
                   </div>
                 )}
                 {report.noiseLevel?.notes && (
-                  <div className="pt-2 border-t border-slate-200">
-                    <span className="text-slate-600 block mb-1">Notes:</span>
-                    <p className="text-slate-700">{report.noiseLevel.notes}</p>
+                  <div className="border-t border-[#0B1F1A]/10 pt-2">
+                    <span className="mb-1 block text-[#0B1F1A]/55">Notes:</span>
+                    <p className="text-[#0B1F1A]/75">
+                      {report.noiseLevel.notes}
+                    </p>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Fuel Efficiency */}
-            <div className="bg-slate-50 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-semibold text-slate-700">
+            <div className="rounded-lg bg-[#F7F6F1] p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="font-semibold text-[#0B1F1A]/80">
                   Fuel Efficiency
                 </h4>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    report.fuelEfficiency?.passed
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${passFailBadge(
+                    report.fuelEfficiency?.passed,
+                  )}`}
                 >
                   {report.fuelEfficiency?.passed ? "Passed" : "Failed"}
                 </span>
@@ -406,16 +412,16 @@ const ReportDetails = () => {
               <div className="space-y-2 text-sm">
                 {report.fuelEfficiency?.rating && (
                   <div className="flex justify-between">
-                    <span className="text-slate-600">Rating:</span>
-                    <span className="font-medium text-slate-800">
+                    <span className="text-[#0B1F1A]/55">Rating:</span>
+                    <span className="font-medium text-[#0B1F1A]">
                       {report.fuelEfficiency.rating}
                     </span>
                   </div>
                 )}
                 {report.fuelEfficiency?.notes && (
-                  <div className="pt-2 border-t border-slate-200">
-                    <span className="text-slate-600 block mb-1">Notes:</span>
-                    <p className="text-slate-700">
+                  <div className="border-t border-[#0B1F1A]/10 pt-2">
+                    <span className="mb-1 block text-[#0B1F1A]/55">Notes:</span>
+                    <p className="text-[#0B1F1A]/75">
                       {report.fuelEfficiency.notes}
                     </p>
                   </div>
@@ -424,17 +430,15 @@ const ReportDetails = () => {
             </div>
 
             {/* Maintenance Status */}
-            <div className="bg-slate-50 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-semibold text-slate-700">
+            <div className="rounded-lg bg-[#F7F6F1] p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="font-semibold text-[#0B1F1A]/80">
                   Maintenance Status
                 </h4>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    report.maintenanceStatus?.passed
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${passFailBadge(
+                    report.maintenanceStatus?.passed,
+                  )}`}
                 >
                   {report.maintenanceStatus?.passed ? "Passed" : "Failed"}
                 </span>
@@ -443,8 +447,10 @@ const ReportDetails = () => {
                 {report.maintenanceStatus?.issues &&
                   report.maintenanceStatus.issues.length > 0 && (
                     <div>
-                      <span className="text-slate-600 block mb-2">Issues:</span>
-                      <ul className="list-disc list-inside space-y-1 text-slate-700">
+                      <span className="mb-2 block text-[#0B1F1A]/55">
+                        Issues:
+                      </span>
+                      <ul className="list-inside list-disc space-y-1 text-[#0B1F1A]/75">
                         {report.maintenanceStatus.issues.map(
                           (issue: string, index: number) => (
                             <li key={index}>{issue}</li>
@@ -454,9 +460,9 @@ const ReportDetails = () => {
                     </div>
                   )}
                 {report.maintenanceStatus?.notes && (
-                  <div className="pt-2 border-t border-slate-200">
-                    <span className="text-slate-600 block mb-1">Notes:</span>
-                    <p className="text-slate-700">
+                  <div className="border-t border-[#0B1F1A]/10 pt-2">
+                    <span className="mb-1 block text-[#0B1F1A]/55">Notes:</span>
+                    <p className="text-[#0B1F1A]/75">
                       {report.maintenanceStatus.notes}
                     </p>
                   </div>
@@ -465,17 +471,15 @@ const ReportDetails = () => {
             </div>
 
             {/* Safety Compliance */}
-            <div className="bg-slate-50 rounded-lg p-4 md:col-span-2">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-semibold text-slate-700">
+            <div className="rounded-lg bg-[#F7F6F1] p-4 md:col-span-2">
+              <div className="mb-3 flex items-center justify-between">
+                <h4 className="font-semibold text-[#0B1F1A]/80">
                   Safety Compliance
                 </h4>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    report.safetyCompliance?.passed
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${passFailBadge(
+                    report.safetyCompliance?.passed,
+                  )}`}
                 >
                   {report.safetyCompliance?.passed ? "Passed" : "Failed"}
                 </span>
@@ -484,8 +488,10 @@ const ReportDetails = () => {
                 {report.safetyCompliance?.issues &&
                   report.safetyCompliance.issues.length > 0 && (
                     <div>
-                      <span className="text-slate-600 block mb-2">Issues:</span>
-                      <ul className="list-disc list-inside space-y-1 text-slate-700">
+                      <span className="mb-2 block text-[#0B1F1A]/55">
+                        Issues:
+                      </span>
+                      <ul className="list-inside list-disc space-y-1 text-[#0B1F1A]/75">
                         {report.safetyCompliance.issues.map(
                           (issue: string, index: number) => (
                             <li key={index}>{issue}</li>
@@ -495,9 +501,9 @@ const ReportDetails = () => {
                     </div>
                   )}
                 {report.safetyCompliance?.notes && (
-                  <div className="pt-2 border-t border-slate-200">
-                    <span className="text-slate-600 block mb-1">Notes:</span>
-                    <p className="text-slate-700">
+                  <div className="border-t border-[#0B1F1A]/10 pt-2">
+                    <span className="mb-1 block text-[#0B1F1A]/55">Notes:</span>
+                    <p className="text-[#0B1F1A]/75">
                       {report.safetyCompliance.notes}
                     </p>
                   </div>
@@ -508,20 +514,20 @@ const ReportDetails = () => {
         </div>
 
         {/* Recommendations & Required Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Recommendations */}
           {report.recommendations && report.recommendations.length > 0 && (
-            <div className="border border-gray-200 rounded-lg p-5">
-              <h3 className="text-lg font-semibold text-slate-800 mb-4">
+            <div className="rounded-lg border border-[#0B1F1A]/10 p-5">
+              <h3 className="mb-4 text-lg font-semibold text-[#0B1F1A]">
                 Recommendations
               </h3>
               <ul className="space-y-2">
                 {report.recommendations.map((rec: string, index: number) => (
                   <li
                     key={index}
-                    className="flex items-start gap-2 text-sm text-slate-700"
+                    className="flex items-start gap-2 text-sm text-[#0B1F1A]/75"
                   >
-                    <span className="text-blue-600 font-bold mt-0.5">•</span>
+                    <span className="mt-0.5 font-bold text-[#16785A]">•</span>
                     <span>{rec}</span>
                   </li>
                 ))}
@@ -531,17 +537,17 @@ const ReportDetails = () => {
 
           {/* Required Actions */}
           {report.requiredActions && report.requiredActions.length > 0 && (
-            <div className="border border-orange-200 bg-orange-50 rounded-lg p-5">
-              <h3 className="text-lg font-semibold text-orange-900 mb-4">
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-5">
+              <h3 className="mb-4 text-lg font-semibold text-amber-900">
                 Required Actions
               </h3>
               <ul className="space-y-2">
                 {report.requiredActions.map((action: string, index: number) => (
                   <li
                     key={index}
-                    className="flex items-start gap-2 text-sm text-orange-800"
+                    className="flex items-start gap-2 text-sm text-amber-800"
                   >
-                    <AlertTriangle size={16} className="flex-shrink-0 mt-0.5" />
+                    <AlertTriangle size={16} className="mt-0.5 flex-shrink-0" />
                     <span>{action}</span>
                   </li>
                 ))}

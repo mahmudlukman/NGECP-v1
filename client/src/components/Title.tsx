@@ -25,24 +25,32 @@ const Title: FC<TitleProps> = ({
 
   return (
     <div
-      className={`flex flex-col ${
+      className={`mx-auto flex max-w-2xl flex-col font-[Figtree,ui-sans-serif,system-ui,sans-serif] ${
         isCentered ? "items-center text-center" : "items-start text-left"
-      } max-w-2xl mx-auto`}
+      }`}
     >
       {/* Optional Badge */}
       {badge && (
-        <span className="inline-block px-3 py-1 mb-3 text-xs font-semibold tracking-wider text-emerald-700 bg-emerald-50 rounded-full border border-emerald-200 uppercase">
-          {badge}
-        </span>
+        <div
+          className={`mb-5 flex items-center gap-3 ${
+            isCentered ? "" : "self-start"
+          }`}
+        >
+          <span className="h-px w-10 bg-[#16785A]" />
+          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#16785A]">
+            {badge}
+          </span>
+          {isCentered && <span className="h-px w-10 bg-[#16785A]" />}
+        </div>
       )}
 
       {/* Main Heading */}
-      <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+      <h2 className="font-[Newsreader,Georgia,serif] text-2xl font-normal tracking-tight text-[#0B1F1A] sm:text-3xl">
         {title}
       </h2>
 
       {/* Description Body */}
-      <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
+      <p className="mt-3 text-sm leading-relaxed text-[#0B1F1A]/65 sm:text-base">
         {description}
       </p>
 
@@ -50,10 +58,10 @@ const Title: FC<TitleProps> = ({
       {visibleButton && href && (
         <Link
           to={href}
-          className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 hover:text-emerald-700 hover:gap-2.5 transition-all group focus:outline-none focus:ring-2 focus:ring-emerald-500/20 rounded-md py-1"
+          className="group mt-5 inline-flex items-center gap-1.5 rounded-md border-b border-[#16785A]/30 py-1 text-sm font-semibold text-[#16785A] transition-all hover:gap-2.5 hover:border-[#16785A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#16785A]/25"
         >
           <span>{buttonText}</span>
-          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
         </Link>
       )}
     </div>

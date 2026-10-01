@@ -103,46 +103,50 @@ const RegisterGenerator = () => {
     (_, i) => currentYear - i,
   );
 
+  const inputClass =
+    "w-full px-3 py-2 border border-[#0B1F1A]/15 rounded-lg outline-none focus:ring-2 focus:ring-[#16785A]/20 focus:border-[#16785A] bg-[#F7F6F1] text-[#0B1F1A]";
+  const labelClass = "text-sm font-medium text-[#0B1F1A]/70";
+
   return (
-    <DashboardLayout activeMenu="Register Generator">
-      <div className="my-5 bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/50 w-full">
-        <div className="no-scrollbar flex-1 h-[95vh] overflow-y-scroll flex flex-col justify-between">
-          <div className="flex items-center justify-between max-w-3xl mb-4">
-            <h1 className="text-2xl text-slate-600 font-semibold">
+    <DashboardLayout>
+      <div className="my-5 w-full rounded-2xl border border-[#0B1F1A]/10 bg-white p-6 font-[Figtree,ui-sans-serif,system-ui,sans-serif] shadow-[0_20px_40px_-30px_rgba(11,31,26,0.25)]">
+        <div className="no-scrollbar flex h-[95vh] flex-1 flex-col justify-between overflow-y-scroll">
+          <div className="mb-4 flex max-w-3xl items-center justify-between">
+            <h1 className="font-[Newsreader,Georgia,serif] text-2xl font-normal text-[#0B1F1A]/70">
               Register{" "}
-              <span className="text-slate-800 font-bold">Generator</span>
+              <span className="font-medium text-[#0B1F1A]">Generator</span>
             </h1>
           </div>
 
           <form
             onSubmit={handleSubmit}
-            className="md:p-10 p-4 space-y-5 max-w-3xl"
+            className="max-w-3xl space-y-5 p-4 md:p-10"
           >
             {/* Brand & Model */}
             <div className="flex flex-wrap gap-5">
-              <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-slate-600">
-                  Brand <span className="text-red-500">*</span>
+              <div className="flex flex-1 flex-col gap-1">
+                <label className={labelClass}>
+                  Brand <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={brand}
                   onChange={(e) => setBrand(e.target.value)}
                   placeholder="e.g. Perkins"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary bg-gray-50 text-gray-700"
+                  className={inputClass}
                   required
                 />
               </div>
-              <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-slate-600">
-                  Model <span className="text-red-500">*</span>
+              <div className="flex flex-1 flex-col gap-1">
+                <label className={labelClass}>
+                  Model <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={model}
                   onChange={(e) => setModel(e.target.value)}
                   placeholder="e.g. 404D-22G"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary bg-gray-50 text-gray-700"
+                  className={inputClass}
                   required
                 />
               </div>
@@ -150,42 +154,42 @@ const RegisterGenerator = () => {
 
             {/* Serial Number */}
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-slate-600">
-                Serial Number <span className="text-red-500">*</span>
+              <label className={labelClass}>
+                Serial Number <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
                 value={serialNumber}
                 onChange={(e) => setSerialNumber(e.target.value)}
                 placeholder="Unique serial number"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary bg-gray-50 text-gray-700"
+                className={inputClass}
                 required
               />
             </div>
 
             {/* Capacity & Year */}
             <div className="flex flex-wrap gap-5">
-              <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-slate-600">
-                  Capacity (KVA) <span className="text-red-500">*</span>
+              <div className="flex flex-1 flex-col gap-1">
+                <label className={labelClass}>
+                  Capacity (KVA) <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="number"
                   value={capacity}
                   onChange={(e) => setCapacity(e.target.value)}
                   placeholder="e.g. 150"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary bg-gray-50 text-gray-700"
+                  className={inputClass}
                   required
                 />
               </div>
-              <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-medium text-slate-600">
-                  Year of Manufacture <span className="text-red-500">*</span>
+              <div className="flex flex-1 flex-col gap-1">
+                <label className={labelClass}>
+                  Year of Manufacture <span className="text-rose-500">*</span>
                 </label>
                 <select
                   value={yearOfManufacture}
                   onChange={(e) => setYearOfManufacture(e.target.value)}
-                  className="w-full px-3 py-2 border text-slate-600 border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary bg-gray-50"
+                  className={inputClass}
                   required
                 >
                   <option value="">Select year</option>
@@ -200,13 +204,13 @@ const RegisterGenerator = () => {
 
             {/* Fuel Type */}
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-medium text-slate-600">
-                Fuel Type <span className="text-red-500">*</span>
+              <label className={labelClass}>
+                Fuel Type <span className="text-rose-500">*</span>
               </label>
               <select
                 value={fuelType}
                 onChange={(e) => setFuelType(e.target.value)}
-                className="w-full px-3 py-2 border text-slate-600 border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-primary bg-gray-50"
+                className={inputClass}
                 required
               >
                 <option value="">Select fuel type</option>
@@ -218,7 +222,7 @@ const RegisterGenerator = () => {
             </div>
 
             {/* Location Section */}
-            <h3 className="font-semibold text-slate-600 mt-6">
+            <h3 className="mt-6 font-[Newsreader,Georgia,serif] text-lg font-normal text-[#0B1F1A]">
               Generator Location
             </h3>
             <GeneratorLocationSelector
@@ -230,7 +234,7 @@ const RegisterGenerator = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full md:w-auto px-6 py-2.5 bg-primary text-white font-medium rounded-lg shadow hover:bg-primary/90 transition disabled:opacity-50 cursor-pointer"
+              className="w-full cursor-pointer rounded-lg bg-[#0B1F1A] px-6 py-2.5 font-medium text-[#F3F1EA] shadow-sm transition hover:bg-[#12332b] disabled:opacity-50 md:w-auto"
             >
               {isLoading ? "Registering..." : "Register Generator"}
             </button>

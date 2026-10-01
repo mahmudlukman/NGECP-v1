@@ -8,6 +8,7 @@ import helmet from "helmet";
 import limiter from "./utils/rateLimiter";
 import type { CorsOptions } from "cors";
 import config from "./config";
+import { generateCSRFToken } from "./middleware/csrf";
 import authRouter from "./routes/auth.route";
 import userRouter from "./routes/user.route";
 import generatorRouter from "./routes/generator.route";
@@ -39,7 +40,7 @@ const corsOptions: CorsOptions = {
       // Reject requests from non-whitelisted origins
       callback(
         new Error(`CORS error: ${origin} is not allowed by CORS`),
-        false
+        false,
       );
     }
   },
@@ -51,11 +52,14 @@ app.use(cors({ ...corsOptions, credentials: true }));
 app.use(
   compression({
     threshold: 1024, // Only compress responses larger than 1KB
-  })
+  }),
 );
 
 // Use Helmet to enhance security by setting various HTTP headers
 app.use(helmet());
+
+// CSRF protection
+app.use(generateCSRFToken);
 
 // Apply rate limiting middleware to prevent excessive requests and enhance security
 app.use(limiter);
@@ -69,7 +73,7 @@ app.use(
   inspectionRouter,
   inspectionReportRouter,
   paymentRouter,
-  analyticsRouter
+  analyticsRouter,
 );
 
 // testing API

@@ -23,7 +23,7 @@ interface CustomLineChartProps {
 
 const CustomLineChart = ({
   data,
-  strokeColor = "#059669", // Emerald-600 default
+  strokeColor = "#16785A", // Brand mint default
   labelKey = "Users",
   valuePrefix = "",
 }: CustomLineChartProps) => {
@@ -37,17 +37,17 @@ const CustomLineChart = ({
     if (active && payload && payload.length) {
       const { month, value, label } = payload[0].payload;
       return (
-        <div className="bg-white px-3 py-2 rounded-xl shadow-xs border border-slate-200 text-xs">
-          <p className="font-semibold text-slate-500 mb-0.5">
+        <div className="rounded-xl border border-[#0B1F1A]/10 bg-white px-3 py-2 text-xs shadow-[0_20px_40px_-24px_rgba(11,31,26,0.35)]">
+          <p className="mb-0.5 font-semibold text-[#0B1F1A]/50">
             {label || month}
           </p>
-          <p className="text-slate-700 font-medium flex items-center gap-1.5">
+          <p className="flex items-center gap-1.5 font-medium text-[#0B1F1A]/80">
             <span
-              className="w-2 h-2 rounded-full inline-block"
+              className="inline-block h-2 w-2 rounded-full"
               style={{ backgroundColor: strokeColor }}
             />
             {labelKey}:{" "}
-            <span className="font-bold text-slate-900">
+            <span className="font-bold text-[#0B1F1A]">
               {valuePrefix}
               {value.toLocaleString()}
             </span>
@@ -62,7 +62,7 @@ const CustomLineChart = ({
   const gradientId = `gradient-${strokeColor.replace("#", "")}`;
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs">
+    <div className="rounded-2xl border border-[#0B1F1A]/10 bg-white p-6 font-[Figtree,ui-sans-serif,system-ui,sans-serif] shadow-xs">
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart
           data={data}
@@ -77,17 +77,17 @@ const CustomLineChart = ({
           <CartesianGrid
             strokeDasharray="3 3"
             vertical={false}
-            stroke="#F1F5F9"
+            stroke="rgba(11,31,26,0.08)"
           />
           <XAxis
             dataKey="month"
-            tick={{ fontSize: 11, fill: "#64748B" }}
-            axisLine={{ stroke: "#E2E8F0" }}
+            tick={{ fontSize: 11, fill: "rgba(11,31,26,0.55)" }}
+            axisLine={{ stroke: "rgba(11,31,26,0.12)" }}
             tickLine={false}
           />
           <YAxis
             allowDecimals={false}
-            tick={{ fontSize: 11, fill: "#64748B" }}
+            tick={{ fontSize: 11, fill: "rgba(11,31,26,0.55)" }}
             axisLine={false}
             tickLine={false}
             tickCount={6}

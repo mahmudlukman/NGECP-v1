@@ -15,6 +15,14 @@ import {
 import Loading from "../components/Loading";
 import { useReactToPrint } from "react-to-print";
 
+// Status badge palette, matching InspectionOverview and the Inspections tables:
+// amber = pending, rose = cancelled/other, neutral grey = scheduled, mint = completed.
+const statusBadgeClasses: Record<string, string> = {
+  completed: "bg-[#16785A]/10 text-[#16785A]",
+  scheduled: "bg-[#0B1F1A]/[0.06] text-[#0B1F1A]/70",
+  pending: "bg-amber-100 text-amber-700",
+};
+
 const InspectionReceipt: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -33,30 +41,30 @@ const InspectionReceipt: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loading />
+      <div className="flex min-h-screen items-center justify-center bg-[#F7F6F1]">
+        <Loading fullScreen={false} />
       </div>
     );
   }
 
   if (isError || !inspection) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-        <div className="max-w-md w-full bg-white border border-slate-200 p-8 rounded-2xl shadow-xs text-center">
-          <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <ShieldAlert className="w-6 h-6" />
+      <div className="flex min-h-screen items-center justify-center bg-[#F7F6F1] p-4 font-[Figtree,ui-sans-serif,system-ui,sans-serif]">
+        <div className="w-full max-w-md rounded-2xl border border-[#0B1F1A]/10 bg-white p-8 text-center shadow-[0_30px_60px_-25px_rgba(11,31,26,0.25)]">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-600">
+            <ShieldAlert className="h-6 w-6" />
           </div>
-          <h3 className="text-xl font-bold text-slate-900">
+          <h3 className="font-[Newsreader,Georgia,serif] text-xl font-normal text-[#0B1F1A]">
             Inspection Not Found
           </h3>
-          <p className="text-xs sm:text-sm text-slate-500 mt-2 mb-6">
+          <p className="mb-6 mt-2 text-xs text-[#0B1F1A]/55 sm:text-sm">
             We couldn't retrieve the requested receipt. The inspection record
             may have been deleted or doesn't exist.
           </p>
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-colors"
+            className="w-full rounded-lg bg-[#0B1F1A] px-4 py-2.5 text-sm font-medium text-[#F3F1EA] transition-colors hover:bg-[#12332b]"
           >
             Go Back
           </button>
@@ -80,25 +88,25 @@ const InspectionReceipt: React.FC = () => {
       : inspection.owner?.accountType || "";
 
   return (
-    <div className="min-h-screen bg-slate-100 py-8 px-4 print:bg-white print:p-0">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-[#F7F6F1] px-4 py-8 font-[Figtree,ui-sans-serif,system-ui,sans-serif] print:bg-white print:p-0">
+      <div className="mx-auto max-w-3xl">
         {/* Action Header (Hidden on Print) */}
-        <div className="flex justify-between items-center mb-6 print:hidden">
+        <div className="mb-6 flex items-center justify-between print:hidden">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors focus:outline-none"
+            className="flex items-center gap-2 text-sm font-medium text-[#0B1F1A]/60 transition-colors hover:text-[#0B1F1A] focus:outline-none"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="h-4 w-4" />
             <span>Back</span>
           </button>
 
           <button
             type="button"
             onClick={() => handlePrint()}
-            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg shadow-xs transition-all focus:outline-none"
+            className="flex items-center gap-2 rounded-lg bg-[#0B1F1A] px-4 py-2.5 text-sm font-medium text-[#F3F1EA] shadow-xs transition-all hover:bg-[#12332b] focus:outline-none"
           >
-            <Download className="w-4 h-4" />
+            <Download className="h-4 w-4" />
             <span>Download / Print Receipt</span>
           </button>
         </div>
@@ -106,38 +114,38 @@ const InspectionReceipt: React.FC = () => {
         {/* Printable Receipt Container */}
         <div
           ref={receiptRef}
-          className="bg-white border border-slate-200 rounded-2xl shadow-xs p-8 sm:p-10 print:shadow-none print:border-none print:p-0"
+          className="rounded-2xl border border-[#0B1F1A]/10 bg-white p-8 shadow-xs sm:p-10 print:border-none print:p-0 print:shadow-none"
         >
           {/* Header */}
-          <div className="text-center pb-8 mb-8 border-b border-slate-200">
-            <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 border border-emerald-100 print:border-none">
-              <CheckCircle2 className="w-8 h-8" />
+          <div className="mb-8 border-b border-[#0B1F1A]/10 pb-8 text-center">
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full border border-[#16785A]/25 bg-[#16785A]/[0.08] text-[#16785A] print:border-none">
+              <CheckCircle2 className="h-8 w-8" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            <h1 className="font-[Newsreader,Georgia,serif] text-2xl font-normal tracking-tight text-[#0B1F1A] sm:text-3xl">
               Payment Receipt
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            <p className="mt-1 text-xs text-[#0B1F1A]/55 sm:text-sm">
               Official Inspection Payment Confirmation
             </p>
           </div>
 
           {/* Payment Meta Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-5 bg-slate-50 rounded-xl border border-slate-200/60 mb-8 print:bg-slate-50 print:border-slate-200">
+          <div className="mb-8 grid grid-cols-1 gap-4 rounded-xl border border-[#0B1F1A]/10 bg-[#F7F6F1] p-5 sm:grid-cols-2 print:border-[#0B1F1A]/10 print:bg-[#F7F6F1]">
             {inspection.payment?.transactionReference && (
-              <div className="sm:col-span-2 pb-3 border-b border-slate-200/60">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <div className="border-b border-[#0B1F1A]/10 pb-3 sm:col-span-2">
+                <span className="text-xs font-semibold uppercase tracking-wider text-[#0B1F1A]/40">
                   Transaction Reference
                 </span>
-                <p className="text-sm font-mono font-bold text-slate-900 break-all mt-0.5">
+                <p className="mt-0.5 break-all font-mono text-sm font-bold text-[#0B1F1A]">
                   {inspection.payment.transactionReference}
                 </p>
               </div>
             )}
             <div>
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#0B1F1A]/40">
                 Payment Date
               </span>
-              <p className="text-sm font-medium text-slate-800 mt-0.5">
+              <p className="mt-0.5 text-sm font-medium text-[#0B1F1A]/80">
                 {inspection.payment?.paymentDate
                   ? format(
                       new Date(inspection.payment.paymentDate),
@@ -147,29 +155,29 @@ const InspectionReceipt: React.FC = () => {
               </p>
             </div>
             <div>
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#0B1F1A]/40">
                 Payment Method
               </span>
-              <p className="text-sm font-medium text-slate-800 capitalize mt-0.5">
+              <p className="mt-0.5 text-sm font-medium capitalize text-[#0B1F1A]/80">
                 {inspection.payment?.paymentMethod || "Online Payment"}
               </p>
             </div>
             <div>
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#0B1F1A]/40">
                 Scheduled Date
               </span>
-              <p className="text-sm font-medium text-slate-800 mt-0.5">
+              <p className="mt-0.5 text-sm font-medium text-[#0B1F1A]/80">
                 {inspection.scheduledDate
                   ? format(new Date(inspection.scheduledDate), "dd MMMM yyyy")
                   : "N/A"}
               </p>
             </div>
             <div>
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#0B1F1A]/40">
                 Payment Status
               </span>
               <div className="mt-1">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                <span className="inline-flex items-center rounded-full bg-[#16785A]/10 px-2.5 py-0.5 text-xs font-semibold text-[#16785A]">
                   Paid
                 </span>
               </div>
@@ -177,22 +185,22 @@ const InspectionReceipt: React.FC = () => {
           </div>
 
           {/* Owner & Generator Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* Owner Section */}
-            <div className="p-4 border border-slate-200/80 rounded-xl">
-              <div className="flex items-center gap-2 mb-3 text-slate-900 font-bold text-sm">
-                <User className="w-4 h-4 text-emerald-600" />
+            <div className="rounded-xl border border-[#0B1F1A]/10 p-4">
+              <div className="mb-3 flex items-center gap-2 text-sm font-bold text-[#0B1F1A]">
+                <User className="h-4 w-4 text-[#16785A]" />
                 <h3>Owner Details</h3>
               </div>
-              <div className="text-xs space-y-1.5 text-slate-600">
-                <p className="font-semibold text-slate-800 text-sm">
+              <div className="space-y-1.5 text-xs text-[#0B1F1A]/65">
+                <p className="text-sm font-semibold text-[#0B1F1A]">
                   {displayOwnerName}
                 </p>
                 {displayOwnerEmail && <p>{displayOwnerEmail}</p>}
                 {displayOwnerType && (
-                  <p className="capitalize text-slate-500">
+                  <p className="capitalize text-[#0B1F1A]/50">
                     Account Type:{" "}
-                    <span className="font-medium text-slate-700">
+                    <span className="font-medium text-[#0B1F1A]/75">
                       {displayOwnerType}
                     </span>
                   </p>
@@ -201,39 +209,41 @@ const InspectionReceipt: React.FC = () => {
             </div>
 
             {/* Generator Section */}
-            <div className="p-4 border border-slate-200/80 rounded-xl">
-              <div className="flex items-center gap-2 mb-3 text-slate-900 font-bold text-sm">
-                <Zap className="w-4 h-4 text-emerald-600" />
+            <div className="rounded-xl border border-[#0B1F1A]/10 p-4">
+              <div className="mb-3 flex items-center gap-2 text-sm font-bold text-[#0B1F1A]">
+                <Zap className="h-4 w-4 text-[#16785A]" />
                 <h3>Generator Details</h3>
               </div>
-              <div className="text-xs space-y-1.5 text-slate-600">
+              <div className="space-y-1.5 text-xs text-[#0B1F1A]/65">
                 <p>
-                  <span className="font-medium text-slate-500">ID:</span>{" "}
-                  <span className="font-mono text-slate-800">
+                  <span className="font-medium text-[#0B1F1A]/45">ID:</span>{" "}
+                  <span className="font-mono text-[#0B1F1A]/80">
                     {inspection.generator?.generatorId || "N/A"}
                   </span>
                 </p>
                 <p>
-                  <span className="font-medium text-slate-500">
+                  <span className="font-medium text-[#0B1F1A]/45">
                     Brand / Model:
                   </span>{" "}
-                  <span className="text-slate-800">
+                  <span className="text-[#0B1F1A]/80">
                     {inspection.generator?.brand || "N/A"}{" "}
                     {inspection.generator?.model || ""}
                   </span>
                 </p>
                 <p>
-                  <span className="font-medium text-slate-500">Serial No:</span>{" "}
-                  <span className="font-mono text-slate-800">
+                  <span className="font-medium text-[#0B1F1A]/45">
+                    Serial No:
+                  </span>{" "}
+                  <span className="font-mono text-[#0B1F1A]/80">
                     {inspection.generator?.serialNumber || "N/A"}
                   </span>
                 </p>
                 {inspection.generator?.capacity && (
                   <p>
-                    <span className="font-medium text-slate-500">
+                    <span className="font-medium text-[#0B1F1A]/45">
                       Capacity:
                     </span>{" "}
-                    <span className="text-slate-800">
+                    <span className="text-[#0B1F1A]/80">
                       {inspection.generator.capacity}
                     </span>
                   </p>
@@ -244,18 +254,20 @@ const InspectionReceipt: React.FC = () => {
 
           {/* Location Details */}
           {inspection.location && (
-            <div className="mb-8 p-4 border border-slate-200/80 rounded-xl">
-              <div className="flex items-center gap-2 mb-2 text-slate-900 font-bold text-sm">
-                <MapPin className="w-4 h-4 text-emerald-600" />
+            <div className="mb-8 rounded-xl border border-[#0B1F1A]/10 p-4">
+              <div className="mb-2 flex items-center gap-2 text-sm font-bold text-[#0B1F1A]">
+                <MapPin className="h-4 w-4 text-[#16785A]" />
                 <h3>Inspection Site Location</h3>
               </div>
-              <div className="text-xs text-slate-600 space-y-1">
+              <div className="space-y-1 text-xs text-[#0B1F1A]/65">
                 <p>
-                  <span className="font-medium text-slate-500">Address:</span>{" "}
+                  <span className="font-medium text-[#0B1F1A]/45">
+                    Address:
+                  </span>{" "}
                   {inspection.location.address || "N/A"}
                 </p>
                 <p>
-                  <span className="font-medium text-slate-500">
+                  <span className="font-medium text-[#0B1F1A]/45">
                     LGA / State:
                   </span>{" "}
                   {inspection.location.lga || "N/A"},{" "}
@@ -266,20 +278,20 @@ const InspectionReceipt: React.FC = () => {
           )}
 
           {/* Financial Summary */}
-          <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-5 mb-8">
-            <h3 className="font-bold text-slate-900 text-sm mb-3">
+          <div className="mb-8 rounded-xl border border-[#0B1F1A]/10 bg-[#F7F6F1] p-5">
+            <h3 className="mb-3 text-sm font-bold text-[#0B1F1A]">
               Payment Summary
             </h3>
             <div className="space-y-2 text-xs sm:text-sm">
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-[#0B1F1A]/60">
                 <span>Inspection Processing Fee</span>
-                <span className="font-medium text-slate-800">
+                <span className="font-medium text-[#0B1F1A]/80">
                   ₦{inspection.payment?.amount?.toLocaleString() || "0"}
                 </span>
               </div>
-              <div className="pt-3 border-t border-slate-200 flex justify-between text-base font-bold text-slate-900">
+              <div className="flex justify-between border-t border-[#0B1F1A]/10 pt-3 text-base font-bold text-[#0B1F1A]">
                 <span>Total Amount Paid</span>
-                <span className="text-emerald-600">
+                <span className="text-[#16785A]">
                   ₦{inspection.payment?.amount?.toLocaleString() || "0"}
                 </span>
               </div>
@@ -287,19 +299,14 @@ const InspectionReceipt: React.FC = () => {
           </div>
 
           {/* Status Badge */}
-          <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200/80 rounded-xl mb-8">
-            <span className="text-xs font-semibold text-slate-600">
+          <div className="mb-8 flex items-center justify-between rounded-xl border border-[#0B1F1A]/10 bg-[#F7F6F1] p-4">
+            <span className="text-xs font-semibold text-[#0B1F1A]/65">
               Inspection Status
             </span>
             <span
-              className={`px-3 py-1 text-xs rounded-full font-semibold capitalize ${
-                inspection.status === "completed"
-                  ? "bg-emerald-100 text-emerald-800"
-                  : inspection.status === "scheduled"
-                    ? "bg-blue-100 text-blue-800"
-                    : inspection.status === "pending"
-                      ? "bg-amber-100 text-amber-800"
-                      : "bg-rose-100 text-rose-800"
+              className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
+                statusBadgeClasses[inspection.status] ||
+                "bg-rose-100 text-rose-700"
               }`}
             >
               {inspection.status === "pending"
@@ -310,9 +317,9 @@ const InspectionReceipt: React.FC = () => {
 
           {/* Card / Gateway Metadata */}
           {inspection.payment?.metadata && (
-            <div className="mb-8 pt-4 border-t border-slate-100 text-xs text-slate-500 space-y-1">
-              <div className="flex items-center gap-1.5 font-bold text-slate-700 mb-1">
-                <CreditCard className="w-3.5 h-3.5 text-slate-400" />
+            <div className="mb-8 space-y-1 border-t border-[#0B1F1A]/10 pt-4 text-xs text-[#0B1F1A]/50">
+              <div className="mb-1 flex items-center gap-1.5 font-bold text-[#0B1F1A]/75">
+                <CreditCard className="h-3.5 w-3.5 text-[#0B1F1A]/40" />
                 <span>Gateway Payment Info</span>
               </div>
               {inspection.payment.metadata.flutterwaveTransactionId && (
@@ -331,7 +338,7 @@ const InspectionReceipt: React.FC = () => {
           )}
 
           {/* Footer */}
-          <div className="pt-6 border-t border-slate-200 text-center text-xs text-slate-400 space-y-1">
+          <div className="space-y-1 border-t border-[#0B1F1A]/10 pt-6 text-center text-xs text-[#0B1F1A]/40">
             <p>
               This is a computer-generated document confirming inspection fee
               payment.

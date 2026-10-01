@@ -13,13 +13,10 @@ const MainLayout = () => {
   const hideLayout = isAdminPath || isUserPath;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50/50 text-slate-800 selection:bg-emerald-500 selection:text-white font-sans antialiased">
+    <div className="flex min-h-screen flex-col bg-[#F7F6F1] font-[Figtree,ui-sans-serif,system-ui,sans-serif] text-[#0B1F1A] antialiased selection:bg-[#16785A] selection:text-white">
       {!hideLayout && <Navbar />}
 
-      <main
-        id="main-content"
-        className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 transition-all"
-      >
+      <main id="main-content" className="flex-1 w-full transition-all">
         <Outlet />
       </main>
 

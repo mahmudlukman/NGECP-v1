@@ -12,7 +12,9 @@ import { v4 as uuidv4 } from "uuid";
 const Flutterwave = require("flutterwave-node-v3");
 const flw = new Flutterwave(config.FLW_PUBLIC_KEY, config.FLW_SECRET_KEY);
 
-// Initialize payment (called after scheduling inspection)
+// @desc    Initialize payment (called after scheduling inspection)
+// @route   GET /api/v1/payment/initialize
+// @access  Private
 export const initializePayment = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -23,8 +25,8 @@ export const initializePayment = catchAsyncError(
         return next(
           new ErrorHandler(
             "Missing required fields: inspectionId, amount, redirect_url",
-            400
-          )
+            400,
+          ),
         );
       }
 
@@ -41,8 +43,8 @@ export const initializePayment = catchAsyncError(
         return next(
           new ErrorHandler(
             "You don't have permission to pay for this inspection",
-            403
-          )
+            403,
+          ),
         );
       }
 
@@ -58,7 +60,10 @@ export const initializePayment = catchAsyncError(
         // If payment exists and is already paid, return error
         if (existingPayment.status === "paid") {
           return next(
-            new ErrorHandler("Payment already completed for this inspection", 400)
+            new ErrorHandler(
+              "Payment already completed for this inspection",
+              400,
+            ),
           );
         }
         // Reuse existing payment record
@@ -84,7 +89,7 @@ export const initializePayment = catchAsyncError(
       // Get generator info for payment description
       const generator = inspection.generator as any;
       const displayName =
-        user.accountType === "individual" ? user.name : user.companyName;
+        user.accountType === "individual" ? user.name : user.organizationName;
 
       // Prepare Flutterwave payment data
       const paymentData = {
@@ -120,7 +125,7 @@ export const initializePayment = catchAsyncError(
             Authorization: `Bearer ${config.FLW_SECRET_KEY}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (response.data?.status === "success") {
@@ -149,16 +154,18 @@ export const initializePayment = catchAsyncError(
         return next(
           new ErrorHandler(
             error.response.data.message || "Payment initialization failed",
-            400
-          )
+            400,
+          ),
         );
       }
       return next(new ErrorHandler(error.message, 400));
     }
-  }
+  },
 );
 
-// Verify payment (callback from Flutterwave)
+// @desc    Verify payment (callback from Flutterwave)
+// @route   GET /api/v1/payment/verify
+// @access  Private
 export const verifyPayment = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -232,7 +239,7 @@ export const verifyPayment = catchAsyncError(
           {
             status: "pending",
           },
-          { new: true }
+          { new: true },
         ).populate("generator", "generatorId brand model");
 
         // Update generator status
@@ -267,140 +274,133 @@ export const verifyPayment = catchAsyncError(
     } catch (error: any) {
       console.error("Payment verification error:", error);
       return next(
-        new ErrorHandler(
-          error.message || "Payment verification failed",
-          400
-        )
+        new ErrorHandler(error.message || "Payment verification failed", 400),
       );
     }
-  }
+  },
 );
 
-// Get payment by transaction reference
-export const getPaymentByReference = catchAsyncError(
+// @desc    Get payment by transaction reference
+// @route   GET /api/v1/payment/reference/:referenceId
+// @access  Private
+export const paymentByReference = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { reference } = req.params;
+    const { reference } = req.params;
 
-      const payment = await Payment.findOne({
-        transactionReference: reference,
-      })
-        .populate("user", "name email companyName")
+    const payment = await Payment.findOne({
+      transactionReference: reference,
+    })
+      .populate("user", "name email companyName")
+      .populate({
+        path: "inspection",
+        populate: {
+          path: "generator",
+          select: "generatorId brand model serialNumber",
+        },
+      });
+
+    if (!payment) {
+      return next(new ErrorHandler("Payment not found", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      payment,
+    });
+  },
+);
+
+// @desc    Get payment status (for checking payment status)
+// @route   GET /api/v1/payment/status/:inspectionId
+// @access  Private
+export const paymentStatus = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { inspectionId } = req.params;
+
+    const payment = await Payment.findOne({
+      inspection: inspectionId,
+    }).populate("inspection", "status scheduledDate");
+
+    if (!payment) {
+      return next(new ErrorHandler("Payment not found", 404));
+    }
+
+    res.status(200).json({
+      success: true,
+      paymentStatus: payment.status,
+      amount: payment.amount,
+      transactionReference: payment.transactionReference,
+      paymentDate: payment.paymentDate,
+      paymentMethod: payment.paymentMethod,
+      inspection: payment.inspection,
+    });
+  },
+);
+
+// @desc    Get my payments
+// @route   GET /api/v1/payment/me
+// @access  Private
+export const myPayments = catchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user?._id;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const pageSize = Math.min(
+      50,
+      Math.max(1, parseInt(req.query.pageSize as string) || 10),
+    );
+    const status = req.query.status as string;
+
+    const skipAmount = (page - 1) * pageSize;
+
+    const query: any = { user: userId };
+
+    if (status && status !== "all") {
+      query.status = status;
+    }
+
+    const [payments, totalPayments] = await Promise.all([
+      Payment.find(query)
         .populate({
           path: "inspection",
           populate: {
             path: "generator",
             select: "generatorId brand model serialNumber",
           },
-        });
+        })
+        .skip(skipAmount)
+        .limit(pageSize)
+        .sort({ createdAt: -1 })
+        .lean(),
+      Payment.countDocuments(query),
+    ]);
 
-      if (!payment) {
-        return next(new ErrorHandler("Payment not found", 404));
-      }
+    const totalPages = Math.ceil(totalPayments / pageSize);
 
-      res.status(200).json({
-        success: true,
-        payment,
-      });
-    } catch (error: any) {
-      return next(new ErrorHandler(error.message, 400));
-    }
-  }
+    res.status(200).json({
+      success: true,
+      payments,
+      pagination: {
+        currentPage: page,
+        pageSize,
+        totalItems: totalPayments,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
+  },
 );
 
-// Get payment status (for checking payment status)
-export const getPaymentStatus = catchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { inspectionId } = req.params;
-
-      const payment = await Payment.findOne({
-        inspection: inspectionId,
-      }).populate("inspection", "status scheduledDate");
-
-      if (!payment) {
-        return next(new ErrorHandler("Payment not found", 404));
-      }
-
-      res.status(200).json({
-        success: true,
-        paymentStatus: payment.status,
-        amount: payment.amount,
-        transactionReference: payment.transactionReference,
-        paymentDate: payment.paymentDate,
-        paymentMethod: payment.paymentMethod,
-        inspection: payment.inspection,
-      });
-    } catch (error: any) {
-      return next(new ErrorHandler(error.message, 400));
-    }
-  }
-);
-
-// Get my payments
-export const getMyPayments = catchAsyncError(
-  async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const userId = req.user?._id;
-      const page = Math.max(1, parseInt(req.query.page as string) || 1);
-      const pageSize = Math.min(
-        50,
-        Math.max(1, parseInt(req.query.pageSize as string) || 10)
-      );
-      const status = req.query.status as string;
-
-      const skipAmount = (page - 1) * pageSize;
-
-      const query: any = { user: userId };
-
-      if (status && status !== "all") {
-        query.status = status;
-      }
-
-      const [payments, totalPayments] = await Promise.all([
-        Payment.find(query)
-          .populate({
-            path: "inspection",
-            populate: {
-              path: "generator",
-              select: "generatorId brand model serialNumber",
-            },
-          })
-          .skip(skipAmount)
-          .limit(pageSize)
-          .sort({ createdAt: -1 })
-          .lean(),
-        Payment.countDocuments(query),
-      ]);
-
-      const totalPages = Math.ceil(totalPayments / pageSize);
-
-      res.status(200).json({
-        success: true,
-        payments,
-        pagination: {
-          currentPage: page,
-          pageSize,
-          totalItems: totalPayments,
-          totalPages,
-          hasNextPage: page < totalPages,
-          hasPrevPage: page > 1,
-        },
-      });
-    } catch (error: any) {
-      return next(new ErrorHandler(error.message, 400));
-    }
-  }
-);
-
-// Get all payments --- for admin
-export const getAllPayments = catchAsyncError(
+// @desc    Get all payments
+// @route   GET /api/v1/payments
+// @access  Admin
+export const allPayments = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const page = Math.max(1, parseInt(req.query.page as string) || 1);
       const pageSize = Math.min(
         50,
-        Math.max(1, parseInt(req.query.pageSize as string) || 10)
+        Math.max(1, parseInt(req.query.pageSize as string) || 10),
       );
       const status = req.query.status as string;
       const search = req.query.search as string;
@@ -465,133 +465,131 @@ export const getAllPayments = catchAsyncError(
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }
-  }
+  },
 );
 
-// Get payment statistics --- for admin
-export const getPaymentStatistics = catchAsyncError(
+// @desc    Get payment statistics
+// @route   GET /api/v1/payment/stats
+// @access  Admin
+export const paymentStatistics = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const [
-        totalPayments,
-        paidPayments,
-        pendingPayments,
-        failedPayments,
-        totalRevenue,
-        revenueThisMonth,
-      ] = await Promise.all([
-        Payment.countDocuments(),
-        Payment.countDocuments({ status: "paid" }),
-        Payment.countDocuments({ status: "pending" }),
-        Payment.countDocuments({ status: "failed" }),
-        Payment.aggregate([
-          { $match: { status: "paid" } },
-          { $group: { _id: null, total: { $sum: "$amount" } } },
-        ]),
-        Payment.aggregate([
-          {
-            $match: {
-              status: "paid",
-              paymentDate: {
-                $gte: new Date(
-                  new Date().getFullYear(),
-                  new Date().getMonth(),
-                  1
-                ),
-              },
+    const [
+      totalPayments,
+      paidPayments,
+      pendingPayments,
+      failedPayments,
+      totalRevenue,
+      revenueThisMonth,
+    ] = await Promise.all([
+      Payment.countDocuments(),
+      Payment.countDocuments({ status: "paid" }),
+      Payment.countDocuments({ status: "pending" }),
+      Payment.countDocuments({ status: "failed" }),
+      Payment.aggregate([
+        { $match: { status: "paid" } },
+        { $group: { _id: null, total: { $sum: "$amount" } } },
+      ]),
+      Payment.aggregate([
+        {
+          $match: {
+            status: "paid",
+            paymentDate: {
+              $gte: new Date(
+                new Date().getFullYear(),
+                new Date().getMonth(),
+                1,
+              ),
             },
           },
-          { $group: { _id: null, total: { $sum: "$amount" } } },
-        ]),
-      ]);
-
-      res.status(200).json({
-        success: true,
-        statistics: {
-          totalPayments,
-          byStatus: {
-            paid: paidPayments,
-            pending: pendingPayments,
-            failed: failedPayments,
-          },
-          revenue: {
-            total: totalRevenue.length > 0 ? totalRevenue[0].total : 0,
-            thisMonth:
-              revenueThisMonth.length > 0 ? revenueThisMonth[0].total : 0,
-          },
         },
-      });
-    } catch (error: any) {
-      return next(new ErrorHandler(error.message, 400));
-    }
-  }
+        { $group: { _id: null, total: { $sum: "$amount" } } },
+      ]),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      statistics: {
+        totalPayments,
+        byStatus: {
+          paid: paidPayments,
+          pending: pendingPayments,
+          failed: failedPayments,
+        },
+        revenue: {
+          total: totalRevenue.length > 0 ? totalRevenue[0].total : 0,
+          thisMonth:
+            revenueThisMonth.length > 0 ? revenueThisMonth[0].total : 0,
+        },
+      },
+    });
+  },
 );
 
-// Update payment status --- for admin (manual verification)
+// @desc    Update payment status --- for admin (manual verification)
+// @route   GET /api/v1/payment/update/status/:id
+// @access  Admin
 export const updatePaymentStatus = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { id } = req.params;
-      const { status, paymentMethod, notes } = req.body;
+    const { id } = req.params;
+    const { status, paymentMethod, notes } = req.body;
 
-      if (!status) {
-        return next(new ErrorHandler("Status is required", 400));
-      }
-
-      const payment = await Payment.findById(id);
-
-      if (!payment) {
-        return next(new ErrorHandler("Payment not found", 404));
-      }
-
-      payment.status = status;
-
-      if (paymentMethod) {
-        payment.paymentMethod = paymentMethod;
-      }
-
-      if (status === "paid" && !payment.paymentDate) {
-        payment.paymentDate = new Date();
-      }
-
-      if (notes) {
-        payment.metadata = { 
-          ...payment.metadata, 
-          adminNotes: notes,
-          manuallyVerifiedBy: req.user?._id,
-          manuallyVerifiedAt: new Date(),
-        };
-      }
-
-      await payment.save();
-
-      // If payment is marked as paid, update inspection status
-      if (status === "paid") {
-        await Inspection.findByIdAndUpdate(payment.inspection, {
-          status: "pending",
-        });
-        
-        // Update generator status
-        const inspection = await Inspection.findById(payment.inspection);
-        if (inspection) {
-          await Generator.findByIdAndUpdate(inspection.generator, {
-            status: "under_inspection",
-          });
-        }
-      }
-
-      res.status(200).json({
-        success: true,
-        message: "Payment status updated successfully",
-        payment,
-      });
-    } catch (error: any) {
-      return next(new ErrorHandler(error.message, 400));
+    if (!status) {
+      return next(new ErrorHandler("Status is required", 400));
     }
-  }
+
+    const payment = await Payment.findById(id);
+
+    if (!payment) {
+      return next(new ErrorHandler("Payment not found", 404));
+    }
+
+    payment.status = status;
+
+    if (paymentMethod) {
+      payment.paymentMethod = paymentMethod;
+    }
+
+    if (status === "paid" && !payment.paymentDate) {
+      payment.paymentDate = new Date();
+    }
+
+    if (notes) {
+      payment.metadata = {
+        ...payment.metadata,
+        adminNotes: notes,
+        manuallyVerifiedBy: req.user?._id,
+        manuallyVerifiedAt: new Date(),
+      };
+    }
+
+    await payment.save();
+
+    // If payment is marked as paid, update inspection status
+    if (status === "paid") {
+      await Inspection.findByIdAndUpdate(payment.inspection, {
+        status: "pending",
+      });
+
+      // Update generator status
+      const inspection = await Inspection.findById(payment.inspection);
+      if (inspection) {
+        await Generator.findByIdAndUpdate(inspection.generator, {
+          status: "under_inspection",
+        });
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Payment status updated successfully",
+      payment,
+    });
+  },
 );
 
-// Initiate refund --- for admin
+// @desc    Initiate refund
+// @route   GET /api/v1/payment/refund/:id
+// @access  Admin
 export const initiateRefund = catchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -609,14 +607,15 @@ export const initiateRefund = catchAsyncError(
       }
 
       // Check if payment was made through Flutterwave
-      const flutterwaveTransactionId = payment.metadata?.flutterwaveTransactionId;
+      const flutterwaveTransactionId =
+        payment.metadata?.flutterwaveTransactionId;
 
       if (!flutterwaveTransactionId) {
         return next(
           new ErrorHandler(
             "Cannot process refund - no Flutterwave transaction ID found",
-            400
-          )
+            400,
+          ),
         );
       }
 
@@ -644,7 +643,7 @@ export const initiateRefund = catchAsyncError(
             Authorization: `Bearer ${config.FLW_SECRET_KEY}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (response.data?.status === "success") {
@@ -681,13 +680,13 @@ export const initiateRefund = catchAsyncError(
         return next(
           new ErrorHandler(
             error.response.data.message || "Refund processing failed",
-            400
-          )
+            400,
+          ),
         );
       }
       return next(new ErrorHandler(error.message, 400));
     }
-  }
+  },
 );
 
 // Handle Flutterwave webhook
@@ -724,7 +723,7 @@ export const handleWebhook = catchAsyncError(
               webhookVerifiedAt: new Date(),
             },
           },
-          { new: true }
+          { new: true },
         );
 
         if (payment) {
@@ -758,11 +757,13 @@ export const handleWebhook = catchAsyncError(
               refundWebhookData: payload.data,
             },
           },
-          { new: true }
+          { new: true },
         );
 
         if (payment) {
-          console.log(`✅ Refund for payment ${payment._id} completed via webhook`);
+          console.log(
+            `✅ Refund for payment ${payment._id} completed via webhook`,
+          );
         }
       }
 
@@ -770,8 +771,8 @@ export const handleWebhook = catchAsyncError(
     } catch (error: any) {
       console.error("Webhook handling error:", error.message);
       return next(
-        new ErrorHandler(error.message || "Webhook handling failed", 500)
+        new ErrorHandler(error.message || "Webhook handling failed", 500),
       );
     }
-  }
+  },
 );

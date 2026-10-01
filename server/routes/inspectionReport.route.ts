@@ -1,62 +1,60 @@
 import express from "express";
-import { isAuthenticated, authorizeRoles } from "../middleware/auth";
+import {
+  isAuthenticated,
+  authorizeRoles,
+  requireActiveAccount,
+} from "../middleware/auth";
 import {
   createInspectionReport,
-  getReportById,
-  getReportByInspectionId,
+  reportById,
+  reportByInspectionId,
   updateInspectionReport,
   approveInspectionReport,
-  getAllReports,
-  getMyReports,
+  allReports,
+  myReports,
   deleteInspectionReport,
 } from "../controllers/inspectionReport.controller";
+import { UserRole } from "../models/User";
 
 const InspectionReportRouter = express.Router();
 
+InspectionReportRouter.use(isAuthenticated, requireActiveAccount);
+
 // User routes
-InspectionReportRouter.get("/my-reports", isAuthenticated, getMyReports);
-InspectionReportRouter.get("/report/:id", isAuthenticated, getReportById);
-InspectionReportRouter.get(
-  "/inspection/:inspectionId",
-  isAuthenticated,
-  getReportByInspectionId
-);
+InspectionReportRouter.get("/reports/me", myReports);
+InspectionReportRouter.get("/report/:id", reportById);
+InspectionReportRouter.get("/report/:inspectionId", reportByInspectionId);
 
 // Admin & Editor routes (can create and update reports)
 InspectionReportRouter.post(
-  "/create-report",
-  isAuthenticated,
-  authorizeRoles("admin", "editor"),
-  createInspectionReport
+  "/report/create",
+  authorizeRoles(UserRole.ADMIN, UserRole.EDITOR),
+  createInspectionReport,
 );
 
 InspectionReportRouter.put(
-  "/update-inspection-report/:id",
-  isAuthenticated,
-  authorizeRoles("admin", "editor"),
-  updateInspectionReport
+  "/report/inspection/update/:id",
+  authorizeRoles(UserRole.ADMIN, UserRole.EDITOR),
+  updateInspectionReport,
 );
 
 InspectionReportRouter.get(
-  "/get-all-reports",
-  isAuthenticated,
-  // authorizeRoles("admin", "editor"),
-  getAllReports
+  "/reports",
+  authorizeRoles(UserRole.ADMIN, UserRole.EDITOR),
+  allReports,
 );
 
 // Admin only routes
 InspectionReportRouter.put(
-  "/approve-report/:id",
-  isAuthenticated,
-  authorizeRoles("admin"),
-  approveInspectionReport
+  "/report/approve/:id",
+  authorizeRoles(UserRole.ADMIN),
+  approveInspectionReport,
 );
 
 InspectionReportRouter.delete(
-  "/delete-report/:id",
-  isAuthenticated,
-  authorizeRoles("admin"),
-  deleteInspectionReport
+  "/report/delete/:id",
+  authorizeRoles(UserRole.ADMIN),
+  deleteInspectionReport,
 );
 
 export default InspectionReportRouter;
