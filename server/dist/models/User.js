@@ -50,19 +50,20 @@ var UserRole;
 var AccountType;
 (function (AccountType) {
     AccountType["INDIVIDUAL"] = "individual";
-    AccountType["COMPANY"] = "company";
+    AccountType["ORGANIZATION"] = "organization";
 })(AccountType || (exports.AccountType = AccountType = {}));
 const UserSchema = new mongoose_1.Schema({
     email: {
         type: String,
-        required: true,
+        required: [true, "Please enter your email!"],
         unique: true,
         lowercase: true,
         trim: true,
+        match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Please enter a valid email"],
     },
     password: {
         type: String,
-        required: true,
+        required: [true, "Please enter your password"],
         select: false,
     },
     role: {
@@ -86,35 +87,45 @@ const UserSchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
-    // Company fields
-    companyName: {
+    // organization fields
+    organizationName: {
         type: String,
         required: function () {
-            return this.accountType === AccountType.COMPANY;
+            return this.accountType === AccountType.ORGANIZATION;
         },
     },
-    companyRegNumber: {
+    organizationRegNumber: {
         type: String,
         unique: true,
         sparse: true,
     },
-    companyAddress: String,
+    organizationAddress: String,
     contactPersonName: String,
     contactPersonPhone: String,
     isActive: {
         type: Boolean,
         default: true,
     },
+    suspendedByAdmin: {
+        type: Boolean,
+        default: false,
+    },
+    passwordChangedAt: Date,
+    resetPasswordToken: String,
+    resetPasswordTime: Date,
 }, {
     minimize: false,
     timestamps: true,
 });
 // Hash password
 UserSchema.pre("save", async function (next) {
-    if (!this.isModified("password")) {
-        next();
+    if (!this.isModified("password") || this.$locals.skipHash) {
+        return next();
     }
     this.password = await bcryptjs_1.default.hash(this.password, 10);
+    if (!this.isNew) {
+        this.passwordChangedAt = new Date();
+    }
     next();
 });
 // JWT token

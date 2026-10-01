@@ -16,7 +16,7 @@ const sendMail = async (options) => {
     const html = await ejs_1.default.renderFile(templatePath, data);
     // Send with Resend
     await resend.emails.send({
-        from: "NGECP <onboarding@happinessani.com>",
+        from: "NGECP <onboarding@resend.dev>",
         to: email,
         subject,
         html,

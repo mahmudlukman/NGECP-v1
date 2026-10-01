@@ -13,6 +13,7 @@ const compression_1 = __importDefault(require("compression"));
 const helmet_1 = __importDefault(require("helmet"));
 const rateLimiter_1 = __importDefault(require("./utils/rateLimiter"));
 const config_1 = __importDefault(require("./config"));
+const csrf_1 = require("./middleware/csrf");
 const auth_route_1 = __importDefault(require("./routes/auth.route"));
 const user_route_1 = __importDefault(require("./routes/user.route"));
 const generator_route_1 = __importDefault(require("./routes/generator.route"));
@@ -50,6 +51,8 @@ exports.app.use((0, compression_1.default)({
 }));
 // Use Helmet to enhance security by setting various HTTP headers
 exports.app.use((0, helmet_1.default)());
+// CSRF protection
+exports.app.use(csrf_1.generateCSRFToken);
 // Apply rate limiting middleware to prevent excessive requests and enhance security
 exports.app.use(rateLimiter_1.default);
 // routes

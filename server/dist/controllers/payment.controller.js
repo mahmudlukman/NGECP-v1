@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handleWebhook = exports.initiateRefund = exports.updatePaymentStatus = exports.getPaymentStatistics = exports.getAllPayments = exports.getMyPayments = exports.getPaymentStatus = exports.getPaymentByReference = exports.verifyPayment = exports.initializePayment = void 0;
+exports.handleWebhook = exports.initiateRefund = exports.updatePaymentStatus = exports.paymentStatistics = exports.allPayments = exports.myPayments = exports.paymentStatus = exports.paymentByReference = exports.verifyPayment = exports.initializePayment = void 0;
 const catchAsyncErrors_1 = require("../middleware/catchAsyncErrors");
 const Payment_1 = require("../models/Payment");
 const Inspection_1 = require("../models/Inspection");
@@ -15,7 +15,9 @@ const config_1 = __importDefault(require("../config"));
 const uuid_1 = require("uuid");
 const Flutterwave = require("flutterwave-node-v3");
 const flw = new Flutterwave(config_1.default.FLW_PUBLIC_KEY, config_1.default.FLW_SECRET_KEY);
-// Initialize payment (called after scheduling inspection)
+// @desc    Initialize payment (called after scheduling inspection)
+// @route   GET /api/v1/payment/initialize
+// @access  Private
 exports.initializePayment = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res, next) => {
     try {
         const { inspectionId, amount, redirect_url } = req.body;
@@ -65,7 +67,7 @@ exports.initializePayment = (0, catchAsyncErrors_1.catchAsyncError)(async (req, 
         }
         // Get generator info for payment description
         const generator = inspection.generator;
-        const displayName = user.accountType === "individual" ? user.name : user.companyName;
+        const displayName = user.accountType === "individual" ? user.name : user.organizationName;
         // Prepare Flutterwave payment data
         const paymentData = {
             tx_ref,
@@ -126,7 +128,9 @@ exports.initializePayment = (0, catchAsyncErrors_1.catchAsyncError)(async (req, 
         return next(new errorHandler_1.default(error.message, 400));
     }
 });
-// Verify payment (callback from Flutterwave)
+// @desc    Verify payment (callback from Flutterwave)
+// @route   GET /api/v1/payment/verify
+// @access  Private
 exports.verifyPayment = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res, next) => {
     try {
         const { status, tx_ref, transaction_id } = req.query;
@@ -220,104 +224,97 @@ exports.verifyPayment = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res,
         return next(new errorHandler_1.default(error.message || "Payment verification failed", 400));
     }
 });
-// Get payment by transaction reference
-exports.getPaymentByReference = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res, next) => {
-    try {
-        const { reference } = req.params;
-        const payment = await Payment_1.Payment.findOne({
-            transactionReference: reference,
-        })
-            .populate("user", "name email companyName")
+// @desc    Get payment by transaction reference
+// @route   GET /api/v1/payment/reference/:referenceId
+// @access  Private
+exports.paymentByReference = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res, next) => {
+    const { reference } = req.params;
+    const payment = await Payment_1.Payment.findOne({
+        transactionReference: reference,
+    })
+        .populate("user", "name email companyName")
+        .populate({
+        path: "inspection",
+        populate: {
+            path: "generator",
+            select: "generatorId brand model serialNumber",
+        },
+    });
+    if (!payment) {
+        return next(new errorHandler_1.default("Payment not found", 404));
+    }
+    res.status(200).json({
+        success: true,
+        payment,
+    });
+});
+// @desc    Get payment status (for checking payment status)
+// @route   GET /api/v1/payment/status/:inspectionId
+// @access  Private
+exports.paymentStatus = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res, next) => {
+    const { inspectionId } = req.params;
+    const payment = await Payment_1.Payment.findOne({
+        inspection: inspectionId,
+    }).populate("inspection", "status scheduledDate");
+    if (!payment) {
+        return next(new errorHandler_1.default("Payment not found", 404));
+    }
+    res.status(200).json({
+        success: true,
+        paymentStatus: payment.status,
+        amount: payment.amount,
+        transactionReference: payment.transactionReference,
+        paymentDate: payment.paymentDate,
+        paymentMethod: payment.paymentMethod,
+        inspection: payment.inspection,
+    });
+});
+// @desc    Get my payments
+// @route   GET /api/v1/payment/me
+// @access  Private
+exports.myPayments = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res, next) => {
+    const userId = req.user?._id;
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize) || 10));
+    const status = req.query.status;
+    const skipAmount = (page - 1) * pageSize;
+    const query = { user: userId };
+    if (status && status !== "all") {
+        query.status = status;
+    }
+    const [payments, totalPayments] = await Promise.all([
+        Payment_1.Payment.find(query)
             .populate({
             path: "inspection",
             populate: {
                 path: "generator",
                 select: "generatorId brand model serialNumber",
             },
-        });
-        if (!payment) {
-            return next(new errorHandler_1.default("Payment not found", 404));
-        }
-        res.status(200).json({
-            success: true,
-            payment,
-        });
-    }
-    catch (error) {
-        return next(new errorHandler_1.default(error.message, 400));
-    }
+        })
+            .skip(skipAmount)
+            .limit(pageSize)
+            .sort({ createdAt: -1 })
+            .lean(),
+        Payment_1.Payment.countDocuments(query),
+    ]);
+    const totalPages = Math.ceil(totalPayments / pageSize);
+    res.status(200).json({
+        success: true,
+        payments,
+        pagination: {
+            currentPage: page,
+            pageSize,
+            totalItems: totalPayments,
+            totalPages,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1,
+        },
+    });
 });
-// Get payment status (for checking payment status)
-exports.getPaymentStatus = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res, next) => {
-    try {
-        const { inspectionId } = req.params;
-        const payment = await Payment_1.Payment.findOne({
-            inspection: inspectionId,
-        }).populate("inspection", "status scheduledDate");
-        if (!payment) {
-            return next(new errorHandler_1.default("Payment not found", 404));
-        }
-        res.status(200).json({
-            success: true,
-            paymentStatus: payment.status,
-            amount: payment.amount,
-            transactionReference: payment.transactionReference,
-            paymentDate: payment.paymentDate,
-            paymentMethod: payment.paymentMethod,
-            inspection: payment.inspection,
-        });
-    }
-    catch (error) {
-        return next(new errorHandler_1.default(error.message, 400));
-    }
-});
-// Get my payments
-exports.getMyPayments = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res, next) => {
-    try {
-        const userId = req.user?._id;
-        const page = Math.max(1, parseInt(req.query.page) || 1);
-        const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize) || 10));
-        const status = req.query.status;
-        const skipAmount = (page - 1) * pageSize;
-        const query = { user: userId };
-        if (status && status !== "all") {
-            query.status = status;
-        }
-        const [payments, totalPayments] = await Promise.all([
-            Payment_1.Payment.find(query)
-                .populate({
-                path: "inspection",
-                populate: {
-                    path: "generator",
-                    select: "generatorId brand model serialNumber",
-                },
-            })
-                .skip(skipAmount)
-                .limit(pageSize)
-                .sort({ createdAt: -1 })
-                .lean(),
-            Payment_1.Payment.countDocuments(query),
-        ]);
-        const totalPages = Math.ceil(totalPayments / pageSize);
-        res.status(200).json({
-            success: true,
-            payments,
-            pagination: {
-                currentPage: page,
-                pageSize,
-                totalItems: totalPayments,
-                totalPages,
-                hasNextPage: page < totalPages,
-                hasPrevPage: page > 1,
-            },
-        });
-    }
-    catch (error) {
-        return next(new errorHandler_1.default(error.message, 400));
-    }
-});
-// Get all payments --- for admin
-exports.getAllPayments = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res, next) => {
+// @desc    Get all payments
+// @route   GET /api/v1/payments
+// @access  Admin
+exports.allPayments = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res, next) => {
     try {
         const page = Math.max(1, parseInt(req.query.page) || 1);
         const pageSize = Math.min(50, Math.max(1, parseInt(req.query.pageSize) || 10));
@@ -378,102 +375,98 @@ exports.getAllPayments = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res
         return next(new errorHandler_1.default(error.message, 400));
     }
 });
-// Get payment statistics --- for admin
-exports.getPaymentStatistics = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res, next) => {
-    try {
-        const [totalPayments, paidPayments, pendingPayments, failedPayments, totalRevenue, revenueThisMonth,] = await Promise.all([
-            Payment_1.Payment.countDocuments(),
-            Payment_1.Payment.countDocuments({ status: "paid" }),
-            Payment_1.Payment.countDocuments({ status: "pending" }),
-            Payment_1.Payment.countDocuments({ status: "failed" }),
-            Payment_1.Payment.aggregate([
-                { $match: { status: "paid" } },
-                { $group: { _id: null, total: { $sum: "$amount" } } },
-            ]),
-            Payment_1.Payment.aggregate([
-                {
-                    $match: {
-                        status: "paid",
-                        paymentDate: {
-                            $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-                        },
+// @desc    Get payment statistics
+// @route   GET /api/v1/payment/stats
+// @access  Admin
+exports.paymentStatistics = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res, next) => {
+    const [totalPayments, paidPayments, pendingPayments, failedPayments, totalRevenue, revenueThisMonth,] = await Promise.all([
+        Payment_1.Payment.countDocuments(),
+        Payment_1.Payment.countDocuments({ status: "paid" }),
+        Payment_1.Payment.countDocuments({ status: "pending" }),
+        Payment_1.Payment.countDocuments({ status: "failed" }),
+        Payment_1.Payment.aggregate([
+            { $match: { status: "paid" } },
+            { $group: { _id: null, total: { $sum: "$amount" } } },
+        ]),
+        Payment_1.Payment.aggregate([
+            {
+                $match: {
+                    status: "paid",
+                    paymentDate: {
+                        $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
                     },
                 },
-                { $group: { _id: null, total: { $sum: "$amount" } } },
-            ]),
-        ]);
-        res.status(200).json({
-            success: true,
-            statistics: {
-                totalPayments,
-                byStatus: {
-                    paid: paidPayments,
-                    pending: pendingPayments,
-                    failed: failedPayments,
-                },
-                revenue: {
-                    total: totalRevenue.length > 0 ? totalRevenue[0].total : 0,
-                    thisMonth: revenueThisMonth.length > 0 ? revenueThisMonth[0].total : 0,
-                },
             },
-        });
-    }
-    catch (error) {
-        return next(new errorHandler_1.default(error.message, 400));
-    }
+            { $group: { _id: null, total: { $sum: "$amount" } } },
+        ]),
+    ]);
+    res.status(200).json({
+        success: true,
+        statistics: {
+            totalPayments,
+            byStatus: {
+                paid: paidPayments,
+                pending: pendingPayments,
+                failed: failedPayments,
+            },
+            revenue: {
+                total: totalRevenue.length > 0 ? totalRevenue[0].total : 0,
+                thisMonth: revenueThisMonth.length > 0 ? revenueThisMonth[0].total : 0,
+            },
+        },
+    });
 });
-// Update payment status --- for admin (manual verification)
+// @desc    Update payment status --- for admin (manual verification)
+// @route   GET /api/v1/payment/update/status/:id
+// @access  Admin
 exports.updatePaymentStatus = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const { status, paymentMethod, notes } = req.body;
-        if (!status) {
-            return next(new errorHandler_1.default("Status is required", 400));
-        }
-        const payment = await Payment_1.Payment.findById(id);
-        if (!payment) {
-            return next(new errorHandler_1.default("Payment not found", 404));
-        }
-        payment.status = status;
-        if (paymentMethod) {
-            payment.paymentMethod = paymentMethod;
-        }
-        if (status === "paid" && !payment.paymentDate) {
-            payment.paymentDate = new Date();
-        }
-        if (notes) {
-            payment.metadata = {
-                ...payment.metadata,
-                adminNotes: notes,
-                manuallyVerifiedBy: req.user?._id,
-                manuallyVerifiedAt: new Date(),
-            };
-        }
-        await payment.save();
-        // If payment is marked as paid, update inspection status
-        if (status === "paid") {
-            await Inspection_1.Inspection.findByIdAndUpdate(payment.inspection, {
-                status: "pending",
-            });
-            // Update generator status
-            const inspection = await Inspection_1.Inspection.findById(payment.inspection);
-            if (inspection) {
-                await Generator_1.Generator.findByIdAndUpdate(inspection.generator, {
-                    status: "under_inspection",
-                });
-            }
-        }
-        res.status(200).json({
-            success: true,
-            message: "Payment status updated successfully",
-            payment,
+    const { id } = req.params;
+    const { status, paymentMethod, notes } = req.body;
+    if (!status) {
+        return next(new errorHandler_1.default("Status is required", 400));
+    }
+    const payment = await Payment_1.Payment.findById(id);
+    if (!payment) {
+        return next(new errorHandler_1.default("Payment not found", 404));
+    }
+    payment.status = status;
+    if (paymentMethod) {
+        payment.paymentMethod = paymentMethod;
+    }
+    if (status === "paid" && !payment.paymentDate) {
+        payment.paymentDate = new Date();
+    }
+    if (notes) {
+        payment.metadata = {
+            ...payment.metadata,
+            adminNotes: notes,
+            manuallyVerifiedBy: req.user?._id,
+            manuallyVerifiedAt: new Date(),
+        };
+    }
+    await payment.save();
+    // If payment is marked as paid, update inspection status
+    if (status === "paid") {
+        await Inspection_1.Inspection.findByIdAndUpdate(payment.inspection, {
+            status: "pending",
         });
+        // Update generator status
+        const inspection = await Inspection_1.Inspection.findById(payment.inspection);
+        if (inspection) {
+            await Generator_1.Generator.findByIdAndUpdate(inspection.generator, {
+                status: "under_inspection",
+            });
+        }
     }
-    catch (error) {
-        return next(new errorHandler_1.default(error.message, 400));
-    }
+    res.status(200).json({
+        success: true,
+        message: "Payment status updated successfully",
+        payment,
+    });
 });
-// Initiate refund --- for admin
+// @desc    Initiate refund
+// @route   GET /api/v1/payment/refund/:id
+// @access  Admin
 exports.initiateRefund = (0, catchAsyncErrors_1.catchAsyncError)(async (req, res, next) => {
     try {
         const { id } = req.params;
