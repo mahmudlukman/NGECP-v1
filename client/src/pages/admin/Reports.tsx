@@ -11,11 +11,22 @@ import Tooltip from "../../components/Tooltip";
 import DeleteAlert from "../../components/DeleteAlert";
 import Pagination from "../../components/Pagination";
 import Loading from "../../components/Loading";
-import { Eye, Trash2, Search, CheckCircle, Edit } from "lucide-react";
+import {
+  Eye,
+  Trash2,
+  Search,
+  CheckCircle,
+  Edit,
+  ClipboardList,
+} from "lucide-react";
 import DashboardLayout from "../../components/Layouts/DashboardLayout";
 import { format } from "date-fns";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../redux/store";
+
+// TODO: point this at your real inspections list route.
+// Reports are created from inspections, so that is where users start.
+const INSPECTIONS_ROUTE = "/admin/inspections";
 
 interface IReport {
   _id: string;
@@ -59,6 +70,69 @@ const scoreBadgeClass = (score: number) => {
   if (score >= 60) return "bg-amber-100 text-amber-700";
   return "bg-rose-100 text-rose-700";
 };
+
+// Shown when no reports exist at all (no filters or search applied)
+const NoReportsState = ({ onGoToInspections }: { onGoToInspections: () => void }) => (
+  <div className="relative flex min-h-[420px] items-center justify-center overflow-hidden rounded-lg bg-[#F3F1EA]/60 ring-1 ring-[#0B1F1A]/10">
+    {/* Faint grid backdrop */}
+    <div
+      aria-hidden
+      className="absolute inset-0 opacity-60"
+      style={{
+        backgroundImage:
+          "linear-gradient(#0B1F1A12 1px, transparent 1px), linear-gradient(90deg, #0B1F1A12 1px, transparent 1px)",
+        backgroundSize: "48px 48px",
+      }}
+    />
+
+    <div className="relative mx-4 max-w-md py-10 text-center">
+      <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-md ring-1 ring-[#0B1F1A]/10">
+        <ClipboardList
+          size={40}
+          strokeWidth={1.75}
+          className="text-[#16785A]"
+        />
+      </div>
+
+      <h2 className="font-[Newsreader,Georgia,serif] text-2xl text-[#0B1F1A]">
+        No inspection reports yet
+      </h2>
+      <p className="mt-2 text-sm leading-relaxed text-[#0B1F1A]/60">
+        A report is created when an inspector completes an inspection. Once
+        reports are submitted, they will appear here for review and approval.
+      </p>
+
+      <button
+        onClick={onGoToInspections}
+        className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#0B1F1A] px-6 py-2.5 text-sm text-[#F3F1EA] transition hover:scale-[1.03] hover:bg-[#12332b] active:scale-95"
+      >
+        Go to Inspections
+      </button>
+    </div>
+  </div>
+);
+
+// Shown inside the table area when filters or search return nothing
+const NoMatchesState = ({ onClear }: { onClear: () => void }) => (
+  <div className="mx-auto max-w-sm py-10 text-center">
+    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#F3F1EA] ring-1 ring-[#0B1F1A]/10">
+      <Search size={22} className="text-[#16785A]" />
+    </div>
+    <h3 className="font-[Newsreader,Georgia,serif] text-lg text-[#0B1F1A]">
+      No reports match your filters
+    </h3>
+    <p className="mt-1 text-sm text-[#0B1F1A]/55">
+      Try a different search term or status, or clear the filters to see
+      everything.
+    </p>
+    <button
+      onClick={onClear}
+      className="mt-5 rounded-lg bg-[#0B1F1A] px-5 py-2 text-sm text-[#F3F1EA] transition hover:bg-[#12332b]"
+    >
+      Clear filters
+    </button>
+  </div>
+);
 
 const Reports = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -118,6 +192,12 @@ const Reports = () => {
     navigate(`/admin/edit-report/${reportId}`);
   };
 
+  const clearFilters = () => {
+    setFilterCompliance("all");
+    setFilterApproved("all");
+    setSearchTerm("");
+  };
+
   const filteredReports = useMemo(() => {
     const reports = reportsData?.reports || [];
     return reports.filter((r: IReport) => {
@@ -169,6 +249,13 @@ const Reports = () => {
     );
   }
 
+  const hasActiveFilters =
+    filterCompliance !== "all" ||
+    filterApproved !== "all" ||
+    searchTerm.trim() !== "";
+  const hasNoReportsAtAll =
+    (reportsData?.reports?.length ?? 0) === 0 && !hasActiveFilters;
+
   return (
     <DashboardLayout>
       <div className="my-5 w-full rounded-2xl border border-[#0B1F1A]/10 bg-white p-6 font-[Figtree,ui-sans-serif,system-ui,sans-serif] shadow-[0_20px_40px_-30px_rgba(11,31,26,0.25)]">
@@ -180,280 +267,294 @@ const Reports = () => {
           </h1>
         </div>
 
-        {/* Filters + Search */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <div className="flex gap-4">
-            <select
-              value={filterCompliance}
-              onChange={(e) => setFilterCompliance(e.target.value)}
-              className="cursor-pointer rounded-lg border border-[#0B1F1A]/15 bg-[#F7F6F1] px-4 py-2 text-sm text-[#0B1F1A]/75 outline-none"
-            >
-              <option value="all">All Compliance</option>
-              <option value="compliant">Compliant</option>
-              <option value="non_compliant">Non-Compliant</option>
-            </select>
-
-            <select
-              value={filterApproved}
-              onChange={(e) => setFilterApproved(e.target.value)}
-              className="cursor-pointer rounded-lg border border-[#0B1F1A]/15 bg-[#F7F6F1] px-4 py-2 text-sm text-[#0B1F1A]/75 outline-none"
-            >
-              <option value="all">All Status</option>
-              <option value="approved">Approved</option>
-              <option value="pending">Pending Approval</option>
-            </select>
-          </div>
-
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="flex w-64 items-center gap-2 rounded-full border border-[#0B1F1A]/10 bg-[#F7F6F1] px-4 py-2 text-sm focus-within:ring-2 focus-within:ring-[#16785A]/20"
-          >
-            <Search size={16} className="text-[#0B1F1A]/40" />
-            <input
-              type="text"
-              placeholder="Search reports..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-transparent text-[#0B1F1A] outline-none placeholder-[#0B1F1A]/40"
-            />
-          </form>
-        </div>
-
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full overflow-hidden rounded text-left text-sm ring-1 ring-[#0B1F1A]/10">
-            <thead className="bg-[#F7F6F1] uppercase tracking-wider text-[#0B1F1A]/50">
-              <tr>
-                <th className="px-4 py-3">Generator</th>
-                <th className="hidden px-4 py-3 md:table-cell">Inspector</th>
-                <th className="hidden px-4 py-3 md:table-cell">Owner</th>
-                <th className="px-4 py-3 text-center">Score</th>
-                <th className="px-4 py-3 text-center">Compliance</th>
-                <th className="px-4 py-3 text-center">Status</th>
-                <th className="hidden px-4 py-3 lg:table-cell">Date</th>
-                <th className="px-4 py-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="text-[#0B1F1A]/80">
-              {filteredReports.map((report: IReport) => (
-                <tr
-                  key={report._id}
-                  className="border-t border-[#0B1F1A]/10 transition hover:bg-[#0B1F1A]/[0.02]"
-                >
-                  <td className="px-4 py-3 align-top">
-                    <div className="space-y-1 text-xs">
-                      <p>
-                        <span className="font-semibold text-[#0B1F1A]">
-                          ID:
-                        </span>{" "}
-                        {report.generator?.generatorId || "N/A"}
-                      </p>
-                      <p>
-                        <span className="font-semibold text-[#0B1F1A]">
-                          Brand:
-                        </span>{" "}
-                        {report.generator?.brand || "N/A"}
-                      </p>
-                      <p>
-                        <span className="font-semibold text-[#0B1F1A]">
-                          Model:
-                        </span>{" "}
-                        {report.generator?.model || "N/A"}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="hidden px-4 py-3 align-top md:table-cell">
-                    <div className="space-y-1 text-xs">
-                      <p className="font-medium text-[#0B1F1A]">
-                        {report.inspector?.name || "N/A"}
-                      </p>
-                      <p className="text-[#0B1F1A]/50">
-                        {report.inspector?.email || "N/A"}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="hidden px-4 py-3 align-top md:table-cell">
-                    <div className="space-y-1 text-xs">
-                      <p className="font-medium text-[#0B1F1A]">
-                        {report.inspection?.owner?.companyName ||
-                          report.inspection?.owner?.name ||
-                          "N/A"}
-                      </p>
-                      <p className="text-[#0B1F1A]/50">
-                        {report.inspection?.owner?.accountType || "N/A"}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center align-top">
-                    <span
-                      className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${scoreBadgeClass(
-                        report.complianceScore,
-                      )}`}
-                    >
-                      {report.complianceScore}%
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center align-top">
-                    <span
-                      className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
-                        report.overallCompliance
-                          ? "bg-[#16785A]/10 text-[#16785A]"
-                          : "bg-rose-100 text-rose-700"
-                      }`}
-                    >
-                      {report.overallCompliance ? "Compliant" : "Non-Compliant"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center align-top">
-                    {report.isApproved ? (
-                      <div className="space-y-1">
-                        <span className="inline-block rounded-full bg-[#0B1F1A]/[0.06] px-3 py-1 text-xs font-semibold text-[#0B1F1A]/70">
-                          Approved
-                        </span>
-                        {report.approvalDate && (
-                          <p className="text-xs text-[#0B1F1A]/45">
-                            {format(
-                              new Date(report.approvalDate),
-                              "dd MMM yyyy",
-                            )}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                        Pending
-                      </span>
-                    )}
-                  </td>
-                  <td className="hidden px-4 py-3 align-top lg:table-cell">
-                    <div className="space-y-1 text-xs">
-                      <p>
-                        <span className="font-semibold text-[#0B1F1A]">
-                          Created:
-                        </span>{" "}
-                        {format(new Date(report.createdAt), "dd MMM yyyy")}
-                      </p>
-                      <p>
-                        <span className="font-semibold text-[#0B1F1A]">
-                          Updated:
-                        </span>{" "}
-                        {format(new Date(report.updatedAt), "dd MMM yyyy")}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 align-top">
-                    <div className="flex flex-wrap gap-2">
-                      <Tooltip text="View Report" position="bottom">
-                        <button
-                          onClick={() => handleViewReport(report._id)}
-                          className="cursor-pointer rounded-full p-2 text-[#0B1F1A]/60 transition hover:bg-[#0B1F1A]/[0.06]"
-                        >
-                          <Eye size={18} />
-                        </button>
-                      </Tooltip>
-
-                      {!report.isApproved && (
-                        <Tooltip text="Edit Report" position="bottom">
-                          <button
-                            onClick={() => handleEditReport(report._id)}
-                            className="cursor-pointer rounded-full p-2 text-amber-600 transition hover:bg-amber-100"
-                          >
-                            <Edit size={18} />
-                          </button>
-                        </Tooltip>
-                      )}
-
-                      {!report.isApproved && isAdmin && (
-                        <Tooltip text="Approve Report" position="bottom">
-                          <button
-                            onClick={() => handleApprove(report._id)}
-                            disabled={isApproving}
-                            className="cursor-pointer rounded-full p-2 text-[#16785A] transition hover:bg-[#16785A]/10 disabled:opacity-50"
-                          >
-                            <CheckCircle size={18} />
-                          </button>
-                        </Tooltip>
-                      )}
-
-                      {isAdmin && (
-                        <Tooltip text="Delete Report" position="bottom">
-                          <button
-                            onClick={() => handleDeleteClick(report._id)}
-                            className="cursor-pointer rounded-full p-2 text-rose-500 transition hover:bg-rose-100"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </Tooltip>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* No Results */}
-        {filteredReports.length === 0 && (
-          <div className="py-8 text-center text-[#0B1F1A]/45">
-            No reports found matching your criteria.
-          </div>
-        )}
-
-        {/* Pagination Controls Info & Size Selector */}
-        <div className="my-5 flex flex-wrap items-center justify-between gap-4">
-          {reportsData?.pagination && (
-            <p className="text-sm text-[#0B1F1A]/55">
-              Showing{" "}
-              <span className="font-medium text-[#0B1F1A]">
-                {(reportsData.pagination.currentPage - 1) * pageSize + 1}
-              </span>{" "}
-              –{" "}
-              <span className="font-medium text-[#0B1F1A]">
-                {Math.min(
-                  reportsData.pagination.currentPage * pageSize,
-                  reportsData.pagination.totalItems,
-                )}
-              </span>{" "}
-              of{" "}
-              <span className="font-medium text-[#0B1F1A]">
-                {reportsData.pagination.totalItems}
-              </span>{" "}
-              reports
-            </p>
-          )}
-          <div className="flex items-center gap-2">
-            <label
-              htmlFor="pageSize"
-              className="whitespace-nowrap text-sm text-[#0B1F1A]/55"
-            >
-              Show:
-            </label>
-            <select
-              id="pageSize"
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="cursor-pointer rounded border border-[#0B1F1A]/15 bg-[#F7F6F1] px-2 py-1 text-sm text-[#0B1F1A]/75 outline-none"
-            >
-              {[5, 10, 20, 50].map((size) => (
-                <option key={size} value={size}>
-                  {size} per page
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Pagination Numbers Component */}
-        {reportsData?.pagination && (
-          <Pagination
-            currentPage={reportsData.pagination.currentPage}
-            totalPages={reportsData.pagination.totalPages}
-            onPageChange={(newPage) => setPage(newPage)}
+        {hasNoReportsAtAll ? (
+          /* Nothing submitted yet: replace filters, table and pagination */
+          <NoReportsState
+            onGoToInspections={() => navigate(INSPECTIONS_ROUTE)}
           />
+        ) : (
+          <>
+            {/* Filters + Search */}
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex gap-4">
+                <select
+                  value={filterCompliance}
+                  onChange={(e) => setFilterCompliance(e.target.value)}
+                  className="cursor-pointer rounded-lg border border-[#0B1F1A]/15 bg-[#F7F6F1] px-4 py-2 text-sm text-[#0B1F1A]/75 outline-none"
+                >
+                  <option value="all">All Compliance</option>
+                  <option value="compliant">Compliant</option>
+                  <option value="non_compliant">Non-Compliant</option>
+                </select>
+
+                <select
+                  value={filterApproved}
+                  onChange={(e) => setFilterApproved(e.target.value)}
+                  className="cursor-pointer rounded-lg border border-[#0B1F1A]/15 bg-[#F7F6F1] px-4 py-2 text-sm text-[#0B1F1A]/75 outline-none"
+                >
+                  <option value="all">All Status</option>
+                  <option value="approved">Approved</option>
+                  <option value="pending">Pending Approval</option>
+                </select>
+              </div>
+
+              <form
+                onSubmit={(e) => e.preventDefault()}
+                className="flex w-64 items-center gap-2 rounded-full border border-[#0B1F1A]/10 bg-[#F7F6F1] px-4 py-2 text-sm focus-within:ring-2 focus-within:ring-[#16785A]/20"
+              >
+                <Search size={16} className="text-[#0B1F1A]/40" />
+                <input
+                  type="text"
+                  placeholder="Search reports..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-transparent text-[#0B1F1A] outline-none placeholder-[#0B1F1A]/40"
+                />
+              </form>
+            </div>
+
+            {/* Table, or the no-matches state when filters hide every row */}
+            {filteredReports.length === 0 ? (
+              <div className="rounded-lg ring-1 ring-[#0B1F1A]/10">
+                <NoMatchesState onClear={clearFilters} />
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full overflow-hidden rounded text-left text-sm ring-1 ring-[#0B1F1A]/10">
+                  <thead className="bg-[#F7F6F1] uppercase tracking-wider text-[#0B1F1A]/50">
+                    <tr>
+                      <th className="px-4 py-3">Generator</th>
+                      <th className="hidden px-4 py-3 md:table-cell">
+                        Inspector
+                      </th>
+                      <th className="hidden px-4 py-3 md:table-cell">Owner</th>
+                      <th className="px-4 py-3 text-center">Score</th>
+                      <th className="px-4 py-3 text-center">Compliance</th>
+                      <th className="px-4 py-3 text-center">Status</th>
+                      <th className="hidden px-4 py-3 lg:table-cell">Date</th>
+                      <th className="px-4 py-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-[#0B1F1A]/80">
+                    {filteredReports.map((report: IReport) => (
+                      <tr
+                        key={report._id}
+                        className="border-t border-[#0B1F1A]/10 transition hover:bg-[#0B1F1A]/[0.02]"
+                      >
+                        <td className="px-4 py-3 align-top">
+                          <div className="space-y-1 text-xs">
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                ID:
+                              </span>{" "}
+                              {report.generator?.generatorId || "N/A"}
+                            </p>
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Brand:
+                              </span>{" "}
+                              {report.generator?.brand || "N/A"}
+                            </p>
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Model:
+                              </span>{" "}
+                              {report.generator?.model || "N/A"}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="hidden px-4 py-3 align-top md:table-cell">
+                          <div className="space-y-1 text-xs">
+                            <p className="font-medium text-[#0B1F1A]">
+                              {report.inspector?.name || "N/A"}
+                            </p>
+                            <p className="text-[#0B1F1A]/50">
+                              {report.inspector?.email || "N/A"}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="hidden px-4 py-3 align-top md:table-cell">
+                          <div className="space-y-1 text-xs">
+                            <p className="font-medium text-[#0B1F1A]">
+                              {report.inspection?.owner?.companyName ||
+                                report.inspection?.owner?.name ||
+                                "N/A"}
+                            </p>
+                            <p className="text-[#0B1F1A]/50">
+                              {report.inspection?.owner?.accountType || "N/A"}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center align-top">
+                          <span
+                            className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${scoreBadgeClass(
+                              report.complianceScore,
+                            )}`}
+                          >
+                            {report.complianceScore}%
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center align-top">
+                          <span
+                            className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
+                              report.overallCompliance
+                                ? "bg-[#16785A]/10 text-[#16785A]"
+                                : "bg-rose-100 text-rose-700"
+                            }`}
+                          >
+                            {report.overallCompliance
+                              ? "Compliant"
+                              : "Non-Compliant"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center align-top">
+                          {report.isApproved ? (
+                            <div className="space-y-1">
+                              <span className="inline-block rounded-full bg-[#0B1F1A]/[0.06] px-3 py-1 text-xs font-semibold text-[#0B1F1A]/70">
+                                Approved
+                              </span>
+                              {report.approvalDate && (
+                                <p className="text-xs text-[#0B1F1A]/45">
+                                  {format(
+                                    new Date(report.approvalDate),
+                                    "dd MMM yyyy",
+                                  )}
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+                              Pending
+                            </span>
+                          )}
+                        </td>
+                        <td className="hidden px-4 py-3 align-top lg:table-cell">
+                          <div className="space-y-1 text-xs">
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Created:
+                              </span>{" "}
+                              {format(new Date(report.createdAt), "dd MMM yyyy")}
+                            </p>
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Updated:
+                              </span>{" "}
+                              {format(new Date(report.updatedAt), "dd MMM yyyy")}
+                            </p>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 align-top">
+                          <div className="flex flex-wrap gap-2">
+                            <Tooltip text="View Report" position="bottom">
+                              <button
+                                onClick={() => handleViewReport(report._id)}
+                                className="cursor-pointer rounded-full p-2 text-[#0B1F1A]/60 transition hover:bg-[#0B1F1A]/[0.06]"
+                              >
+                                <Eye size={18} />
+                              </button>
+                            </Tooltip>
+
+                            {!report.isApproved && (
+                              <Tooltip text="Edit Report" position="bottom">
+                                <button
+                                  onClick={() => handleEditReport(report._id)}
+                                  className="cursor-pointer rounded-full p-2 text-amber-600 transition hover:bg-amber-100"
+                                >
+                                  <Edit size={18} />
+                                </button>
+                              </Tooltip>
+                            )}
+
+                            {!report.isApproved && isAdmin && (
+                              <Tooltip text="Approve Report" position="bottom">
+                                <button
+                                  onClick={() => handleApprove(report._id)}
+                                  disabled={isApproving}
+                                  className="cursor-pointer rounded-full p-2 text-[#16785A] transition hover:bg-[#16785A]/10 disabled:opacity-50"
+                                >
+                                  <CheckCircle size={18} />
+                                </button>
+                              </Tooltip>
+                            )}
+
+                            {isAdmin && (
+                              <Tooltip text="Delete Report" position="bottom">
+                                <button
+                                  onClick={() => handleDeleteClick(report._id)}
+                                  className="cursor-pointer rounded-full p-2 text-rose-500 transition hover:bg-rose-100"
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </Tooltip>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Pagination Controls Info & Size Selector */}
+            <div className="my-5 flex flex-wrap items-center justify-between gap-4">
+              {reportsData?.pagination && (
+                <p className="text-sm text-[#0B1F1A]/55">
+                  Showing{" "}
+                  <span className="font-medium text-[#0B1F1A]">
+                    {reportsData.pagination.totalItems === 0
+                      ? 0
+                      : (reportsData.pagination.currentPage - 1) * pageSize + 1}
+                  </span>{" "}
+                  –{" "}
+                  <span className="font-medium text-[#0B1F1A]">
+                    {Math.min(
+                      reportsData.pagination.currentPage * pageSize,
+                      reportsData.pagination.totalItems,
+                    )}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-medium text-[#0B1F1A]">
+                    {reportsData.pagination.totalItems}
+                  </span>{" "}
+                  reports
+                </p>
+              )}
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="pageSize"
+                  className="whitespace-nowrap text-sm text-[#0B1F1A]/55"
+                >
+                  Show:
+                </label>
+                <select
+                  id="pageSize"
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="cursor-pointer rounded border border-[#0B1F1A]/15 bg-[#F7F6F1] px-2 py-1 text-sm text-[#0B1F1A]/75 outline-none"
+                >
+                  {[5, 10, 20, 50].map((size) => (
+                    <option key={size} value={size}>
+                      {size} per page
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Pagination Numbers Component */}
+            {reportsData?.pagination && (
+              <Pagination
+                currentPage={reportsData.pagination.currentPage}
+                totalPages={reportsData.pagination.totalPages}
+                onPageChange={(newPage) => setPage(newPage)}
+              />
+            )}
+          </>
         )}
 
         {/* Delete Confirmation Modal */}

@@ -17,6 +17,92 @@ import { format } from "date-fns";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../redux/store";
 
+// Dashed pin + bolt illustration shared by both empty states
+const EmptyIllustration = () => (
+  <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-md ring-1 ring-[#0B1F1A]/10">
+    <svg width="48" height="56" viewBox="0 0 48 56" fill="none">
+      <path
+        d="M24 3C13 3 5 11 5 21c0 13 19 31 19 31s19-18 19-31C43 11 35 3 24 3z"
+        stroke="#16785A"
+        strokeWidth="2.5"
+        strokeDasharray="5 4"
+        fill="#16785A"
+        fillOpacity="0.08"
+      />
+      <path d="M26 11l-9 13h7l-2 11 9-14h-7l2-10z" fill="#16785A" />
+    </svg>
+  </div>
+);
+
+// Shown when no generators exist at all (no filters or search applied)
+const NoGeneratorsState = ({ onAdd }: { onAdd: () => void }) => (
+  <div className="relative flex min-h-[420px] items-center justify-center overflow-hidden rounded-lg bg-[#F3F1EA]/60 ring-1 ring-[#0B1F1A]/10">
+    {/* Faint grid backdrop */}
+    <div
+      aria-hidden
+      className="absolute inset-0 opacity-60"
+      style={{
+        backgroundImage:
+          "linear-gradient(#0B1F1A12 1px, transparent 1px), linear-gradient(90deg, #0B1F1A12 1px, transparent 1px)",
+        backgroundSize: "48px 48px",
+      }}
+    />
+
+    <div className="relative mx-4 max-w-md py-10 text-center">
+      <EmptyIllustration />
+      <h2 className="font-[Newsreader,Georgia,serif] text-2xl text-[#0B1F1A]">
+        No generators registered yet
+      </h2>
+      <p className="mt-2 text-sm leading-relaxed text-[#0B1F1A]/60">
+        Register a generator to start tracking its details, location, and
+        compliance status. It will show up in this list and on the map.
+      </p>
+      <button
+        onClick={onAdd}
+        className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#0B1F1A] px-6 py-2.5 text-sm text-[#F3F1EA] transition hover:scale-[1.03] hover:bg-[#12332b] active:scale-95"
+      >
+        <Plus size={16} /> Register a Generator
+      </button>
+    </div>
+  </div>
+);
+
+// Shown inside the table when filters or search return nothing
+const NoMatchesState = ({
+  onClear,
+  onAdd,
+}: {
+  onClear: () => void;
+  onAdd: () => void;
+}) => (
+  <div className="mx-auto max-w-sm py-10 text-center">
+    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#F3F1EA] ring-1 ring-[#0B1F1A]/10">
+      <Search size={22} className="text-[#16785A]" />
+    </div>
+    <h3 className="font-[Newsreader,Georgia,serif] text-lg text-[#0B1F1A]">
+      No generators match your filters
+    </h3>
+    <p className="mt-1 text-sm text-[#0B1F1A]/55">
+      Try a different search term or status, or clear the filters to see
+      everything.
+    </p>
+    <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
+      <button
+        onClick={onClear}
+        className="rounded-lg bg-[#0B1F1A] px-5 py-2 text-sm text-[#F3F1EA] transition hover:bg-[#12332b]"
+      >
+        Clear filters
+      </button>
+      <button
+        onClick={onAdd}
+        className="inline-flex items-center gap-2 rounded-lg bg-[#0B1F1A]/[0.04] px-5 py-2 text-sm text-[#0B1F1A]/75 transition hover:bg-[#0B1F1A]/[0.08]"
+      >
+        <Plus size={16} /> Add New Generator
+      </button>
+    </div>
+  </div>
+);
+
 const ManageGenerators = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [page, setPage] = useState(1);
@@ -59,6 +145,18 @@ const ManageGenerators = () => {
 
   const pagination = generatorsData?.pagination;
   const generators = generatorsData?.generators || [];
+
+  // Filters count as active as soon as the user types, so the search box
+  // never unmounts mid-typing while the debounce catches up.
+  const hasActiveFilters = filterStatus !== "all" || searchTerm.trim() !== "";
+  const hasNoGeneratorsAtAll = generators.length === 0 && !hasActiveFilters;
+
+  const clearFilters = () => {
+    setFilterStatus("all");
+    setSearchTerm("");
+    setDebouncedSearch("");
+    setPage(1);
+  };
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
@@ -132,326 +230,337 @@ const ManageGenerators = () => {
           </button>
         </div>
 
-        {/* Filter + Search */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-          <select
-            value={filterStatus}
-            onChange={(e) => {
-              setFilterStatus(e.target.value);
-              setPage(1);
-            }}
-            className="rounded-lg border border-[#0B1F1A]/15 bg-[#F7F6F1] px-4 py-2 text-sm text-[#0B1F1A]/75 focus:outline-none focus:ring-1 focus:ring-[#16785A]"
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="under_inspection">Under Inspection</option>
-            <option value="compliant">Compliant</option>
-            <option value="non_compliant">Non-Compliant</option>
-          </select>
-
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="flex w-64 items-center gap-2 rounded-full border border-[#0B1F1A]/10 bg-[#F7F6F1] px-4 py-2 text-sm focus-within:ring-2 focus-within:ring-[#16785A]/20"
-          >
-            <Search size={16} className="text-[#0B1F1A]/40" />
-            <input
-              type="text"
-              placeholder="Search brand, owner, state..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-transparent text-[#0B1F1A] outline-none placeholder-[#0B1F1A]/40"
-            />
-          </form>
-        </div>
-
-        {/* Table */}
-        <div className="overflow-x-auto rounded-lg ring-1 ring-[#0B1F1A]/10">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-[#F7F6F1] uppercase tracking-wider text-[#0B1F1A]/50">
-              <tr>
-                <th className="px-4 py-3">Generator</th>
-                <th className="hidden px-4 py-3 md:table-cell">Details</th>
-                <th className="hidden px-4 py-3 md:table-cell">Location</th>
-                <th className="hidden px-4 py-3 md:table-cell">Compliance</th>
-                <th className="px-4 py-3 text-center">Status</th>
-                <th className="px-4 py-3">Actions</th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-[#0B1F1A]/10 text-[#0B1F1A]/80">
-              {generators.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="py-8 text-center text-[#0B1F1A]/45"
-                  >
-                    No generators found matching your criteria.
-                  </td>
-                </tr>
-              ) : (
-                generators.map((g: IGenerator) => (
-                  <tr
-                    key={g._id!}
-                    className="transition hover:bg-[#0B1F1A]/[0.02]"
-                  >
-                    {/* Generator Info */}
-                    <td className="px-4 py-3 align-top">
-                      <p className="mt-1 text-xs text-[#0B1F1A]/55">
-                        <span className="font-semibold text-[#0B1F1A]">
-                          Owner:
-                        </span>{" "}
-                        {typeof g.owner === "string"
-                          ? g.owner
-                          : g.owner?.organizationName ||
-                            g.owner?.name ||
-                            g.owner?.email ||
-                            "N/A"}
-                      </p>
-                      <div className="text-xs text-[#0B1F1A]/55">
-                        ID:{" "}
-                        <span className="font-mono text-[#0B1F1A]/80">
-                          {g.generatorId}
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* Details */}
-                    <td className="hidden px-4 py-3 align-top md:table-cell">
-                      <div className="space-y-1 text-xs">
-                        <p>
-                          <span className="font-semibold text-[#0B1F1A]">
-                            Brand:
-                          </span>{" "}
-                          {g.brand || "N/A"}
-                        </p>
-                        <p>
-                          <span className="font-semibold text-[#0B1F1A]">
-                            Model:
-                          </span>{" "}
-                          {g.model || "N/A"}
-                        </p>
-                        <p>
-                          <span className="font-semibold text-[#0B1F1A]">
-                            Serial No:
-                          </span>{" "}
-                          {g.serialNumber || "N/A"}
-                        </p>
-                        <p>
-                          <span className="font-semibold text-[#0B1F1A]">
-                            Capacity:
-                          </span>{" "}
-                          {g.capacity || "N/A"}KVA
-                        </p>
-                        <p>
-                          <span className="font-semibold text-[#0B1F1A]">
-                            Year:
-                          </span>{" "}
-                          {g.yearOfManufacture || "N/A"}
-                        </p>
-                      </div>
-                    </td>
-
-                    {/* Location */}
-                    <td className="hidden px-4 py-3 align-top md:table-cell">
-                      <div className="space-y-1 text-xs">
-                        <p>
-                          <span className="font-semibold text-[#0B1F1A]">
-                            Address:
-                          </span>{" "}
-                          {g.location?.address || "N/A"}
-                        </p>
-                        <p>
-                          <span className="font-semibold text-[#0B1F1A]">
-                            State:
-                          </span>{" "}
-                          {g.location?.state || "N/A"}
-                        </p>
-                        <p>
-                          <span className="font-semibold text-[#0B1F1A]">
-                            LGA:
-                          </span>{" "}
-                          {g.location?.lga || "N/A"}
-                        </p>
-                        <p>
-                          <span className="font-semibold text-[#0B1F1A]">
-                            Coordinates:
-                          </span>{" "}
-                          {g.location?.coordinates
-                            ? `${g.location.coordinates.latitude}, ${g.location.coordinates.longitude}`
-                            : "N/A"}
-                        </p>
-                      </div>
-                    </td>
-
-                    {/* Compliance */}
-                    <td className="hidden px-4 py-3 align-top md:table-cell">
-                      <div className="space-y-1 text-xs">
-                        <p>
-                          <span className="font-semibold text-[#0B1F1A]">
-                            Score:
-                          </span>{" "}
-                          {g.complianceScore ?? "N/A"}
-                        </p>
-                        <p>
-                          <span className="font-semibold text-[#0B1F1A]">
-                            Next Inspection:
-                          </span>{" "}
-                          {g.nextInspectionDue
-                            ? format(
-                                new Date(g.nextInspectionDue),
-                                "dd MMM yyyy",
-                              )
-                            : "N/A"}
-                        </p>
-                        <p>
-                          <span className="font-semibold text-[#0B1F1A]">
-                            Last Inspection:
-                          </span>{" "}
-                          {g.lastInspectionDate
-                            ? format(
-                                new Date(g.lastInspectionDate),
-                                "dd MMM yyyy",
-                              )
-                            : "N/A"}
-                        </p>
-                        <p>
-                          <span className="font-semibold text-[#0B1F1A]">
-                            Registered:
-                          </span>{" "}
-                          {g.registrationDate
-                            ? format(
-                                new Date(g.registrationDate),
-                                "dd MMM yyyy",
-                              )
-                            : "N/A"}
-                        </p>
-                      </div>
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-4 py-3 text-center align-top">
-                      <select
-                        value={g.status}
-                        onChange={(e) =>
-                          handleStatusChange(g._id, e.target.value)
-                        }
-                        className="rounded-lg border border-[#0B1F1A]/15 bg-[#F7F6F1] px-3 py-2 text-sm text-[#0B1F1A]/75 focus:outline-none"
-                      >
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="under_inspection">
-                          Under Inspection
-                        </option>
-                        <option value="compliant">Compliant</option>
-                        <option value="non_compliant">Non-Compliant</option>
-                      </select>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-4 py-3 align-top">
-                      <div className="flex items-center gap-2">
-                        <Tooltip text="Edit Generator" position="bottom">
-                          <button
-                            onClick={() =>
-                              navigate(`/admin/update-generator/${g._id}`)
-                            }
-                            className="cursor-pointer rounded-full p-2 text-amber-600 transition hover:bg-amber-100"
-                          >
-                            <Pencil size={18} />
-                          </button>
-                        </Tooltip>
-
-                        <Tooltip text="View Generator" position="bottom">
-                          <button
-                            onClick={() =>
-                              navigate(`/admin/generator/${g._id}`)
-                            }
-                            className="cursor-pointer rounded-full p-2 text-[#0B1F1A]/60 transition hover:bg-[#0B1F1A]/[0.06]"
-                          >
-                            <Eye size={18} />
-                          </button>
-                        </Tooltip>
-
-                        <Tooltip text="Delete Generator" position="bottom">
-                          <button
-                            disabled={!isAdmin}
-                            onClick={() => handleDeleteClick(g._id!)}
-                            className={`rounded-full p-2 transition ${
-                              isAdmin
-                                ? "cursor-pointer text-rose-600 hover:bg-rose-100"
-                                : "cursor-not-allowed text-[#0B1F1A]/25 opacity-50"
-                            }`}
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </Tooltip>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination Controls */}
-        <div className="my-5 flex flex-wrap items-center justify-between gap-4">
-          {pagination && (
-            <p className="text-sm text-[#0B1F1A]/55">
-              Showing{" "}
-              <span className="font-medium text-[#0B1F1A]">
-                {pagination.totalItems === 0
-                  ? 0
-                  : (pagination.currentPage - 1) * pageSize + 1}
-              </span>{" "}
-              –{" "}
-              <span className="font-medium text-[#0B1F1A]">
-                {Math.min(
-                  pagination.currentPage * pageSize,
-                  pagination.totalItems,
-                )}
-              </span>{" "}
-              of{" "}
-              <span className="font-medium text-[#0B1F1A]">
-                {pagination.totalItems}
-              </span>{" "}
-              generators
-            </p>
-          )}
-
-          <div className="flex items-center gap-2">
-            <label
-              htmlFor="pageSize"
-              className="whitespace-nowrap text-sm text-[#0B1F1A]/55"
-            >
-              Show:
-            </label>
-            <select
-              id="pageSize"
-              value={pageSize}
-              onChange={(e) => {
-                setPageSize(Number(e.target.value));
-                setPage(1);
-              }}
-              className="rounded border border-[#0B1F1A]/15 bg-[#F7F6F1] px-2 py-1 text-sm text-[#0B1F1A]/75 focus:outline-none"
-            >
-              {[5, 10, 20, 50].map((size) => (
-                <option key={size} value={size}>
-                  {size} per page
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Pagination Component */}
-        {pagination && pagination.totalPages > 1 && (
-          <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
-            onPageChange={(newPage) => setPage(newPage)}
+        {hasNoGeneratorsAtAll ? (
+          /* Nothing registered yet: replace filters, table and pagination */
+          <NoGeneratorsState
+            onAdd={() => navigate("/admin/register-generator")}
           />
+        ) : (
+          <>
+            {/* Filter + Search */}
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <select
+                value={filterStatus}
+                onChange={(e) => {
+                  setFilterStatus(e.target.value);
+                  setPage(1);
+                }}
+                className="rounded-lg border border-[#0B1F1A]/15 bg-[#F7F6F1] px-4 py-2 text-sm text-[#0B1F1A]/75 focus:outline-none focus:ring-1 focus:ring-[#16785A]"
+              >
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="under_inspection">Under Inspection</option>
+                <option value="compliant">Compliant</option>
+                <option value="non_compliant">Non-Compliant</option>
+              </select>
+
+              <form
+                onSubmit={(e) => e.preventDefault()}
+                className="flex w-64 items-center gap-2 rounded-full border border-[#0B1F1A]/10 bg-[#F7F6F1] px-4 py-2 text-sm focus-within:ring-2 focus-within:ring-[#16785A]/20"
+              >
+                <Search size={16} className="text-[#0B1F1A]/40" />
+                <input
+                  type="text"
+                  placeholder="Search brand, owner, state..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-transparent text-[#0B1F1A] outline-none placeholder-[#0B1F1A]/40"
+                />
+              </form>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto rounded-lg ring-1 ring-[#0B1F1A]/10">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-[#F7F6F1] uppercase tracking-wider text-[#0B1F1A]/50">
+                  <tr>
+                    <th className="px-4 py-3">Generator</th>
+                    <th className="hidden px-4 py-3 md:table-cell">Details</th>
+                    <th className="hidden px-4 py-3 md:table-cell">Location</th>
+                    <th className="hidden px-4 py-3 md:table-cell">
+                      Compliance
+                    </th>
+                    <th className="px-4 py-3 text-center">Status</th>
+                    <th className="px-4 py-3">Actions</th>
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-[#0B1F1A]/10 text-[#0B1F1A]/80">
+                  {generators.length === 0 ? (
+                    <tr>
+                      <td colSpan={6}>
+                        <NoMatchesState
+                          onClear={clearFilters}
+                          onAdd={() => navigate("/admin/register-generator")}
+                        />
+                      </td>
+                    </tr>
+                  ) : (
+                    generators.map((g: IGenerator) => (
+                      <tr
+                        key={g._id!}
+                        className="transition hover:bg-[#0B1F1A]/[0.02]"
+                      >
+                        {/* Generator Info */}
+                        <td className="px-4 py-3 align-top">
+                          <p className="mt-1 text-xs text-[#0B1F1A]/55">
+                            <span className="font-semibold text-[#0B1F1A]">
+                              Owner:
+                            </span>{" "}
+                            {typeof g.owner === "string"
+                              ? g.owner
+                              : g.owner?.organizationName ||
+                                g.owner?.name ||
+                                g.owner?.email ||
+                                "N/A"}
+                          </p>
+                          <div className="text-xs text-[#0B1F1A]/55">
+                            ID:{" "}
+                            <span className="font-mono text-[#0B1F1A]/80">
+                              {g.generatorId}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Details */}
+                        <td className="hidden px-4 py-3 align-top md:table-cell">
+                          <div className="space-y-1 text-xs">
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Brand:
+                              </span>{" "}
+                              {g.brand || "N/A"}
+                            </p>
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Model:
+                              </span>{" "}
+                              {g.model || "N/A"}
+                            </p>
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Serial No:
+                              </span>{" "}
+                              {g.serialNumber || "N/A"}
+                            </p>
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Capacity:
+                              </span>{" "}
+                              {g.capacity || "N/A"}KVA
+                            </p>
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Year:
+                              </span>{" "}
+                              {g.yearOfManufacture || "N/A"}
+                            </p>
+                          </div>
+                        </td>
+
+                        {/* Location */}
+                        <td className="hidden px-4 py-3 align-top md:table-cell">
+                          <div className="space-y-1 text-xs">
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Address:
+                              </span>{" "}
+                              {g.location?.address || "N/A"}
+                            </p>
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                State:
+                              </span>{" "}
+                              {g.location?.state || "N/A"}
+                            </p>
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                LGA:
+                              </span>{" "}
+                              {g.location?.lga || "N/A"}
+                            </p>
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Coordinates:
+                              </span>{" "}
+                              {g.location?.coordinates
+                                ? `${g.location.coordinates.latitude}, ${g.location.coordinates.longitude}`
+                                : "N/A"}
+                            </p>
+                          </div>
+                        </td>
+
+                        {/* Compliance */}
+                        <td className="hidden px-4 py-3 align-top md:table-cell">
+                          <div className="space-y-1 text-xs">
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Score:
+                              </span>{" "}
+                              {g.complianceScore ?? "N/A"}
+                            </p>
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Next Inspection:
+                              </span>{" "}
+                              {g.nextInspectionDue
+                                ? format(
+                                    new Date(g.nextInspectionDue),
+                                    "dd MMM yyyy",
+                                  )
+                                : "N/A"}
+                            </p>
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Last Inspection:
+                              </span>{" "}
+                              {g.lastInspectionDate
+                                ? format(
+                                    new Date(g.lastInspectionDate),
+                                    "dd MMM yyyy",
+                                  )
+                                : "N/A"}
+                            </p>
+                            <p>
+                              <span className="font-semibold text-[#0B1F1A]">
+                                Registered:
+                              </span>{" "}
+                              {g.registrationDate
+                                ? format(
+                                    new Date(g.registrationDate),
+                                    "dd MMM yyyy",
+                                  )
+                                : "N/A"}
+                            </p>
+                          </div>
+                        </td>
+
+                        {/* Status */}
+                        <td className="px-4 py-3 text-center align-top">
+                          <select
+                            value={g.status}
+                            onChange={(e) =>
+                              handleStatusChange(g._id, e.target.value)
+                            }
+                            className="rounded-lg border border-[#0B1F1A]/15 bg-[#F7F6F1] px-3 py-2 text-sm text-[#0B1F1A]/75 focus:outline-none"
+                          >
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="under_inspection">
+                              Under Inspection
+                            </option>
+                            <option value="compliant">Compliant</option>
+                            <option value="non_compliant">Non-Compliant</option>
+                          </select>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="px-4 py-3 align-top">
+                          <div className="flex items-center gap-2">
+                            <Tooltip text="Edit Generator" position="bottom">
+                              <button
+                                onClick={() =>
+                                  navigate(`/admin/update-generator/${g._id}`)
+                                }
+                                className="cursor-pointer rounded-full p-2 text-amber-600 transition hover:bg-amber-100"
+                              >
+                                <Pencil size={18} />
+                              </button>
+                            </Tooltip>
+
+                            <Tooltip text="View Generator" position="bottom">
+                              <button
+                                onClick={() =>
+                                  navigate(`/admin/generator/${g._id}`)
+                                }
+                                className="cursor-pointer rounded-full p-2 text-[#0B1F1A]/60 transition hover:bg-[#0B1F1A]/[0.06]"
+                              >
+                                <Eye size={18} />
+                              </button>
+                            </Tooltip>
+
+                            <Tooltip text="Delete Generator" position="bottom">
+                              <button
+                                disabled={!isAdmin}
+                                onClick={() => handleDeleteClick(g._id!)}
+                                className={`rounded-full p-2 transition ${
+                                  isAdmin
+                                    ? "cursor-pointer text-rose-600 hover:bg-rose-100"
+                                    : "cursor-not-allowed text-[#0B1F1A]/25 opacity-50"
+                                }`}
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </Tooltip>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="my-5 flex flex-wrap items-center justify-between gap-4">
+              {pagination && (
+                <p className="text-sm text-[#0B1F1A]/55">
+                  Showing{" "}
+                  <span className="font-medium text-[#0B1F1A]">
+                    {pagination.totalItems === 0
+                      ? 0
+                      : (pagination.currentPage - 1) * pageSize + 1}
+                  </span>{" "}
+                  –{" "}
+                  <span className="font-medium text-[#0B1F1A]">
+                    {Math.min(
+                      pagination.currentPage * pageSize,
+                      pagination.totalItems,
+                    )}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-medium text-[#0B1F1A]">
+                    {pagination.totalItems}
+                  </span>{" "}
+                  generators
+                </p>
+              )}
+
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="pageSize"
+                  className="whitespace-nowrap text-sm text-[#0B1F1A]/55"
+                >
+                  Show:
+                </label>
+                <select
+                  id="pageSize"
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="rounded border border-[#0B1F1A]/15 bg-[#F7F6F1] px-2 py-1 text-sm text-[#0B1F1A]/75 focus:outline-none"
+                >
+                  {[5, 10, 20, 50].map((size) => (
+                    <option key={size} value={size}>
+                      {size} per page
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Pagination Component */}
+            {pagination && pagination.totalPages > 1 && (
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                onPageChange={(newPage) => setPage(newPage)}
+              />
+            )}
+          </>
         )}
 
         {/* Delete Confirmation Modal */}

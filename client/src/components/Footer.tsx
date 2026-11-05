@@ -286,11 +286,15 @@ const Footer = () => {
             Control Program. All Rights Reserved.
           </span>
           <span className="flex items-center gap-2">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#7FD1AE]/60 motion-reduce:hidden" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#7FD1AE]" />
-            </span>
-            All systems operational
+            Engineered by
+            <a
+              href="https://www.codepence.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#F3F1EA]/40 hover:text-[#F3F1EA] transition-colors"
+            >
+              Codepence.
+            </a>
           </span>
         </div>
       </div>

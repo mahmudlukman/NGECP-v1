@@ -546,7 +546,7 @@ const GeneratorDetails: React.FC = () => {
                   </div>
                   <button
                     type="button"
-                    onClick={() => navigate(`/report-details/${report._id}`)}
+                    onClick={() => navigate(`/admin/report-details/${report._id}`)}
                     className="p-2 rounded-lg hover:bg-blue-100 text-blue-600 transition-colors"
                     title="View Report"
                   >

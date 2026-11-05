@@ -13,7 +13,7 @@ interface Generator {
   brand: string;
   model: string;
   serialNumber: string;
-  capacity: number | string; // Allow string due to "45 KVA" in data
+  capacity: number | string;
   yearOfManufacture: number;
   fuelType: string;
   status?: string;
@@ -28,8 +28,6 @@ interface Generator {
   };
 }
 
-// Status color mapping — ink/mint brand palette, with amber and rose
-// kept for "in progress" and "non-compliant" states respectively.
 const statusColors: Record<string, string> = {
   active: "#16785A", // Mint (brand accent)
   inactive: "#9CA3AF", // Neutral grey
@@ -46,6 +44,13 @@ const normalizeStatus = (status?: string): string => {
   if (lowerStatus === "under_inspection") return "underinspection";
   return lowerStatus.replace("_", "");
 };
+
+// A generator is plottable only if it has real, non-zero coordinates
+const hasValidCoordinates = (gen: Generator): boolean =>
+  !!gen.location?.coordinates?.latitude &&
+  !!gen.location?.coordinates?.longitude &&
+  gen.location.coordinates.latitude !== 0 &&
+  gen.location.coordinates.longitude !== 0;
 
 // Custom marker icon with status color and number for multiple generators
 const createMarkerIcon = (status: string = "unknown", count: number = 1) => {
@@ -90,11 +95,7 @@ function FitBounds({ generators }: { generators: Generator[] }) {
   useEffect(() => {
     if (generators.length > 0) {
       const bounds = generators
-        .filter(
-          (gen) =>
-            gen.location?.coordinates?.latitude &&
-            gen.location?.coordinates?.longitude,
-        )
+        .filter(hasValidCoordinates)
         .map(
           (gen) =>
             [
@@ -111,6 +112,78 @@ function FitBounds({ generators }: { generators: Generator[] }) {
 
   return null;
 }
+
+// Empty state shown when there is nothing to plot on the map
+interface EmptyMapStateProps {
+  hasGenerators: boolean; // true = generators exist, but none have valid coordinates
+  total: number;
+  onAdd: () => void;
+  onViewList: () => void;
+}
+
+const EmptyMapState = ({
+  hasGenerators,
+  total,
+  onAdd,
+  onViewList,
+}: EmptyMapStateProps) => (
+  <div className="relative flex h-[calc(100vh-250px)] min-h-[500px] items-center justify-center overflow-hidden bg-[#F3F1EA]/60">
+    {/* Faint map-grid backdrop */}
+    <div
+      aria-hidden
+      className="absolute inset-0 opacity-60"
+      style={{
+        backgroundImage:
+          "linear-gradient(#0B1F1A12 1px, transparent 1px), linear-gradient(90deg, #0B1F1A12 1px, transparent 1px)",
+        backgroundSize: "48px 48px",
+      }}
+    />
+
+    <div className="relative mx-4 max-w-md text-center">
+      {/* Illustration: dashed pin with a bolt */}
+      <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-md ring-1 ring-[#0B1F1A]/10">
+        <svg width="48" height="56" viewBox="0 0 48 56" fill="none">
+          <path
+            d="M24 3C13 3 5 11 5 21c0 13 19 31 19 31s19-18 19-31C43 11 35 3 24 3z"
+            stroke="#16785A"
+            strokeWidth="2.5"
+            strokeDasharray="5 4"
+            fill="#16785A"
+            fillOpacity="0.08"
+          />
+          <path d="M26 11l-9 13h7l-2 11 9-14h-7l2-10z" fill="#16785A" />
+        </svg>
+      </div>
+
+      <h2 className="font-[Newsreader,Georgia,serif] text-2xl text-[#0B1F1A]">
+        {hasGenerators ? "Nothing to plot yet" : "No generators on the map yet"}
+      </h2>
+
+      <p className="mt-2 text-sm leading-relaxed text-[#0B1F1A]/60">
+        {hasGenerators
+          ? `You have ${total} registered generator${total > 1 ? "s" : ""}, but none have valid location coordinates. Update their locations to see them here, or add a new one.`
+          : "Once you register a generator with its location, it will appear here as a pin you can click for details."}
+      </p>
+
+      <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <button
+          onClick={onAdd}
+          className="rounded-lg bg-[#0B1F1A] px-6 py-2.5 text-[#F3F1EA] transition hover:scale-[1.03] hover:bg-[#12332b] active:scale-95"
+        >
+          + Register a Generator
+        </button>
+        {hasGenerators && (
+          <button
+            onClick={onViewList}
+            className="rounded-lg bg-[#0B1F1A]/[0.04] px-6 py-2.5 text-[#0B1F1A]/75 transition hover:scale-[1.03] hover:bg-[#0B1F1A]/[0.08] active:scale-95"
+          >
+            Fix locations in List View
+          </button>
+        )}
+      </div>
+    </div>
+  </div>
+);
 
 const GeneratorsMapView = () => {
   const navigate = useNavigate();
@@ -134,11 +207,8 @@ const GeneratorsMapView = () => {
   const groupedGenerators = useMemo(() => {
     const map = new Map<string, Generator[]>();
     generators.forEach((gen) => {
-      if (
-        gen.location?.coordinates?.latitude &&
-        gen.location?.coordinates?.longitude
-      ) {
-        const key = `${gen.location.coordinates.latitude},${gen.location.coordinates.longitude}`;
+      if (hasValidCoordinates(gen)) {
+        const key = `${gen.location.coordinates!.latitude},${gen.location.coordinates!.longitude}`;
         const existing = map.get(key) || [];
         map.set(key, [...existing, gen]);
       }
@@ -176,13 +246,8 @@ const GeneratorsMapView = () => {
     );
   }
 
-  const validGenerators = generators.filter(
-    (gen) =>
-      gen.location?.coordinates?.latitude &&
-      gen.location?.coordinates?.longitude &&
-      gen.location.coordinates.latitude !== 0 &&
-      gen.location.coordinates.longitude !== 0,
-  );
+  const validGenerators = generators.filter(hasValidCoordinates);
+  const hasPlottable = validGenerators.length > 0;
 
   return (
     <DashboardLayout>
@@ -216,62 +281,57 @@ const GeneratorsMapView = () => {
             </div>
           </div>
 
-          {/* Legend */}
-          <div className="mt-4 flex flex-wrap gap-4 text-sm text-[#0B1F1A]/70">
-            <div className="flex items-center gap-2">
-              <div
-                className="h-4 w-4 rounded-full"
-                style={{ backgroundColor: statusColors.active }}
-              />
-              <span>Active</span>
+          {/* Legend — hidden when there is nothing to show */}
+          {hasPlottable && (
+            <div className="mt-4 flex flex-wrap gap-4 text-sm text-[#0B1F1A]/70">
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-4 w-4 rounded-full"
+                  style={{ backgroundColor: statusColors.active }}
+                />
+                <span>Active</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-4 w-4 rounded-full"
+                  style={{ backgroundColor: statusColors.inactive }}
+                />
+                <span>Inactive</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-4 w-4 rounded-full"
+                  style={{ backgroundColor: statusColors.underinspection }}
+                />
+                <span>Under Inspection</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-4 w-4 rounded-full"
+                  style={{ backgroundColor: statusColors.compliant }}
+                />
+                <span>Compliant</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-4 w-4 rounded-full"
+                  style={{ backgroundColor: statusColors.noncompliant }}
+                />
+                <span>Non-Compliant</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div
-                className="h-4 w-4 rounded-full"
-                style={{ backgroundColor: statusColors.inactive }}
-              />
-              <span>Inactive</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div
-                className="h-4 w-4 rounded-full"
-                style={{ backgroundColor: statusColors.underinspection }}
-              />
-              <span>Under Inspection</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div
-                className="h-4 w-4 rounded-full"
-                style={{ backgroundColor: statusColors.compliant }}
-              />
-              <span>Compliant</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div
-                className="h-4 w-4 rounded-full"
-                style={{ backgroundColor: statusColors.noncompliant }}
-              />
-              <span>Non-Compliant</span>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Map Container */}
         <div className="overflow-hidden rounded-b-2xl bg-white shadow-md">
-          {validGenerators.length === 0 ? (
-            <div className="flex h-96 items-center justify-center">
-              <div className="text-center">
-                <p className="mb-4 text-lg text-[#0B1F1A]/60">
-                  No generators with valid locations found
-                </p>
-                <button
-                  onClick={() => navigate("/admin/register-generator")}
-                  className="rounded-lg bg-[#0B1F1A] px-6 py-2 text-[#F3F1EA] transition hover:scale-[1.03] active:scale-95"
-                >
-                  Register Your First Generator
-                </button>
-              </div>
-            </div>
+          {!hasPlottable ? (
+            <EmptyMapState
+              hasGenerators={generators.length > 0}
+              total={generators.length}
+              onAdd={() => navigate("/admin/register-generator")}
+              onViewList={() => navigate("/admin/manage-generators")}
+            />
           ) : (
             <div className="h-[calc(100vh-250px)] min-h-[500px]">
               <MapContainer
@@ -296,13 +356,8 @@ const GeneratorsMapView = () => {
                       icon={createMarkerIcon(representativeGen.status, count)}
                       eventHandlers={{
                         click: () => {
-                          if (gens.length === 1) {
-                            setSelectedGenerator(gens[0]);
-                            setIsModalOpen(true);
-                          } else {
-                            setSelectedGenerator(gens[0]); // Select first generator
-                            setIsModalOpen(true);
-                          }
+                          setSelectedGenerator(gens[0]); // Select first generator
+                          setIsModalOpen(true);
                         },
                       }}
                     />
